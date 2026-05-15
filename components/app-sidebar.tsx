@@ -61,7 +61,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-full border border-border/60 bg-card px-3 py-2 text-xs text-muted-foreground shadow-pill">
-        Phase 3 · Discovery
+        Phase 4 · Ranking + trends API
       </div>
     </aside>
   );

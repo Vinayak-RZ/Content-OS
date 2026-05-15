@@ -19,6 +19,7 @@ import {
 } from "@/lib/discovery/dedup";
 import type { AdapterRunResult, TrendCandidate } from "@/lib/discovery/types";
 import { urlSha256 } from "@/lib/discovery/urls";
+import { rankDiscoveryPool } from "@/lib/ranking";
 import { getDecryptedKey } from "@/lib/user-settings";
 
 const MAX_NEW_INSERTS = 48;
@@ -46,8 +47,8 @@ export type DiscoveryRunResult = {
 };
 
 /**
- * Carry-over queue + adapter fan-out → memory/URL dedup → optional Firecrawl enrich → inserts.
- * `finalScore` matches adapter heuristic until Phase 4 ranking.
+ * Carry-over queue + adapter fan-out → memory/URL dedup → optional Firecrawl enrich → rank → persist.
+ * `finalScore` comes from `rankDiscoveryPool` (5-signal); falls back to `trendScore` if embeddings fail.
  */
 export async function runDiscoveryForUser(
   userId: string,
@@ -156,162 +157,53 @@ export async function runDiscoveryForUser(
   const toStore = enriched.slice(0, MAX_NEW_INSERTS);
   const expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_MS);
 
-  // #region agent log
-  const preTxTs = Date.now();
-  fetch("http://127.0.0.1:7334/ingest/8e343a91-5a10-4aef-9609-b898378ff4d2", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "ce7402",
-    },
-    body: JSON.stringify({
-      sessionId: "ce7402",
-      runId: "post-fix",
-      hypothesisId: "H1",
-      location: "orchestrator.ts:before-$transaction",
-      message: "about to open interactive tx",
-      data: { toStoreLen: toStore.length, savedLen: saved.length },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
+  const finalScores = await rankDiscoveryPool(userId, saved, toStore);
 
-  await prisma.$transaction(async (tx) => {
-    // #region agent log
-    const txEnteredAt = Date.now();
-    fetch("http://127.0.0.1:7334/ingest/8e343a91-5a10-4aef-9609-b898378ff4d2", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "ce7402",
-      },
-      body: JSON.stringify({
-        sessionId: "ce7402",
-        runId: "post-fix",
-        hypothesisId: "H2",
-        location: "orchestrator.ts:tx-callback-enter",
-        message: "interactive tx callback entered",
-        data: { msSincePreTx: txEnteredAt - preTxTs },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
-    if (saved.length > 0) {
-      await tx.trend.updateMany({
-        where: { id: { in: saved.map((s) => s.id) } },
-        data: {
-          discoveryBatchId: batchId,
-          expiresAt,
-        },
-      });
-    }
-
-    // #region agent log
-    const afterUpdateAt = Date.now();
-    fetch("http://127.0.0.1:7334/ingest/8e343a91-5a10-4aef-9609-b898378ff4d2", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "ce7402",
-      },
-      body: JSON.stringify({
-        sessionId: "ce7402",
-        runId: "post-fix",
-        hypothesisId: "H3",
-        location: "orchestrator.ts:after-updateMany",
-        message: "updateMany done (if any)",
-        data: {
-          hadSaved: saved.length > 0,
-          msSinceTxEnter: afterUpdateAt - txEnteredAt,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
-    let createIdx = 0;
-    for (const c of toStore) {
-      // #region agent log
-      if (
-        createIdx === 0 ||
-        createIdx === 10 ||
-        createIdx === 25 ||
-        createIdx === 40 ||
-        createIdx === toStore.length - 1
-      ) {
-        const t = Date.now();
-        fetch(
-          "http://127.0.0.1:7334/ingest/8e343a91-5a10-4aef-9609-b898378ff4d2",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "ce7402",
-            },
-            body: JSON.stringify({
-              sessionId: "ce7402",
-              runId: "post-fix",
-              hypothesisId: "H4",
-              location: "orchestrator.ts:before-create",
-              message: "about to trend.create",
-              data: {
-                createIdx,
-                msSinceTxEnter: t - txEnteredAt,
-                toStoreLen: toStore.length,
-              },
-              timestamp: Date.now(),
-            }),
+  await prisma.$transaction(
+    async (tx) => {
+      for (let i = 0; i < saved.length; i += 1) {
+        const s = saved[i];
+        const fs = finalScores[i];
+        if (!s) continue;
+        await tx.trend.update({
+          where: { id: s.id },
+          data: {
+            discoveryBatchId: batchId,
+            expiresAt,
+            finalScore: typeof fs === "number" ? fs : s.trendScore,
           },
-        ).catch(() => {});
+        });
       }
-      // #endregion
 
-      await tx.trend.create({
-        data: {
-          userId,
-          title: c.title.slice(0, 240),
-          source: c.source.slice(0, 120),
-          url: c.url,
-          urlHash: urlSha256(c.url),
-          summary: c.summary.slice(0, 2400),
-          trendScore: c.trendScore,
-          finalScore: c.trendScore,
-          tags: c.tags.slice(0, 20),
-          sourceType: c.sourceType,
-          discoveredAt: c.discoveredAt,
-          expiresAt,
-          discoveryBatchId: batchId,
-        },
-      });
-      createIdx += 1;
-    }
-
-    // #region agent log
-    fetch("http://127.0.0.1:7334/ingest/8e343a91-5a10-4aef-9609-b898378ff4d2", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "ce7402",
-      },
-      body: JSON.stringify({
-        sessionId: "ce7402",
-        runId: "post-fix",
-        hypothesisId: "H5",
-        location: "orchestrator.ts:tx-callback-success",
-        message: "all creates finished",
-        data: {
-          totalCreates: createIdx,
-          msSinceTxEnter: Date.now() - txEnteredAt,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, {
-    maxWait: 15_000,
-    timeout: 120_000,
-  });
+      const offset = saved.length;
+      for (let j = 0; j < toStore.length; j += 1) {
+        const c = toStore[j];
+        if (!c) continue;
+        const fs = finalScores[offset + j];
+        await tx.trend.create({
+          data: {
+            userId,
+            title: c.title.slice(0, 240),
+            source: c.source.slice(0, 120),
+            url: c.url,
+            urlHash: urlSha256(c.url),
+            summary: c.summary.slice(0, 2400),
+            trendScore: c.trendScore,
+            finalScore: typeof fs === "number" ? fs : c.trendScore,
+            tags: c.tags.slice(0, 20),
+            sourceType: c.sourceType,
+            discoveredAt: c.discoveredAt,
+            expiresAt,
+            discoveryBatchId: batchId,
+          },
+        });
+      }
+    },
+    {
+      maxWait: 15_000,
+      timeout: 120_000,
+    },
+  );
 
   return {
     userId,
