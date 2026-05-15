@@ -3,6 +3,8 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import Link from "next/link";
+import { SignInButton } from "@/components/auth/sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -18,8 +20,8 @@ gsap.registerPlugin(useGSAP);
 
 const steps = [
   { label: "Foundation", state: "done" as const },
-  { label: "Auth", state: "active" as const },
-  { label: "Knowledge", state: "upcoming" as const },
+  { label: "Auth", state: "done" as const },
+  { label: "Knowledge", state: "active" as const },
   { label: "Discovery", state: "upcoming" as const },
   { label: "Publish", state: "upcoming" as const },
 ];
@@ -48,12 +50,12 @@ export function HomeHero() {
     <div ref={containerRef} className="mx-auto w-full max-w-2xl">
     <Card className="w-full" data-hero-item>
       <CardHeader className="text-center">
-        <CardDescription>Step 1 of 5 — Getting started</CardDescription>
+        <CardDescription>Step 2 of 5 — Getting started</CardDescription>
         <CardTitle className="text-3xl">Welcome to Content OS</CardTitle>
       </CardHeader>
       <CardContent className="space-y-8">
         <div data-hero-item className="space-y-3">
-          <Progress value={20} />
+          <Progress value={40} />
           <div className="flex flex-wrap justify-center gap-2">
             {steps.map((step) => (
               <Badge
@@ -86,12 +88,12 @@ export function HomeHero() {
           data-hero-item
           className="flex flex-wrap items-center justify-center gap-3"
         >
-          <Button size="lg" disabled>
-            Sign in (Phase 1)
-          </Button>
-          <Button variant="outline" size="lg" disabled>
-            Dashboard (Phase 5)
-          </Button>
+          <SignInButton size="lg" callbackUrl="/dashboard" />
+          <Link href="/login">
+            <Button variant="outline" size="lg">
+              Sign in page
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
