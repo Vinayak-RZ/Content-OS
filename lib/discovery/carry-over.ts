@@ -5,6 +5,9 @@
 
 import type { Trend } from "@prisma/client";
 import type { TrendFeedbackStatus } from "@/types";
+import { prisma } from "@/lib/db";
+import type { TrendCandidate } from "@/lib/discovery/types";
+import { canonicalizeUrl } from "@/lib/discovery/urls";
 
 export const POOL_TARGET = 10;
 export const MAX_SAVED_CARRY = 10;
@@ -70,4 +73,34 @@ export function isTrendActiveForDashboard(
     return true;
   }
   return trend.expiresAt > now;
+}
+
+/** Saved thumbs-up rows eligible for carry-over (no API re-fetch). */
+export async function getSavedTrendsForDiscovery(
+  userId: string,
+): Promise<Trend[]> {
+  const now = new Date();
+  return prisma.trend.findMany({
+    where: {
+      userId,
+      feedbackStatus: "saved",
+      OR: [{ savedUntil: null }, { savedUntil: { gt: now } }],
+    },
+    orderBy: { feedbackAt: "desc" },
+    take: MAX_SAVED_CARRY,
+  });
+}
+
+export function trendRowToCandidate(trend: Trend): TrendCandidate {
+  return {
+    title: trend.title,
+    url: canonicalizeUrl(trend.url),
+    summary: trend.summary,
+    source: trend.source,
+    sourceType: trend.sourceType as TrendCandidate["sourceType"],
+    tags: trend.tags,
+    trendScore: trend.trendScore,
+    discoveredAt: trend.discoveredAt,
+    metadata: { carriedFromTrendId: trend.id, carriedOver: true },
+  };
 }
