@@ -1,0 +1,146 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  displayName     String
+  timezone        String   @default("Asia/Kolkata")
+  tavilyApiKey    String?
+  firecrawlApiKey String?
+  openrouterKey   String?
+  nvidiaKey       String?
+  emailDigest     Boolean  @default(true)
+  sourceConfig    Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  trends            Trend[]
+  drafts            Draft[]
+  knowledgeChunks   KnowledgeChunk[]
+  knowledgeFiles    KnowledgeFile[]
+  topicEngagements  TopicEngagement[]
+  cronLogs          CronLog[]
+}
+
+model Trend {
+  id               String    @id @default(uuid())
+  userId           String
+  title            String
+  source           String
+  url              String
+  urlHash          String
+  summary          String
+  trendScore       Float
+  finalScore       Float
+  tags             String[]
+  sourceType       String
+  discoveredAt     DateTime  @default(now())
+  expiresAt        DateTime
+  feedbackStatus   String?   // null | 'saved' | 'dismissed'
+  feedbackAt       DateTime?
+  discoveryBatchId String?
+  savedUntil       DateTime?
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drafts            Draft[]
+  topicEngagements  TopicEngagement[]
+
+  @@index([userId, urlHash])
+  @@index([userId, discoveredAt])
+  @@index([userId, feedbackStatus])
+}
+
+model Draft {
+  id              String   @id @default(uuid())
+  userId          String
+  trendId         String?
+  topicTitle      String
+  currentContent  String   @db.Text
+  hookVariants    String[]
+  ctaVariants     String[]
+  selectedHook    Int      @default(0)
+  selectedCta     Int      @default(0)
+  revisionHistory Json     @default("[]")
+  sources         String[]
+  status          String   @default("draft")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trend            Trend?            @relation(fields: [trendId], references: [id], onDelete: SetNull)
+  topicEngagements TopicEngagement[]
+}
+
+model KnowledgeFile {
+  id          String   @id @default(uuid())
+  userId      String
+  fileName    String
+  content     String   @db.Text
+  fileVersion Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fileName])
+}
+
+model KnowledgeChunk {
+  id          String                       @id @default(uuid())
+  userId      String
+  fileName    String
+  chunkText   String                       @db.Text
+  embedding   Unsupported("vector(1536)")?
+  chunkIndex  Int
+  fileVersion Int                          @default(1)
+  updatedAt   DateTime                     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, fileName])
+}
+
+model TopicEngagement {
+  id        String                       @id @default(uuid())
+  userId    String
+  trendId   String?
+  draftId   String?
+  urlHash   String?
+  topicTitle String
+  topicEmbedding Unsupported("vector(1536)")?
+  status    String
+  selectedAt DateTime                    @default(now())
+  publishedAt DateTime?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trend Trend? @relation(fields: [trendId], references: [id], onDelete: SetNull)
+  draft Draft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+
+  @@index([userId, urlHash])
+  @@index([userId, status])
+}
+
+model CronLog {
+  id              String   @id @default(uuid())
+  userId          String
+  runAt           DateTime @default(now())
+  success         Boolean
+  sourceCounts    Json
+  totalDiscovered Int
+  errorMessage    String?
+  durationMs      Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, runAt])
+}
