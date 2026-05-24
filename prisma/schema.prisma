@@ -19,6 +19,12 @@ model User {
   firecrawlApiKey String?
   openrouterKey   String?
   nvidiaKey       String?
+  openaiKey       String?
+  /** Active draft provider: openrouter | nvidia | openai */
+  draftProvider   String?
+  /** Model id for the active draft provider (provider-specific). */
+  draftModelId    String?
+  onboardingCompletedAt DateTime?
   emailDigest     Boolean  @default(true)
   sourceConfig    Json?
   createdAt       DateTime @default(now())
@@ -30,6 +36,19 @@ model User {
   knowledgeFiles    KnowledgeFile[]
   topicEngagements  TopicEngagement[]
   cronLogs          CronLog[]
+  usageCounters     UsageCounter[]
+}
+
+model UsageCounter {
+  userId    String
+  kind      String // generate_hour | discover_day
+  windowKey String // UTC hour key YYYY-MM-DDTHH or day key YYYY-MM-DD
+  count     Int     @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, kind, windowKey])
+  @@index([userId, kind])
 }
 
 model Trend {
@@ -84,7 +103,12 @@ model Draft {
 model KnowledgeFile {
   id          String   @id @default(uuid())
   userId      String
+  slug        String
   fileName    String
+  displayName String
+  role        String // style | narrative | technical | brand | general
+  sortOrder   Int      @default(0)
+  isSystem    Boolean  @default(false)
   content     String   @db.Text
   fileVersion Int      @default(1)
   createdAt   DateTime @default(now())
@@ -93,6 +117,8 @@ model KnowledgeFile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, fileName])
+  @@unique([userId, slug])
+  @@index([userId, role])
 }
 
 model KnowledgeChunk {

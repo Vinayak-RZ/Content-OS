@@ -1,47 +1,45 @@
-import Link from "next/link";
+import { TopicsDashboard } from "@/components/dashboard/topics-dashboard";
 import { AppHeader } from "@/components/app-header";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import { DiscoveryRunButton } from "@/components/discovery-run-button";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import {
+  fetchTrendsForDashboard,
+  serializeDashboardTrend,
+} from "@/lib/trends/list";
 
 export default async function DashboardPage() {
   const session = await getSession();
+  const userId = session!.user!.id;
+
+  const trends = await fetchTrendsForDashboard(userId, 24);
+  const serialized = trends.map(serializeDashboardTrend);
+
+  const lastLog = await prisma.cronLog.findFirst({
+    where: { userId },
+    orderBy: { runAt: "desc" },
+    select: {
+      runAt: true,
+      success: true,
+      totalDiscovered: true,
+    },
+  });
+
+  const lastDiscovery = lastLog
+    ? {
+        runAt: lastLog.runAt.toISOString(),
+        success: lastLog.success,
+        totalDiscovered: lastLog.totalDiscovered,
+      }
+    : null;
 
   return (
     <>
-      <AppHeader title="Dashboard" breadcrumb="App" />
-      <div className="flex flex-1 flex-col gap-6 px-8 pb-16">
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>
-              Hello{session?.user?.name ? `, ${session.user.name.split(" ")[0]}` : ""}
-            </CardTitle>
-            <CardDescription>
-              Topic cards land in Phase 5. Discovery runs on the schedule cron (users with digest on)
-              or you can fetch trends now below. Manage founder context under Knowledge.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <DiscoveryRunButton />
-            <div className="flex flex-wrap gap-3 border-t border-border/60 pt-4">
-              <Link href="/knowledge">
-                <Button>Knowledge</Button>
-              </Link>
-              <Link href="/settings">
-                <Button variant="outline">Settings</Button>
-              </Link>
-              <SignOutButton />
-            </div>
-          </CardContent>
-        </Card>
+      <AppHeader title="Dashboard" breadcrumb="Today" />
+      <div className="flex flex-1 flex-col px-8 pb-8 pt-2">
+        <TopicsDashboard
+          initialTrends={serialized}
+          lastDiscovery={lastDiscovery}
+        />
       </div>
     </>
   );

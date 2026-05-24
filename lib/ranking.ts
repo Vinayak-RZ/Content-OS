@@ -1,6 +1,7 @@
 import type { Trend } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
+import type { KnowledgeRole } from "@/lib/knowledge/constants";
 import { embedTexts } from "@/lib/knowledge/embed";
 import { getEngagementVectorsForOriginality } from "@/lib/topic-memory";
 import {
@@ -23,27 +24,32 @@ type RankRow = {
   tags: string[];
 };
 
-async function avgCentroidSingleFile(
+async function avgCentroidByRole(
   userId: string,
-  fileName: string,
+  role: KnowledgeRole,
 ): Promise<number[] | null> {
   const rows = await prisma.$queryRaw<{ centroid: string | null }[]>`
-    SELECT AVG(embedding)::text AS centroid
-    FROM "KnowledgeChunk"
-    WHERE "userId" = ${userId}
-      AND "fileName" = ${fileName}
-      AND embedding IS NOT NULL
+    SELECT AVG(kc.embedding)::text AS centroid
+    FROM "KnowledgeChunk" kc
+    INNER JOIN "KnowledgeFile" kf
+      ON kf."userId" = kc."userId" AND kf."fileName" = kc."fileName"
+    WHERE kc."userId" = ${userId}
+      AND kf."role" = ${role}
+      AND kc.embedding IS NOT NULL
   `;
   return parsePgVectorText(rows[0]?.centroid ?? null);
 }
 
+/** Founder relevance: narrative + brand documents. */
 async function avgCentroidFounder(userId: string): Promise<number[] | null> {
   const rows = await prisma.$queryRaw<{ centroid: string | null }[]>`
-    SELECT AVG(embedding)::text AS centroid
-    FROM "KnowledgeChunk"
-    WHERE "userId" = ${userId}
-      AND "fileName" IN ('startup-journey.md', 'soul.md')
-      AND embedding IS NOT NULL
+    SELECT AVG(kc.embedding)::text AS centroid
+    FROM "KnowledgeChunk" kc
+    INNER JOIN "KnowledgeFile" kf
+      ON kf."userId" = kc."userId" AND kf."fileName" = kc."fileName"
+    WHERE kc."userId" = ${userId}
+      AND kf."role" IN ('narrative', 'brand')
+      AND kc.embedding IS NOT NULL
   `;
   return parsePgVectorText(rows[0]?.centroid ?? null);
 }
@@ -93,9 +99,9 @@ export async function rankDiscoveryPool(
   try {
     const [technicalCentroid, founderCentroid, writingCentroid, memoryVecs] =
       await Promise.all([
-        avgCentroidSingleFile(userId, "technical-interests.md"),
+        avgCentroidByRole(userId, "technical"),
         avgCentroidFounder(userId),
-        avgCentroidSingleFile(userId, "writing-style.md"),
+        avgCentroidByRole(userId, "style"),
         getEngagementVectorsForOriginality(userId),
       ]);
 

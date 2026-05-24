@@ -4,16 +4,17 @@ import { join } from "path";
 import { ApiError } from "@/lib/api-error";
 import { prisma } from "@/lib/db";
 import {
-  CANONICAL_KNOWLEDGE_FILES,
   KNOWLEDGE_SEED_DIR,
+  SYSTEM_KNOWLEDGE_FILES,
 } from "@/lib/knowledge/constants";
+import { createKnowledgeDocument } from "@/lib/knowledge/create";
 import { syncKnowledgeFile } from "@/lib/knowledge/sync";
 
 function seedRoot(): string {
   return join(process.cwd(), ...KNOWLEDGE_SEED_DIR);
 }
 
-/** Insert missing canonical files from `seeds/founder/` and chunk + embed each. */
+/** Insert missing system files from `seeds/founder/` and chunk + embed each. */
 export async function seedKnowledgeFromRepo(userId: string): Promise<{
   created: string[];
   skipped: string[];
@@ -22,18 +23,18 @@ export async function seedKnowledgeFromRepo(userId: string): Promise<{
   const created: string[] = [];
   const skipped: string[] = [];
 
-  for (const fileName of CANONICAL_KNOWLEDGE_FILES) {
+  for (const meta of SYSTEM_KNOWLEDGE_FILES) {
     const existing = await prisma.knowledgeFile.findUnique({
-      where: { userId_fileName: { userId, fileName } },
+      where: { userId_slug: { userId, slug: meta.slug } },
     });
     if (existing) {
-      skipped.push(fileName);
+      skipped.push(meta.slug);
       continue;
     }
 
     let buf: string;
     try {
-      buf = await readFile(join(root, fileName), "utf8");
+      buf = await readFile(join(root, meta.fileName), "utf8");
     } catch (e: unknown) {
       const code =
         typeof e === "object" &&
@@ -45,16 +46,36 @@ export async function seedKnowledgeFromRepo(userId: string): Promise<{
       if (code === "ENOENT") {
         throw new ApiError(
           "SEED_UNAVAILABLE",
-          `Missing seed file: ${fileName} under seeds/founder/`,
+          `Missing seed file: ${meta.fileName} under seeds/founder/`,
           500,
         );
       }
       throw e;
     }
 
-    await syncKnowledgeFile(userId, fileName, buf);
-    created.push(fileName);
+    await createKnowledgeDocument(userId, {
+      slug: meta.slug,
+      displayName: meta.displayName,
+      role: meta.role,
+      content: buf,
+      isSystem: true,
+      sortOrder: meta.sortOrder,
+    });
+    created.push(meta.slug);
   }
 
   return { created, skipped };
+}
+
+/** Re-embed a system file from repo template (reset content). */
+export async function resetSystemKnowledgeFromRepo(
+  userId: string,
+  slug: string,
+): Promise<void> {
+  const meta = SYSTEM_KNOWLEDGE_FILES.find((f) => f.slug === slug);
+  if (!meta) {
+    throw new ApiError("NOT_FOUND", "Not a system document", 404);
+  }
+  const buf = await readFile(join(seedRoot(), meta.fileName), "utf8");
+  await syncKnowledgeFile(userId, slug, buf);
 }

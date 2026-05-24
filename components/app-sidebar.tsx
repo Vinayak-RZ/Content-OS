@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
+  Activity,
   BookOpen,
   FileText,
   LayoutDashboard,
@@ -17,8 +18,9 @@ const navItems: {
   disabled?: boolean;
 }[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Drafts", href: "#", icon: FileText, disabled: true },
+  { label: "Drafts", href: "/drafts", icon: FileText },
   { label: "Knowledge", href: "/knowledge", icon: BookOpen },
+  { label: "Activity", href: "/activity", icon: Activity },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -61,7 +63,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="mt-auto rounded-full border border-border/60 bg-card px-3 py-2 text-xs text-muted-foreground shadow-pill">
-        Phase 4 · Ranking + trends API
+        Phase 5–7 · Dashboard + drafts + polish
       </div>
     </aside>
   );

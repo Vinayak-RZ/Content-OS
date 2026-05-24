@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 
+import { ApiError, errorResponse } from "@/lib/api-error";
 import { prisma } from "@/lib/db";
 import { runDiscoveryForUser } from "@/lib/discovery/orchestrator";
-import { ApiError, errorResponse } from "@/lib/api-error";
+import { consumeDiscoverManualRateLimit } from "@/lib/rate-limit";
 import { getSession } from "@/lib/session";
 
 export const maxDuration = 300;
@@ -15,6 +16,8 @@ export async function POST() {
     if (!session?.user?.id) {
       throw new ApiError("UNAUTHORIZED", "Sign in required", 401);
     }
+
+    await consumeDiscoverManualRateLimit(session.user.id);
 
     const t0 = Date.now();
     const result = await runDiscoveryForUser(session.user.id);

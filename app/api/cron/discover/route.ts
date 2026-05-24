@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/db";
 import { runDiscoveryForUser } from "@/lib/discovery/orchestrator";
+import {
+  buildDiscoveryDigestHtml,
+  sendDiscoveryDigestEmail,
+} from "@/lib/email/resend";
 
 export const maxDuration = 300;
 
@@ -27,10 +32,15 @@ export async function POST(request: Request) {
 
   const users = await prisma.user.findMany({
     where: { emailDigest: true },
-    select: { id: true },
+    select: { id: true, email: true, displayName: true },
   });
 
   const outcomes: { userId: string; ok: boolean; error?: string }[] = [];
+
+  const appUrl =
+    typeof process.env["NEXT_PUBLIC_APP_URL"] === "string"
+      ? process.env["NEXT_PUBLIC_APP_URL"].trim().replace(/\/$/, "")
+      : "";
 
   for (const u of users) {
     const t0 = Date.now();
@@ -45,6 +55,26 @@ export async function POST(request: Request) {
           durationMs: Date.now() - t0,
         },
       });
+
+      const highlights = await prisma.trend.findMany({
+        where: { userId: u.id, discoveryBatchId: r.batchId },
+        orderBy: { finalScore: "desc" },
+        take: 6,
+        select: { title: true, finalScore: true },
+      });
+
+      const html = buildDiscoveryDigestHtml({
+        displayName: u.displayName,
+        topics: highlights,
+        appUrl,
+      });
+
+      await sendDiscoveryDigestEmail({
+        to: u.email,
+        subject: `Content OS — ${r.newStored + r.carriedOver} topics ranked`,
+        html,
+      });
+
       outcomes.push({ userId: u.id, ok: true });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);

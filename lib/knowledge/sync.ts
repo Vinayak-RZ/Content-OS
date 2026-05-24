@@ -3,24 +3,36 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { splitKnowledgeIntoChunks } from "@/lib/knowledge/chunk";
 import { embedTexts } from "@/lib/knowledge/embed";
-import { parseKnowledgeFileName } from "@/lib/knowledge/file-name";
+import { parseKnowledgeSlug, slugToFileName } from "@/lib/knowledge/slug";
+
+async function resolveKnowledgeFile(
+  userId: string,
+  slug: string,
+): Promise<KnowledgeFile | null> {
+  return prisma.knowledgeFile.findUnique({
+    where: { userId_slug: { userId, slug } },
+  });
+}
 
 /**
  * Upsert markdown content when `content` is provided; otherwise re-chunk/embed from DB row.
  */
 export async function syncKnowledgeFile(
   userId: string,
-  fileName: string,
+  slugOrRaw: string,
   content?: string,
 ): Promise<KnowledgeFile> {
-  const safeName = parseKnowledgeFileName(fileName);
-  if (!safeName) {
-    throw new Error("Invalid knowledge file name");
+  const slug = parseKnowledgeSlug(slugOrRaw) ?? parseKnowledgeSlug(slugOrRaw.replace(/\.md$/i, ""));
+  if (!slug) {
+    throw new Error("Invalid knowledge document slug");
   }
 
-  const existing = await prisma.knowledgeFile.findUnique({
-    where: { userId_fileName: { userId, fileName: safeName } },
-  });
+  const existing = await resolveKnowledgeFile(userId, slug);
+  const fileName = existing?.fileName ?? slugToFileName(slug);
+
+  if (!existing && content === undefined) {
+    throw new Error(`Knowledge file not found: ${slug}`);
+  }
 
   let body: string;
   let fileVersion: number;
@@ -30,11 +42,8 @@ export async function syncKnowledgeFile(
     fileVersion =
       typeof existing?.fileVersion === "number" ? existing.fileVersion + 1 : 1;
   } else {
-    if (!existing) {
-      throw new Error(`Knowledge file not found: ${safeName}`);
-    }
-    body = existing.content;
-    fileVersion = existing.fileVersion;
+    body = existing!.content;
+    fileVersion = existing!.fileVersion;
   }
 
   const chunkTexts = splitKnowledgeIntoChunks(body);
@@ -43,32 +52,32 @@ export async function syncKnowledgeFile(
 
   return prisma.$transaction(async (tx) => {
     if (content !== undefined) {
-      await tx.knowledgeFile.upsert({
-        where: { userId_fileName: { userId, fileName: safeName } },
-        create: {
-          userId,
-          fileName: safeName,
-          content: body,
-          fileVersion,
-        },
-        update: { content: body, fileVersion },
-      });
+      if (existing) {
+        await tx.knowledgeFile.update({
+          where: { userId_slug: { userId, slug } },
+          data: { content: body, fileVersion },
+        });
+      } else {
+        throw new Error(
+          `Cannot sync unknown document ${slug}; create via createKnowledgeDocument`,
+        );
+      }
     }
 
     await tx.knowledgeChunk.deleteMany({
-      where: { userId, fileName: safeName },
+      where: { userId, fileName },
     });
 
     await insertKnowledgeChunks(tx, {
       userId,
-      fileName: safeName,
+      fileName,
       chunkTexts,
       embeddings,
       fileVersion,
     });
 
     return tx.knowledgeFile.findUniqueOrThrow({
-      where: { userId_fileName: { userId, fileName: safeName } },
+      where: { userId_slug: { userId, slug } },
     });
   });
 }

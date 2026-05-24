@@ -5,7 +5,13 @@ import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-export function DiscoveryRunButton() {
+export function DiscoveryRunButton({
+  onCompleted,
+  compact,
+}: {
+  onCompleted?: () => void | Promise<void>;
+  compact?: boolean;
+}) {
   const [status, setStatus] = useState<"idle" | "running" | "done" | "error">(
     "idle",
   );
@@ -31,6 +37,7 @@ export function DiscoveryRunButton() {
       const carried = (body as { carriedOver?: number }).carriedOver ?? 0;
       setStatus("done");
       setMessage(`Added ${newStored} new trends; ${carried} carried from your queue.`);
+      await onCompleted?.();
     } catch (e) {
       setStatus("error");
       setMessage(e instanceof Error ? e.message : "Discovery failed.");
@@ -44,6 +51,7 @@ export function DiscoveryRunButton() {
         onClick={() => void run()}
         disabled={status === "running"}
         variant="secondary"
+        size={compact ? "sm" : "default"}
       >
         {status === "running" ? (
           <>

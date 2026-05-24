@@ -15,11 +15,16 @@ export default async function KnowledgePage() {
   const files = await prisma.knowledgeFile.findMany({
     where: { userId },
     select: {
+      slug: true,
       fileName: true,
+      displayName: true,
+      role: true,
+      sortOrder: true,
+      isSystem: true,
       updatedAt: true,
       fileVersion: true,
     },
-    orderBy: { fileName: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { displayName: "asc" }],
   });
 
   const counts = await prisma.knowledgeChunk.groupBy({
@@ -32,7 +37,12 @@ export default async function KnowledgePage() {
   );
 
   const initialFiles = files.map((f) => ({
+    slug: f.slug,
     fileName: f.fileName,
+    displayName: f.displayName,
+    role: f.role,
+    sortOrder: f.sortOrder,
+    isSystem: f.isSystem,
     updatedAt: f.updatedAt.toISOString(),
     fileVersion: f.fileVersion,
     chunkCount: chunkByFile[f.fileName] ?? 0,
