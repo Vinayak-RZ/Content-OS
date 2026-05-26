@@ -15,5 +15,6 @@ export const config = {
     "/draft/:path*",
     "/drafts",
     "/activity",
+    "/analytics",
   ],
 };

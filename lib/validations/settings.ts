@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { DRAFT_PROVIDER_KINDS } from "@/lib/llm/models";
+
 export const settingsPatchSchema = z
   .object({
     timezone: z.string().min(1).max(64).optional(),
@@ -8,10 +10,15 @@ export const settingsPatchSchema = z
     firecrawlApiKey: z.string().min(1).optional(),
     openrouterKey: z.string().min(1).optional(),
     nvidiaKey: z.string().min(1).optional(),
+    openaiKey: z.string().min(1).optional(),
+    draftProvider: z.enum(DRAFT_PROVIDER_KINDS).optional(),
+    draftModelId: z.string().min(1).max(200).optional(),
     clearTavily: z.boolean().optional(),
     clearFirecrawl: z.boolean().optional(),
     clearOpenrouter: z.boolean().optional(),
     clearNvidia: z.boolean().optional(),
+    clearOpenai: z.boolean().optional(),
+    onboardingCompleted: z.boolean().optional(),
   })
   .strict();
 

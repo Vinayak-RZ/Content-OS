@@ -8,9 +8,10 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      /** True when OpenRouter or NVIDIA NIM key is configured for drafts. */
+      /** True when any draft provider key is configured. */
       hasDraftProviderKey?: boolean;
       hasTavilyKey?: boolean;
+      onboardingCompleted?: boolean;
     };
   }
 }
@@ -19,5 +20,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     hasDraftProviderKey?: boolean;
     hasTavilyKey?: boolean;
+    onboardingCompleted?: boolean;
   }
 }

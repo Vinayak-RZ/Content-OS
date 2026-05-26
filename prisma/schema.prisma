@@ -20,9 +20,7 @@ model User {
   openrouterKey   String?
   nvidiaKey       String?
   openaiKey       String?
-  /** Active draft provider: openrouter | nvidia | openai */
-  draftProvider   String?
-  /** Model id for the active draft provider (provider-specific). */
+  draftProvider   String? // openrouter | nvidia | openai
   draftModelId    String?
   onboardingCompletedAt DateTime?
   emailDigest     Boolean  @default(true)

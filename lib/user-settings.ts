@@ -5,65 +5,93 @@ import {
   hasEncryptedSecret,
   maskSecret,
 } from "@/lib/crypto";
-import type { SettingsPatchInput } from "@/lib/validations/settings";
 import {
   getActiveDraftProviderKind,
-  hasDraftProviderKey,
+  resolveDraftProvider,
 } from "@/lib/llm/draft-provider";
-import type { DraftProviderKind } from "@/lib/llm/models";
+import {
+  type DraftProviderKind,
+  getDefaultModelId,
+  isValidDraftModel,
+} from "@/lib/llm/models";
+import type { SettingsPatchInput } from "@/lib/validations/settings";
 
 export type SettingsResponse = {
   email: string;
   displayName: string;
   timezone: string;
   emailDigest: boolean;
+  onboardingCompleted: boolean;
   keys: {
     tavily: boolean;
     firecrawl: boolean;
     openrouter: boolean;
     nvidia: boolean;
+    openai: boolean;
   };
-  /** Which draft provider will be used (OpenRouter preferred if both keys exist). */
   draftProvider: DraftProviderKind | null;
+  draftModelId: string | null;
+  /** Resolved provider when keys allow (preference + fallback). */
+  activeDraftProvider: DraftProviderKind | null;
+  activeModelId: string | null;
+  activeModelDisplayName: string | null;
 };
 
 export function toSettingsResponse(user: User): SettingsResponse {
+  const resolved = resolveDraftProvider(user);
+  const preferred = user.draftProvider as DraftProviderKind | null;
+  const draftModelId =
+    user.draftModelId ??
+    (preferred ? getDefaultModelId(preferred) : null);
+
   return {
     email: user.email,
     displayName: user.displayName,
     timezone: user.timezone,
     emailDigest: user.emailDigest,
+    onboardingCompleted: Boolean(user.onboardingCompletedAt),
     keys: {
       tavily: hasEncryptedSecret(user.tavilyApiKey),
       firecrawl: hasEncryptedSecret(user.firecrawlApiKey),
       openrouter: hasEncryptedSecret(user.openrouterKey),
       nvidia: hasEncryptedSecret(user.nvidiaKey),
+      openai: hasEncryptedSecret(user.openaiKey),
     },
-    draftProvider: getActiveDraftProviderKind(user),
+    draftProvider: (user.draftProvider as DraftProviderKind | null) ?? null,
+    draftModelId,
+    activeDraftProvider: getActiveDraftProviderKind(user),
+    activeModelId: resolved?.modelId ?? null,
+    activeModelDisplayName: resolved?.displayName ?? null,
   };
 }
 
 export function userNeedsOnboarding(user: User): boolean {
-  return !hasDraftProviderKey(user);
+  return !user.onboardingCompletedAt;
 }
 
-export function wouldLoseDraftProvider(
+export function validateDraftProviderSettings(
   user: User,
   input: SettingsPatchInput,
-): boolean {
-  const willHaveOpenrouter =
-    !input.clearOpenrouter &&
-    (Boolean(input.openrouterKey) || hasEncryptedSecret(user.openrouterKey));
-  const willHaveNvidia =
-    !input.clearNvidia &&
-    (Boolean(input.nvidiaKey) || hasEncryptedSecret(user.nvidiaKey));
-  return !willHaveOpenrouter && !willHaveNvidia;
+): void {
+  const provider =
+    input.draftProvider ??
+    (user.draftProvider as DraftProviderKind | undefined);
+  const modelId = input.draftModelId ?? user.draftModelId ?? undefined;
+
+  if (input.draftModelId && !provider) {
+    throw new Error("Select a draft provider before choosing a model.");
+  }
+  if (provider && modelId && !isValidDraftModel(provider, modelId)) {
+    throw new Error(`Invalid model for ${provider}.`);
+  }
 }
 
 export function buildSettingsUpdate(
   user: User,
   input: SettingsPatchInput,
 ): Prisma.UserUpdateInput {
+  validateDraftProviderSettings(user, input);
+
   const data: Prisma.UserUpdateInput = {};
 
   if (input.timezone !== undefined) {
@@ -71,6 +99,18 @@ export function buildSettingsUpdate(
   }
   if (input.emailDigest !== undefined) {
     data.emailDigest = input.emailDigest;
+  }
+  if (input.onboardingCompleted === true) {
+    data.onboardingCompletedAt = new Date();
+  }
+  if (input.draftProvider !== undefined) {
+    data.draftProvider = input.draftProvider;
+    if (!input.draftModelId) {
+      data.draftModelId = getDefaultModelId(input.draftProvider);
+    }
+  }
+  if (input.draftModelId !== undefined) {
+    data.draftModelId = input.draftModelId;
   }
   if (input.clearTavily) {
     data.tavilyApiKey = null;
@@ -92,13 +132,23 @@ export function buildSettingsUpdate(
   } else if (input.nvidiaKey) {
     data.nvidiaKey = encryptSecret(input.nvidiaKey);
   }
+  if (input.clearOpenai) {
+    data.openaiKey = null;
+  } else if (input.openaiKey) {
+    data.openaiKey = encryptSecret(input.openaiKey);
+  }
 
   return data;
 }
 
 export function getDecryptedKey(
   user: User,
-  key: "tavilyApiKey" | "firecrawlApiKey" | "openrouterKey" | "nvidiaKey",
+  key:
+    | "tavilyApiKey"
+    | "firecrawlApiKey"
+    | "openrouterKey"
+    | "nvidiaKey"
+    | "openaiKey",
 ): string | null {
   const value = user[key];
   if (!value) return null;

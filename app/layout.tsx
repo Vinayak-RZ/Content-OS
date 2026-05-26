@@ -1,14 +1,30 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Jost, Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { Providers } from "@/app/providers";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const body = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const heading = Jost({
+  subsets: ["latin"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const display = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Content OS",
+  title: "Content OS — Thinking amplification for technical founders",
   description:
-    "Thinking amplification for technical founders — discover, draft, publish.",
+    "Discover high-signal topics, generate drafts in your voice, and publish on your terms.",
 };
 
 export default function RootLayout({
@@ -18,7 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} min-h-screen font-sans antialiased`}>
+      <body
+        className={`${body.variable} ${heading.variable} ${display.variable} min-h-screen font-sans antialiased`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

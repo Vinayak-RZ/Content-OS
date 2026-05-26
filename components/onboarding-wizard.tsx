@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -14,19 +15,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DraftProviderFields } from "@/components/draft-provider-fields";
+import { DraftProviderSettings } from "@/components/draft-provider-fields";
 import type { SettingsResponse } from "@/lib/user-settings";
 import {
   discoveryKeysPatchFromForm,
-  draftKeysPatchFromForm,
-  hasDraftKeyInForm,
+  draftSettingsPatchFromForm,
 } from "@/lib/settings-keys";
 
 const STEPS = [
-  { id: 1, title: "API keys", required: true },
-  { id: 2, title: "Context files", required: false },
-  { id: 3, title: "Interests", required: false },
-  { id: 4, title: "First discovery", required: false },
+  { id: 1, title: "API keys (optional)" },
+  { id: 2, title: "Context files" },
+  { id: 3, title: "Interests" },
+  { id: 4, title: "First discovery" },
 ] as const;
 
 interface OnboardingWizardProps {
@@ -36,6 +36,7 @@ interface OnboardingWizardProps {
 export function OnboardingWizard({ initial }: OnboardingWizardProps) {
   const router = useRouter();
   const { update } = useSession();
+  const [settings, setSettings] = useState(initial);
   const [step, setStep] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -47,15 +48,8 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
   async function saveKeys(form: FormData) {
     setIsSaving(true);
     setError(null);
-    if (!hasDraftKeyInForm(form, initial.keys)) {
-      setError(
-        "Add an OpenRouter or NVIDIA NIM API key to continue (one is required).",
-      );
-      setIsSaving(false);
-      return;
-    }
     const patch: Record<string, string> = {
-      ...draftKeysPatchFromForm(form),
+      ...draftSettingsPatchFromForm(form),
       ...discoveryKeysPatchFromForm(form, {
         tavily: "tavilyApiKey",
         firecrawl: "firecrawlApiKey",
@@ -79,6 +73,7 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
         const err = data as { error?: string };
         throw new Error(err.error ?? "Failed to save keys");
       }
+      setSettings(data as SettingsResponse);
       await update();
       setStep(2);
     } catch (e) {
@@ -117,9 +112,23 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
     }
   }
 
-  function finish() {
-    router.push("/dashboard");
-    router.refresh();
+  async function finish() {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await fetch("/api/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboardingCompleted: true }),
+      });
+      await update();
+      router.push("/dashboard");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not finish onboarding");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -136,8 +145,10 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
           <CardHeader>
             <CardTitle>Connect API keys</CardTitle>
             <CardDescription>
-              Connect a draft provider (OpenRouter or NVIDIA NIM). Tavily and
-              Firecrawl power discovery in later phases.
+              Optional for now. You will need a draft provider key (OpenRouter,
+              OpenAI, or NVIDIA NIM) when you generate your first post. Server{" "}
+              <span className="font-medium">OPENAI_API_KEY</span> is still used
+              for knowledge embeddings.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -148,27 +159,33 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
                 void saveKeys(new FormData(e.currentTarget));
               }}
             >
-              <DraftProviderFields
-                openrouterConfigured={initial.keys.openrouter}
-                nvidiaConfigured={initial.keys.nvidia}
-                requireOne
-              />
+              <DraftProviderSettings settings={settings} />
               <KeyInput
                 id="tavilyApiKey"
                 label="Tavily"
-                configured={initial.keys.tavily}
+                configured={settings.keys.tavily}
               />
               <KeyInput
                 id="firecrawlApiKey"
                 label="Firecrawl"
-                configured={initial.keys.firecrawl}
+                configured={settings.keys.firecrawl}
               />
               {error ? (
                 <p className="text-sm text-red-600">{error}</p>
               ) : null}
-              <Button type="submit" size="lg" disabled={isSaving}>
-                {isSaving ? "Saving…" : "Continue"}
-              </Button>
+              <div className="flex flex-wrap gap-3">
+                <Button type="submit" size="lg" disabled={isSaving}>
+                  {isSaving ? "Saving…" : "Save & continue"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setStep(2)}
+                >
+                  Skip for now
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -179,11 +196,9 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
           <CardHeader>
             <CardTitle>Context files</CardTitle>
             <CardDescription>
-              Copy the six canonical founder markdown files into your workspace
-              and chunk + embed them (requires{" "}
-              <span className="font-medium">OPENAI_API_KEY</span> for{" "}
-              <code className="text-xs">text-embedding-3-small</code>). You can
-              edit everything later under{" "}
+              Import founder knowledge files and chunk + embed them (requires{" "}
+              <span className="font-medium">OPENAI_API_KEY</span> on the server).
+              Edit anytime under{" "}
               <span className="font-medium">Knowledge</span>.
             </CardDescription>
           </CardHeader>
@@ -215,7 +230,7 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
             <CardTitle>Configure interests</CardTitle>
             <CardDescription>
               Technical interests and platform context live in your knowledge
-              base. You will refine them in the Knowledge editor (Phase 2).
+              base. Refine them in the Knowledge editor.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex gap-3">
@@ -230,15 +245,21 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
       {step === 4 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Run first discovery</CardTitle>
+            <CardTitle>Ready to explore</CardTitle>
             <CardDescription>
-              Discovery adapters arrive in Phase 3. Your daily cron and manual
-              refresh will populate topic cards on the dashboard.
+              Discovery and drafts are on the dashboard. Add draft API keys in{" "}
+              <Link href="/settings" className="font-medium text-brand underline">
+                Settings
+              </Link>{" "}
+              whenever you are ready to generate.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button size="lg" onClick={finish}>
-              Go to dashboard
+            {error ? (
+              <p className="mb-3 text-sm text-red-600">{error}</p>
+            ) : null}
+            <Button size="lg" onClick={() => void finish()} disabled={isSaving}>
+              {isSaving ? "Finishing…" : "Go to dashboard"}
             </Button>
           </CardContent>
         </Card>
@@ -251,20 +272,15 @@ function KeyInput({
   id,
   label,
   configured,
-  required,
 }: {
   id: string;
   label: string;
   configured: boolean;
-  required?: boolean;
 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label htmlFor={id}>
-          {label}
-          {required ? <span className="text-brand"> *</span> : null}
-        </Label>
+        <Label htmlFor={id}>{label}</Label>
         {configured ? (
           <span className="text-xs text-brand">Configured</span>
         ) : null}
@@ -274,7 +290,6 @@ function KeyInput({
         name={id}
         type="password"
         autoComplete="off"
-        required={required && !configured}
         placeholder={configured ? "Leave blank to keep" : "Paste API key"}
       />
     </div>

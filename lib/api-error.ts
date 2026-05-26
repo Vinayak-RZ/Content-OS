@@ -11,6 +11,18 @@ export class ApiError extends Error {
   }
 }
 
+function prismaUserMessage(error: unknown): string | null {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    (error as { code?: string }).code === "P2028"
+  ) {
+    return "Database is busy (connection pool). Wait a few seconds and try again.";
+  }
+  return null;
+}
+
 export function errorResponse(error: unknown): NextResponse {
   if (error instanceof ApiError) {
     return NextResponse.json(
@@ -20,6 +32,18 @@ export function errorResponse(error: unknown): NextResponse {
         statusCode: error.statusCode,
       },
       { status: error.statusCode },
+    );
+  }
+  const prismaMsg = prismaUserMessage(error);
+  if (prismaMsg) {
+    console.error(error);
+    return NextResponse.json(
+      {
+        error: prismaMsg,
+        code: "DB_BUSY",
+        statusCode: 503,
+      },
+      { status: 503 },
     );
   }
   console.error(error);

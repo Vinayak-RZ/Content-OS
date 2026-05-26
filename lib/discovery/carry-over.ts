@@ -9,8 +9,13 @@ import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
 import { canonicalizeUrl } from "@/lib/discovery/urls";
 
-export const POOL_TARGET = 10;
-export const MAX_SAVED_CARRY = 10;
+import {
+  DISCOVERY_MAX_SAVED_CARRY,
+  DISCOVERY_NEW_PER_RUN,
+} from "@/lib/discovery/founder-profile";
+
+export const POOL_TARGET = DISCOVERY_NEW_PER_RUN;
+export const MAX_SAVED_CARRY = DISCOVERY_MAX_SAVED_CARRY;
 /** Days a saved topic stays valid when refreshed via thumbs up */
 export const SAVED_TOPIC_TTL_DAYS = 5;
 
@@ -25,7 +30,8 @@ export function computeFetchBudget(savedCount: number): DiscoveryFetchBudget {
   return {
     poolTarget: POOL_TARGET,
     savedCount: capped,
-    newFetchBudget: Math.max(0, POOL_TARGET - capped),
+    /** New topics per run — not reduced by saved carry-over. */
+    newFetchBudget: POOL_TARGET,
   };
 }
 

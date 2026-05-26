@@ -11,7 +11,13 @@ import {
   computeFetchBudget,
   getSavedTrendsForDiscovery,
 } from "@/lib/discovery/carry-over";
-import { DEFAULT_TAVILY_QUERIES } from "@/lib/discovery/constants";
+import {
+  DEFAULT_FIRECRAWL_QUERIES,
+} from "@/lib/discovery/constants";
+import { POOL_TARGET } from "@/lib/discovery/carry-over";
+import { DISCOVERY_NEW_PER_RUN } from "@/lib/discovery/founder-profile";
+import { trimVisibleTopicPool } from "@/lib/discovery/pool-trim";
+import { filterAndBoostCandidates } from "@/lib/discovery/quality";
 import {
   collectExistingTrendUrlHashes,
   collectMemoryExcludedUrlHashes,
@@ -22,11 +28,10 @@ import { urlSha256 } from "@/lib/discovery/urls";
 import { rankDiscoveryPool } from "@/lib/ranking";
 import { getDecryptedKey } from "@/lib/user-settings";
 
-const MAX_NEW_INSERTS = 48;
 const ENRICH_MIN_SUMMARY_LEN = 100;
-const MAX_ENRICH_PER_RUN = 5;
-/** Trend rows expire unless refreshed (~7-day pool). */
-const DEFAULT_EXPIRES_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_ENRICH_PER_RUN = 3;
+/** Undrafted topics stay in backlog until trimmed or expired (~14 days). */
+const DEFAULT_EXPIRES_MS = 14 * 24 * 60 * 60 * 1000;
 
 function platformGithubToken(): string | undefined {
   const raw = process.env["GITHUB_TOKEN"];
@@ -76,15 +81,13 @@ export async function runDiscoveryForUser(
   };
 
   const b = Math.max(newFetchBudget, 0);
-  const hnTake = Math.min(12, Math.max(5, Math.round(b * 1.8)));
-  const rssTake = Math.min(12, Math.max(4, Math.round(b * 1.8)));
-  const rdTake = Math.min(16, Math.max(6, Math.round(b * 2)));
-  const ghTake = Math.min(10, Math.max(3, Math.round(b * 1.2)));
-  const tvTake = tavilyKey
-    ? Math.min(28, Math.max(b, Math.round(b * 2)))
-    : 0;
+  const hnTake = Math.min(10, Math.max(4, b + 4));
+  const rssTake = Math.min(10, Math.max(4, b + 3));
+  const rdTake = Math.min(12, Math.max(5, b + 4));
+  const ghTake = Math.min(6, Math.max(2, b + 1));
+  const tvTake = tavilyKey ? Math.min(16, Math.max(8, b * 3)) : 0;
   const fcTake =
-    firecrawlKey && b > 0 && DEFAULT_TAVILY_QUERIES[0] ? 2 : 0;
+    firecrawlKey && b > 0 && DEFAULT_FIRECRAWL_QUERIES[0] ? 2 : 0;
 
   const adapterResults = await Promise.all([
     fetchHackerNews(hnTake),
@@ -94,10 +97,10 @@ export async function runDiscoveryForUser(
     tavilyKey
       ? fetchTavily(tavilyKey, tvTake)
       : Promise.resolve({ sourceType: "tavily" as const, fetched: 0, candidates: [] }),
-    firecrawlKey && fcTake > 0 && DEFAULT_TAVILY_QUERIES[0]
+    firecrawlKey && fcTake > 0 && DEFAULT_FIRECRAWL_QUERIES[0]
       ? fetchFirecrawlSearch(
           firecrawlKey,
-          DEFAULT_TAVILY_QUERIES[0],
+          DEFAULT_FIRECRAWL_QUERIES[0]!,
           fcTake,
         )
       : Promise.resolve({
@@ -124,7 +127,7 @@ export async function runDiscoveryForUser(
   sourceCounts.duplicateSkipped = deduped.duplicateSkipped;
   sourceCounts.dismissedSkipped = deduped.duplicateSkipped;
 
-  let enriched: TrendCandidate[] = [...deduped.kept];
+  let enriched: TrendCandidate[] = filterAndBoostCandidates([...deduped.kept]);
   let enrichCalls = MAX_ENRICH_PER_RUN;
 
   if (firecrawlKey && enrichCalls > 0) {
@@ -154,10 +157,23 @@ export async function runDiscoveryForUser(
     enriched = next;
   }
 
-  const toStore = enriched.slice(0, MAX_NEW_INSERTS);
   const expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_MS);
 
-  const finalScores = await rankDiscoveryPool(userId, saved, toStore);
+  const finalScores = await rankDiscoveryPool(userId, saved, enriched);
+
+  const newScoreSlice = finalScores.slice(saved.length);
+  const rankedNew = enriched
+    .map((c, i) => ({
+      c,
+      score:
+        typeof newScoreSlice[i] === "number"
+          ? newScoreSlice[i]!
+          : c.trendScore,
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  const newSlots = DISCOVERY_NEW_PER_RUN;
+  const toStore = rankedNew.slice(0, newSlots).map((r) => r.c);
 
   await prisma.$transaction(
     async (tx) => {
@@ -175,11 +191,11 @@ export async function runDiscoveryForUser(
         });
       }
 
-      const offset = saved.length;
-      for (let j = 0; j < toStore.length; j += 1) {
-        const c = toStore[j];
-        if (!c) continue;
-        const fs = finalScores[offset + j];
+      for (let j = 0; j < rankedNew.length && j < newSlots; j += 1) {
+        const row = rankedNew[j];
+        if (!row) continue;
+        const c = row.c;
+        const fs = row.score;
         await tx.trend.create({
           data: {
             userId,
@@ -204,6 +220,14 @@ export async function runDiscoveryForUser(
       timeout: 120_000,
     },
   );
+
+  sourceCounts.poolTarget = POOL_TARGET;
+  sourceCounts.newPerRun = DISCOVERY_NEW_PER_RUN;
+  sourceCounts.rankedCandidates = enriched.length;
+  sourceCounts.storedNew = toStore.length;
+
+  const trimmed = await trimVisibleTopicPool(userId);
+  sourceCounts.poolTrimmed = trimmed;
 
   return {
     userId,

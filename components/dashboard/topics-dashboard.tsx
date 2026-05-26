@@ -1,13 +1,19 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 import { ChevronDown, ChevronUp, Link2, Loader2 } from "lucide-react";
+import { formatDraftApiError } from "@/lib/client/draft-api-error";
+import {
+  DISCOVERY_NEW_PER_RUN,
+  DISCOVERY_VISIBLE_POOL_MAX,
+  DISCOVERY_VISIBLE_POOL_MIN,
+} from "@/lib/discovery/founder-profile";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
 import { TopicCard } from "@/components/dashboard/topic-card";
+import { TopicPickPlaceholder } from "@/components/dashboard/topic-pick-placeholder";
+import { TopicPoolTable } from "@/components/dashboard/topic-pool-table";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,6 +30,8 @@ import type { SerializedDashboardTrend } from "@/lib/trends/list";
 export function TopicsDashboard({
   initialTrends,
   lastDiscovery,
+  visiblePoolCount,
+  latestBatchId,
 }: {
   initialTrends: SerializedDashboardTrend[];
   lastDiscovery: {
@@ -31,85 +39,134 @@ export function TopicsDashboard({
     success: boolean;
     totalDiscovered: number;
   } | null;
+  visiblePoolCount: number;
+  latestBatchId: string | null;
 }) {
   const router = useRouter();
-  const gridRef = useRef<HTMLDivElement>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   const refresh = useCallback(() => {
     router.refresh();
   }, [router]);
 
-  useGSAP(
-    () => {
-      const nodes = gridRef.current?.querySelectorAll(".topic-card-stagger");
-      if (!nodes?.length) return;
-      gsap.from(nodes, {
-        opacity: 0,
-        y: 14,
-        duration: 0.42,
-        stagger: 0.06,
-        ease: "power2.out",
-      });
-    },
-    {
-      scope: gridRef,
-      dependencies: [initialTrends.map((t) => t.id).join(","), expanded],
-    },
-  );
+const TOP_PICKS_COUNT = 3;
 
-  const top = initialTrends.slice(0, 3);
-  const rest = initialTrends.slice(3, 10);
-  const visibleRest = expanded ? rest : [];
+  const { rest, newCount, backlogCount, topSlots } = useMemo(() => {
+    const topSlice = initialTrends.slice(0, TOP_PICKS_COUNT);
+    const restSlice = initialTrends.slice(TOP_PICKS_COUNT);
+    const slots = Array.from({ length: TOP_PICKS_COUNT }, (_, i) => topSlice[i] ?? null);
+    let newer = 0;
+    let older = 0;
+    for (const t of initialTrends) {
+      if (latestBatchId && t.discoveryBatchId === latestBatchId) newer += 1;
+      else older += 1;
+    }
+    return {
+      top: topSlice,
+      rest: restSlice,
+      topSlots: slots,
+      newCount: newer,
+      backlogCount: older,
+    };
+  }, [initialTrends, latestBatchId]);
 
   const discoveryHint = lastDiscovery
-    ? `Last discovery ${new Date(lastDiscovery.runAt).toLocaleString()} · ${lastDiscovery.success ? "ok" : "failed"} · ${lastDiscovery.totalDiscovered} topics in pool`
-    : "Run discovery to populate your topic board.";
+    ? `Last discovery ${new Date(lastDiscovery.runAt).toLocaleString()} · ${lastDiscovery.success ? "ok" : "failed"} · added ${lastDiscovery.totalDiscovered} topic${lastDiscovery.totalDiscovered === 1 ? "" : "s"} · ${visiblePoolCount} in pool`
+    : visiblePoolCount > 0
+      ? `${visiblePoolCount} topic${visiblePoolCount === 1 ? "" : "s"} in your pool (${newCount} new, ${backlogCount} backlog).`
+      : "Run discovery to populate your topic board.";
 
   return (
     <div className="flex flex-col gap-10 pb-20">
-      <section className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-card/40 px-6 py-6 shadow-pill">
+      <section className="flex flex-col gap-4 rounded-xl border border-subtle bg-card px-6 py-6 shadow-ambient">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="font-heading text-xl font-semibold tracking-tight">
               Today&apos;s signals
             </h2>
             <p className="max-w-xl text-sm text-muted-foreground">{discoveryHint}</p>
+            <p className="max-w-xl text-xs text-muted-foreground">
+              Each run researches ~{DISCOVERY_NEW_PER_RUN} new topics. Your pool
+              holds {DISCOVERY_VISIBLE_POOL_MIN}–{DISCOVERY_VISIBLE_POOL_MAX}{" "}
+              ranked items (new + undrafted backlog). Generate drafts from any
+              topic — top cards, expanded grid, or the full table.
+            </p>
           </div>
           <DiscoveryRunButton onCompleted={refresh} compact />
         </div>
       </section>
 
       {initialTrends.length === 0 ? (
-        <Card className="border-dashed border-border/80 bg-muted/20 shadow-none">
-          <CardHeader>
-            <CardTitle>No topics yet</CardTitle>
-            <CardDescription>
-              Run discovery or paste a custom URL below. Seed Knowledge files first so ranking + drafts sound like you.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DiscoveryRunButton onCompleted={refresh} />
-          </CardContent>
-        </Card>
+        <>
+          <Card className="border-dashed border-border/80 bg-muted/20 shadow-none">
+            <CardHeader>
+              <CardTitle>
+                {visiblePoolCount > 0
+                  ? "Topics in pool — refresh the page"
+                  : lastDiscovery && lastDiscovery.totalDiscovered > 0
+                    ? "Topics stored but hidden"
+                    : "No topics yet"}
+              </CardTitle>
+              <CardDescription>
+                {visiblePoolCount > 0 ? (
+                  <>
+                    The server sees {visiblePoolCount} active topic
+                    {visiblePoolCount === 1 ? "" : "s"}; try a hard refresh.
+                  </>
+                ) : lastDiscovery && lastDiscovery.totalDiscovered > 0 ? (
+                  <>
+                    Discovery stored {lastDiscovery.totalDiscovered} topic
+                    {lastDiscovery.totalDiscovered === 1 ? "" : "s"}, but none
+                    match dashboard filters (expired, dismissed, or already drafted).
+                    Run discovery again or check Analytics.
+                  </>
+                ) : (
+                  <>
+                    Run discovery or paste a custom URL below. Seed Knowledge files
+                    first so ranking + drafts sound like you.
+                  </>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DiscoveryRunButton onCompleted={refresh} />
+            </CardContent>
+          </Card>
+          <section>
+            <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Top picks
+            </h3>
+            <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: TOP_PICKS_COUNT }, (_, i) => (
+                <TopicPickPlaceholder key={`empty-${i}`} slot={i + 1} />
+              ))}
+            </div>
+          </section>
+        </>
       ) : (
-        <div ref={gridRef} className="flex flex-col gap-10">
+        <div className="flex flex-col gap-10">
           <section>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Top picks
             </h3>
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {top.map((t) => (
-                <TopicCard key={t.id} trend={t} />
-              ))}
+            <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {topSlots.map((trend, index) =>
+                trend ? (
+                  <TopicCard key={trend.id} trend={trend} />
+                ) : (
+                  <TopicPickPlaceholder key={`empty-${index}`} slot={index + 1} />
+                ),
+              )}
             </div>
           </section>
+
+          <TopicPoolTable trends={initialTrends} latestBatchId={latestBatchId} />
 
           {rest.length > 0 ? (
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  More ideas ({rest.length})
+                  More topics ({rest.length}) — all can be drafted
                 </h3>
                 <Button
                   type="button"
@@ -124,14 +181,14 @@ export function TopicsDashboard({
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="size-4" /> Expand 4–10
+                      <ChevronDown className="size-4" /> Show all {rest.length}
                     </>
                   )}
                 </Button>
               </div>
               {expanded ? (
-                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {visibleRest.map((t) => (
+                <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {rest.map((t) => (
                     <TopicCard key={t.id} trend={t} />
                   ))}
                 </div>
@@ -213,14 +270,7 @@ function CustomTopicComposer({
       });
       const json: unknown = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : "Generate failed";
-        throw new Error(err);
+        throw new Error(formatDraftApiError(json, "Generate failed"));
       }
       const id =
         typeof json === "object" &&

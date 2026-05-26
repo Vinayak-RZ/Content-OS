@@ -13,21 +13,25 @@ export default async function LoginPage() {
   const session = await getSession();
   if (session?.user?.id) {
     redirect(
-      session.user.hasDraftProviderKey ? "/dashboard" : "/onboarding",
+      session.user.onboardingCompleted ? "/dashboard" : "/onboarding",
     );
   }
 
   return (
-    <Card>
+    <Card className="shadow-ambient">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Sign in</CardTitle>
-        <CardDescription>
-          Use your Google account to access your dashboard and encrypted API
-          keys.
+        <CardTitle className="font-heading text-2xl">Welcome back</CardTitle>
+        <CardDescription className="text-base">
+          Sign in with Google to access your topic board, drafts, and encrypted
+          settings.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex justify-center">
-        <SignInButton size="lg" callbackUrl="/dashboard" />
+      <CardContent className="flex flex-col items-center gap-4 pb-8">
+        <SignInButton size="lg" callbackUrl="/dashboard" className="w-full" />
+        <p className="text-center text-xs leading-relaxed text-muted-foreground">
+          By continuing, you agree to use Content OS for your own content
+          workflow. We never post on your behalf.
+        </p>
       </CardContent>
     </Card>
   );

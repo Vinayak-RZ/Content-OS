@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/logo";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
-  Activity,
+  BarChart3,
   BookOpen,
   FileText,
   LayoutDashboard,
@@ -20,7 +22,7 @@ const navItems: {
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Drafts", href: "/drafts", icon: FileText },
   { label: "Knowledge", href: "/knowledge", icon: BookOpen },
-  { label: "Activity", href: "/activity", icon: Activity },
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -28,15 +30,12 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-border/60 bg-sidebar px-4 py-6">
-      <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-foreground text-background">
-          <span className="text-xs font-bold">C</span>
-        </span>
-        <span className="text-lg font-semibold tracking-tight">Content OS</span>
-      </Link>
+    <aside className="flex w-60 shrink-0 flex-col border-r border-subtle bg-sidebar">
+      <div className="px-5 py-6">
+        <Logo href="/" size="sm" />
+      </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5">
+      <nav className="flex flex-1 flex-col gap-0.5 px-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -47,11 +46,12 @@ export function AppSidebar() {
               key={item.label}
               href={item.disabled ? "#" : item.href}
               aria-disabled={item.disabled}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-3 rounded-md px-3 py-2.5 font-heading text-sm font-semibold transition-colors duration-150 ease-out",
                 isActive
                   ? "bg-card text-foreground shadow-pill"
-                  : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                 item.disabled && "pointer-events-none opacity-40",
               )}
             >
@@ -62,8 +62,8 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-full border border-border/60 bg-card px-3 py-2 text-xs text-muted-foreground shadow-pill">
-        Phase 5–7 · Dashboard + drafts + polish
+      <div className="border-t border-subtle p-4">
+        <SignOutButton variant="ghost" size="sm" className="w-full justify-start" />
       </div>
     </aside>
   );

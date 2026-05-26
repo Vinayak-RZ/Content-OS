@@ -17,36 +17,45 @@ export function utcDayWindowKey(d = new Date()): string {
   return d.toISOString().slice(0, 10);
 }
 
+function rateLimitMessage(kind: string, limit: number): string {
+  return kind === KIND_GENERATE
+    ? `Generate limit reached (${limit}/hour). Try again soon.`
+    : `Manual discovery limit reached (${limit}/day).`;
+}
+
+/**
+ * Increment usage without Prisma interactive `$transaction`.
+ * Supabase PgBouncer (port 6543) often cannot start interactive transactions (P2028).
+ */
 async function consumeWithinLimit(
   userId: string,
   kind: string,
   windowKey: string,
   limit: number,
 ): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    const row = await tx.usageCounter.findUnique({
-      where: {
-        userId_kind_windowKey: { userId, kind, windowKey },
-      },
-    });
-    const current = row?.count ?? 0;
-    if (current >= limit) {
-      throw new ApiError(
-        "RATE_LIMIT",
-        kind === KIND_GENERATE
-          ? `Generate limit reached (${limit}/hour). Try again soon.`
-          : `Manual discovery limit reached (${limit}/day).`,
-        429,
-      );
-    }
-    await tx.usageCounter.upsert({
-      where: {
-        userId_kind_windowKey: { userId, kind, windowKey },
-      },
-      create: { userId, kind, windowKey, count: 1 },
-      update: { count: { increment: 1 } },
-    });
+  const where = {
+    userId_kind_windowKey: { userId, kind, windowKey },
+  } as const;
+
+  const before = await prisma.usageCounter.findUnique({ where });
+  if ((before?.count ?? 0) >= limit) {
+    throw new ApiError("RATE_LIMIT", rateLimitMessage(kind, limit), 429);
+  }
+
+  await prisma.usageCounter.upsert({
+    where,
+    create: { userId, kind, windowKey, count: 1 },
+    update: { count: { increment: 1 } },
   });
+
+  const after = await prisma.usageCounter.findUnique({ where });
+  if ((after?.count ?? 0) > limit) {
+    await prisma.usageCounter.update({
+      where,
+      data: { count: { decrement: 1 } },
+    });
+    throw new ApiError("RATE_LIMIT", rateLimitMessage(kind, limit), 429);
+  }
 }
 
 export async function consumeGenerateRateLimit(userId: string): Promise<void> {

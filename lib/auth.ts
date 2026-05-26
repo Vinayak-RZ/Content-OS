@@ -52,7 +52,11 @@ export function getAuthOptions(): NextAuthOptions {
               displayName: true,
               openrouterKey: true,
               nvidiaKey: true,
+              openaiKey: true,
+              draftProvider: true,
+              draftModelId: true,
               tavilyApiKey: true,
+              onboardingCompletedAt: true,
             },
           });
           if (dbUser) {
@@ -60,6 +64,7 @@ export function getAuthOptions(): NextAuthOptions {
             token.name = dbUser.displayName;
             token.hasDraftProviderKey = hasDraftProviderKey(dbUser);
             token.hasTavilyKey = Boolean(dbUser.tavilyApiKey);
+            token.onboardingCompleted = Boolean(dbUser.onboardingCompletedAt);
           }
         }
         return token;
@@ -69,6 +74,7 @@ export function getAuthOptions(): NextAuthOptions {
           session.user.id = token.sub ?? "";
           session.user.hasDraftProviderKey = Boolean(token.hasDraftProviderKey);
           session.user.hasTavilyKey = Boolean(token.hasTavilyKey);
+          session.user.onboardingCompleted = Boolean(token.onboardingCompleted);
         }
         return session;
       },

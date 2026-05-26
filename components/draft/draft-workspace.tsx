@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Loader2, Send } from "lucide-react";
 
+import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -233,9 +234,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
               Topics
             </Button>
           </Link>
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">
-            {draft.status}
-          </span>
+          <DraftStatusBadge status={draft.status} />
         </div>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">

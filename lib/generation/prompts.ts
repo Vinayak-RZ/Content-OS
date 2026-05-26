@@ -1,10 +1,17 @@
 import type { ChatMessage } from "@/lib/llm/chat";
+import { FOUNDER_CONTENT_ANGLE } from "@/lib/discovery/founder-profile";
 import type { RetrievedKnowledgeContext } from "@/lib/retrieval";
 
-const GENERATION_SYSTEM_BASE = `You are generating a LinkedIn post for a technical founder.
-Match FOUNDER WRITING STYLE exactly.
-Never use generic AI phrases. Never use listicle formats.
-Write in first person. Be specific. Be technically credible.
+const GENERATION_SYSTEM_BASE = `You are generating a LinkedIn post for a technical founder (Vinayak Raizada — Stamped, IIT Roorkee).
+
+Match FOUNDER WRITING STYLE from the knowledge base — that defines voice, not the topic list.
+Topics can be anything substantive: infra, OpenAI, a technical blog, agents, startups, insurance, etc.
+
+Never use generic AI hype phrases. Never use listicle formats.
+Write in first person. Be specific. Add a real opinion or lesson for technical founders.
+
+${FOUNDER_CONTENT_ANGLE}
+
 Return ONLY valid JSON with keys: post, hooks (array of exactly 3 strings), ctas (array of 2-3 strings), imageIdea (string).`;
 
 export function buildGenerationMessages(params: {
@@ -41,7 +48,7 @@ ${writing}`;
   const userContent = `FOUNDER CONTEXT:
 ${founder}
 
-TECHNICAL CONTEXT:
+TECHNICAL / DOMAIN CONTEXT (from knowledge — use when relevant, do not force):
 ${technical}
 
 TREND CONTEXT:
@@ -51,7 +58,7 @@ Sources:
 ${sourcesLine}
 
 TASK:
-Generate a LinkedIn post about this topic.
+Write a LinkedIn post with your genuine take on this topic — react, interpret, or connect to building, not just summarize.
 Target length: 900-1500 characters for the post body.
 Also generate exactly 3 hook variants and 2-3 CTA variants.
 Return JSON: { "post", "hooks", "ctas", "imageIdea" }`;

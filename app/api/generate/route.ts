@@ -8,13 +8,12 @@ import {
 } from "@/lib/generation/draft-schema";
 import { buildGenerationMessages } from "@/lib/generation/prompts";
 import { draftChatComplete } from "@/lib/llm/chat";
-import { resolveDraftProvider } from "@/lib/llm/draft-provider";
+import { requireDraftProviderAuth } from "@/lib/llm/draft-provider";
 import { prisma } from "@/lib/db";
 import { consumeGenerateRateLimit } from "@/lib/rate-limit";
 import { retrieveKnowledgeContext } from "@/lib/retrieval";
 import { requireSession } from "@/lib/session";
 import { recordTopicEngagementSelected } from "@/lib/topic-memory";
-import { getDecryptedKey } from "@/lib/user-settings";
 import { generateDraftBodySchema } from "@/lib/validations/generate";
 
 export const maxDuration = 300;
@@ -37,26 +36,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: session.user.id },
     });
-    const provider = resolveDraftProvider(user);
-    if (!provider) {
-      throw new ApiError(
-        "NO_LLM_KEY",
-        "Add an OpenRouter or NVIDIA API key in Settings to generate drafts.",
-        400,
-      );
-    }
-
-    const apiKey =
-      provider.kind === "openrouter"
-        ? getDecryptedKey(user, "openrouterKey")
-        : getDecryptedKey(user, "nvidiaKey");
-    if (!apiKey) {
-      throw new ApiError(
-        "NO_LLM_KEY",
-        "Draft provider key missing. Re-save Settings.",
-        400,
-      );
-    }
+    const { provider, apiKey } = requireDraftProviderAuth(user);
 
     let topicTitle = "";
     let topicSummary = "";

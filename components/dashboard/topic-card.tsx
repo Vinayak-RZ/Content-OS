@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ThumbsDown, ThumbsUp, Sparkles } from "lucide-react";
+import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
+import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -70,38 +71,6 @@ export function TopicCard({
     }
   }
 
-  async function generateDraft(): Promise<void> {
-    setBusy(true);
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trendId: trend.id }),
-      });
-      const json: unknown = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : `Generate failed (${res.status})`;
-        throw new Error(msg);
-      }
-      const id =
-        typeof json === "object" &&
-        json &&
-        "draftId" in json &&
-        typeof (json as { draftId?: string }).draftId === "string"
-          ? (json as { draftId: string }).draftId
-          : null;
-      if (id) router.push(`/draft/${id}`);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const tagHint =
     trend.tags.length > 0
       ? trend.tags.slice(0, 3).join(", ")
@@ -109,9 +78,9 @@ export function TopicCard({
 
   return (
     <Card
-      className={`topic-card-stagger flex flex-col border-border/70 shadow-pill ${className ?? ""}`}
+      className={`flex h-full flex-col border-border/70 shadow-pill ${className ?? ""}`}
     >
-      <CardHeader className="gap-2 pb-2">
+      <CardHeader className="shrink-0 gap-2 pb-2">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <CardTitle className="max-w-[85%] text-lg font-semibold leading-snug">
             {trend.title.slice(0, 80)}
@@ -144,7 +113,7 @@ export function TopicCard({
           files.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-3 pb-3">
+      <CardContent className="flex min-h-0 flex-1 flex-col gap-2 pb-0 pt-0">
         <p className="text-sm text-foreground/90">
           <span className="font-medium">Suggested angle: </span>
           Lead with how this shifts incentives for technical founders building in{" "}
@@ -159,37 +128,32 @@ export function TopicCard({
           {domainLabel(trend.url)} · {trend.source}
         </a>
       </CardContent>
-      <CardFooter className="mt-auto flex flex-wrap gap-2 border-t border-border/60 pt-4">
-        <Button
-          type="button"
-          disabled={busy}
-          onClick={() => void generateDraft()}
-          className="gap-1.5"
-        >
-          <Sparkles className="size-4" aria-hidden />
-          Generate draft
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={() => void patchFeedback("saved")}
-          aria-label="Save topic"
-        >
-          <ThumbsUp className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={() => void patchFeedback("dismissed")}
-          aria-label="Dismiss topic"
-        >
-          <ThumbsDown className="size-4" />
-        </Button>
-      </CardFooter>
+      <div className="shrink-0 border-t border-subtle px-6 pb-6 pt-3 sm:px-8 sm:pb-8">
+        <div className="flex flex-wrap gap-2">
+          <TopicDraftButton trendId={trend.id} className="gap-1.5" />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => void patchFeedback("saved")}
+            aria-label="Save topic"
+          >
+            <ThumbsUp className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => void patchFeedback("dismissed")}
+            aria-label="Dismiss topic"
+          >
+            <ThumbsDown className="size-4" />
+          </Button>
+          <TopicRemoveButton trendId={trend.id} size="sm" />
+        </div>
+      </div>
     </Card>
   );
 }

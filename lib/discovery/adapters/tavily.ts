@@ -14,6 +14,19 @@ type TavilyResponse = {
   error?: string;
 };
 
+/** Rotate queries each run so discovery is not locked to one theme. */
+function pickQueriesForRun(): string[] {
+  const pool = [...DEFAULT_TAVILY_QUERIES];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = pool[i]!;
+    pool[i] = pool[j]!;
+    pool[j] = tmp;
+  }
+  const count = Math.min(5, pool.length);
+  return pool.slice(0, count);
+}
+
 export async function fetchTavily(
   apiKey: string,
   budget: number,
@@ -22,8 +35,8 @@ export async function fetchTavily(
     return { sourceType: "tavily", fetched: 0, candidates: [] };
   }
 
-  const queries = DEFAULT_TAVILY_QUERIES;
-  const perQuery = Math.max(1, Math.ceil(budget / queries.length));
+  const queries = pickQueriesForRun();
+  const perQuery = Math.max(2, Math.ceil(budget / queries.length));
 
   const all: TrendCandidate[] = [];
 
@@ -37,7 +50,7 @@ export async function fetchTavily(
           api_key: apiKey,
           query,
           max_results: Math.min(perQuery, budget - all.length),
-          search_depth: "basic",
+          search_depth: "advanced",
         }),
         signal: AbortSignal.timeout(25000),
       });

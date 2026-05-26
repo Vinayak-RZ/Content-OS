@@ -12,12 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DraftProviderFields } from "@/components/draft-provider-fields";
+import { DraftProviderSettings } from "@/components/draft-provider-fields";
 import type { SettingsResponse } from "@/lib/user-settings";
 import {
   discoveryKeysPatchFromForm,
-  draftKeysPatchFromForm,
-  hasDraftKeyInForm,
+  draftSettingsPatchFromForm,
 } from "@/lib/settings-keys";
 
 const TIMEZONES = [
@@ -72,23 +71,18 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     const patch: Record<string, unknown> = {
       timezone: String(form.get("timezone") ?? settings.timezone),
       emailDigest: form.get("emailDigest") === "on",
-    };
-    if (!hasDraftKeyInForm(form, settings.keys)) {
-      setError(
-        "At least one draft provider key is required (OpenRouter or NVIDIA NIM).",
-      );
-      return;
-    }
-    Object.assign(
-      patch,
-      draftKeysPatchFromForm(form),
-      discoveryKeysPatchFromForm(form, {
+      ...draftSettingsPatchFromForm(form),
+      ...discoveryKeysPatchFromForm(form, {
         tavily: "tavilyApiKey",
         firecrawl: "firecrawlApiKey",
       }),
-    );
+    };
     void save(patch);
   }
+
+  const activeLabel = settings.activeDraftProvider
+    ? `${settings.activeDraftProvider} · ${settings.activeModelDisplayName ?? settings.activeModelId}`
+    : "none (add a key for your selected provider)";
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6">
@@ -129,18 +123,12 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         <CardHeader>
           <CardTitle>Draft generation</CardTitle>
           <CardDescription>
-            Stored encrypted. Leave blank to keep existing keys. If both are set,
-            OpenRouter is used
-            {settings.draftProvider
-              ? ` (currently ${settings.draftProvider === "openrouter" ? "OpenRouter" : "NVIDIA NIM"}).`
-              : "."}
+            Active when generating or editing drafts:{" "}
+            <span className="font-medium text-foreground">{activeLabel}</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DraftProviderFields
-            openrouterConfigured={settings.keys.openrouter}
-            nvidiaConfigured={settings.keys.nvidia}
-          />
+          <DraftProviderSettings settings={settings} />
         </CardContent>
       </Card>
 
@@ -148,7 +136,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         <CardHeader>
           <CardTitle>Discovery</CardTitle>
           <CardDescription>
-            Optional until Phase 3. Values are never shown again after save.
+            Optional. Values are never shown again after save.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

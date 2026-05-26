@@ -13,6 +13,10 @@ const config: Config = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         sidebar: "hsl(var(--sidebar))",
+        forest: {
+          DEFAULT: "hsl(var(--forest))",
+          foreground: "hsl(var(--forest-foreground))",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -42,16 +46,42 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        xl: "calc(var(--radius) + 4px)",
-        "2xl": "calc(var(--radius) + 8px)",
+        lg: "var(--radius-lg)",
+        md: "var(--radius)",
+        sm: "calc(var(--radius) - 2px)",
+        xl: "var(--radius-xl)",
+        "2xl": "calc(var(--radius-xl) + 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        heading: ["var(--font-heading)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
+      },
+      fontSize: {
+        "display-hero": ["4.5rem", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
+        "headline-lg": ["2.5rem", { lineHeight: "1.3", letterSpacing: "-0.01em" }],
+        "headline-md": ["1.5rem", { lineHeight: "1.35" }],
+        "body-lg": ["1.125rem", { lineHeight: "1.55" }],
+      },
+      maxWidth: {
+        container: "var(--container-max)",
+      },
+      spacing: {
+        section: "var(--section-padding)",
+      },
+      transitionTimingFunction: {
+        out: "var(--ease-out)",
+        "in-out": "var(--ease-in-out)",
+      },
+      boxShadow: {
+        ambient: "var(--shadow-ambient)",
+        card: "var(--shadow-card)",
       },
     },
   },

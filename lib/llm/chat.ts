@@ -1,5 +1,9 @@
 import type { ResolvedDraftProvider } from "@/lib/llm/draft-provider";
-import { NVIDIA_DRAFT } from "@/lib/llm/models";
+import {
+  NVIDIA_API_BASE,
+  OPENAI_API_BASE,
+  OPENROUTER_API_BASE,
+} from "@/lib/llm/models";
 
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
@@ -11,8 +15,21 @@ type ChatResponse = {
   error?: { message?: string };
 };
 
+function chatCompletionsUrl(kind: ResolvedDraftProvider["kind"]): string {
+  switch (kind) {
+    case "nvidia":
+      return `${NVIDIA_API_BASE}/chat/completions`;
+    case "openai":
+      return `${OPENAI_API_BASE}/chat/completions`;
+    case "openrouter":
+      return `${OPENROUTER_API_BASE}/chat/completions`;
+    default:
+      return `${OPENROUTER_API_BASE}/chat/completions`;
+  }
+}
+
 /**
- * OpenAI-compatible chat completion (OpenRouter or NVIDIA integrate API).
+ * OpenAI-compatible chat completion (OpenRouter, OpenAI, or NVIDIA).
  */
 export async function draftChatComplete(params: {
   provider: ResolvedDraftProvider;
@@ -31,10 +48,7 @@ export async function draftChatComplete(params: {
     jsonObject = false,
   } = params;
 
-  const url =
-    provider.kind === "nvidia"
-      ? `${NVIDIA_DRAFT.baseUrl}/chat/completions`
-      : "https://openrouter.ai/api/v1/chat/completions";
+  const url = chatCompletionsUrl(provider.kind);
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,

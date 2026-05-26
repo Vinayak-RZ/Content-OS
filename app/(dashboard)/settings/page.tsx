@@ -17,7 +17,11 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <AppHeader title="Settings" breadcrumb="App" />
+      <AppHeader
+        title="Settings"
+        breadcrumb="Workspace"
+        description="API keys, draft provider, and discovery preferences."
+      />
       <div className="px-8 pb-16">
         <SettingsForm initial={toSettingsResponse(user)} />
       </div>

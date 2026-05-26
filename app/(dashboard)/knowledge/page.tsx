@@ -50,7 +50,11 @@ export default async function KnowledgePage() {
 
   return (
     <>
-      <AppHeader title="Knowledge" breadcrumb="App" />
+      <AppHeader
+        title="Knowledge"
+        breadcrumb="Workspace"
+        description="Context files that ground discovery and draft generation in your voice."
+      />
       <KnowledgeShell initialFiles={initialFiles} />
     </>
   );

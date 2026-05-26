@@ -25,6 +25,44 @@ export type DashboardTrendRow = Prisma.TrendGetPayload<{
   select: typeof trendDashboardSelect;
 }>;
 
+/** Prisma where for non-dismissed trends (includes NULL feedbackStatus — required for Postgres). */
+function activeTrendWhere(
+  userId: string,
+  now: Date,
+  excludeHashes: string[],
+): Prisma.TrendWhereInput {
+  return {
+    userId,
+    OR: [{ feedbackStatus: null }, { feedbackStatus: "saved" }],
+    AND: [
+      {
+        OR: [
+          { expiresAt: { gt: now } },
+          {
+            AND: [
+              { feedbackStatus: "saved" },
+              { savedUntil: { gt: now } },
+            ],
+          },
+        ],
+      },
+      ...(excludeHashes.length > 0
+        ? [{ urlHash: { notIn: excludeHashes } }]
+        : []),
+    ],
+  };
+}
+
+export async function countVisibleTrendsForDashboard(
+  userId: string,
+): Promise<number> {
+  const now = new Date();
+  const excludeHashes = await getExcludedUrlHashesForDashboard(userId);
+  return prisma.trend.count({
+    where: activeTrendWhere(userId, now, Array.from(excludeHashes)),
+  });
+}
+
 export async function fetchTrendsForDashboard(
   userId: string,
   limit: number,
@@ -34,20 +72,7 @@ export async function fetchTrendsForDashboard(
   const excludeArr = Array.from(excludeHashes);
 
   const rows = await prisma.trend.findMany({
-    where: {
-      userId,
-      feedbackStatus: { not: "dismissed" },
-      OR: [
-        { expiresAt: { gt: now } },
-        {
-          AND: [
-            { feedbackStatus: "saved" },
-            { savedUntil: { gt: now } },
-          ],
-        },
-      ],
-      ...(excludeArr.length > 0 ? { urlHash: { notIn: excludeArr } } : {}),
-    },
+    where: activeTrendWhere(userId, now, excludeArr),
     orderBy: [{ finalScore: "desc" }, { discoveredAt: "desc" }],
     take: limit,
     select: trendDashboardSelect,

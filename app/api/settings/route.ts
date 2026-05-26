@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/session";
 import {
   buildSettingsUpdate,
   toSettingsResponse,
-  wouldLoseDraftProvider,
+  validateDraftProviderSettings,
 } from "@/lib/user-settings";
 import { settingsPatchSchema } from "@/lib/validations/settings";
 
@@ -37,10 +37,13 @@ export async function PATCH(request: Request) {
     const user = await prisma.user.findUniqueOrThrow({
       where: { id: session.user.id },
     });
-    if (wouldLoseDraftProvider(user, parsed.data)) {
+
+    try {
+      validateDraftProviderSettings(user, parsed.data);
+    } catch (e) {
       throw new ApiError(
         "VALIDATION_ERROR",
-        "At least one draft provider key is required (OpenRouter or NVIDIA NIM)",
+        e instanceof Error ? e.message : "Invalid draft settings",
         400,
       );
     }

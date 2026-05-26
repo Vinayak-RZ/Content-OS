@@ -1,26 +1,39 @@
-/** Default Tavily queries (IMPLEMENTATION-PLAN §4.3). Rotate / split by fetch budget. */
+/**
+ * Broad, high-signal discovery sources.
+ * Insurance/BFSI is one lane among many — personalization is via Knowledge + ranking.
+ */
+
 export const DEFAULT_TAVILY_QUERIES: string[] = [
-  "AI infrastructure engineering scalability",
-  "LLM inference efficiency developer tools",
-  "technical founder startup engineering blog",
-  "insurance fraud prevention AI claims",
-  "agentic systems developer tooling",
-  "distributed systems Rust Go performance",
+  "OpenAI Anthropic Google AI model release analysis",
+  "LLM inference distributed systems GPU serving",
+  "agentic AI systems architecture engineering blog",
+  "technical founder startup engineering lessons",
+  "generative AI enterprise production deployment",
+  "insurtech fintech BFSI AI news",
+  "open source AI developer tools launch",
+  "software architecture technical deep dive blog",
+];
+
+export const DEFAULT_FIRECRAWL_QUERIES: string[] = [
+  "technical analysis AI infrastructure engineering",
+  "startup founder product engineering essay",
 ];
 
 export const REDDIT_SUBREDDITS: string[] = [
-  "machinelearning",
+  "MachineLearning",
   "LocalLLaMA",
+  "artificial",
   "programming",
   "startups",
   "devops",
   "ExperiencedDevs",
+  "insurtech",
 ];
 
-/** High-signal tech / founder RSS (no keys). Trim list if feeds fail silently. */
 export const DEFAULT_RSS_FEEDS: string[] = [
   "https://news.ycombinator.com/rss",
   "https://github.blog/feed/",
-  "https://www.conventionalcommits.org/rss.xml",
-  "https://hnrss.org/newest?q=Rust+OR+LLM",
+  "https://techcrunch.com/feed/",
+  "https://simonwillison.net/atom/everything/",
+  "https://www.latent.space/feed",
 ];
