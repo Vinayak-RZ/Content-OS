@@ -129,9 +129,10 @@ export function LandingPage({
             </p>
             <h1
               data-hero-reveal
-              className="font-display text-balance text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-display-hero"
+              className="font-display text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-display-hero"
             >
-              Turn signal into substance
+              <span className="block">From discovery to draft</span>
+              <span className="block">on your terms</span>
             </h1>
             <p
               data-hero-reveal

@@ -64,7 +64,7 @@ export default async function AnalyticsPage() {
           <StatCard
             label="Runs today"
             value={analytics.discoveryRunsToday}
-            hint="Manual and scheduled"
+            hint="Manual runs only"
           />
         </div>
 

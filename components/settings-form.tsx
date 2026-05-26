@@ -70,7 +70,6 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     const form = new FormData(e.currentTarget);
     const patch: Record<string, unknown> = {
       timezone: String(form.get("timezone") ?? settings.timezone),
-      emailDigest: form.get("emailDigest") === "on",
       ...draftSettingsPatchFromForm(form),
       ...discoveryKeysPatchFromForm(form, {
         tavily: "tavilyApiKey",
@@ -107,15 +106,6 @@ export function SettingsForm({ initial }: SettingsFormProps) {
               ))}
             </select>
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="emailDigest"
-              defaultChecked={settings.emailDigest}
-              className="size-4 rounded border-input accent-brand"
-            />
-            Daily digest email after discovery
-          </label>
         </CardContent>
       </Card>
 

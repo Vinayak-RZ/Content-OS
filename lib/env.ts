@@ -39,8 +39,6 @@ const envSchema = z.object({
     .length(64, "ENCRYPTION_KEY must be a 32-byte hex string (64 chars)"),
   /** Embeddings (Phase 2 knowledge chunks, discovery scoring). Not used for draft generation (OpenRouter/NVIDIA). */
   OPENAI_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
-  /** Protects `POST /api/cron/*` — required before enabling cron in production. */
-  CRON_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
@@ -63,20 +61,6 @@ export function requireOpenAiApiKey(): string {
     );
   }
   return key;
-}
-
-/** Call from cron routes only — fails fast if unset. */
-export function requireCronSecret(): string {
-  const secret =
-    typeof process.env["CRON_SECRET"] === "string"
-      ? process.env["CRON_SECRET"].trim()
-      : "";
-  if (!secret) {
-    throw new Error(
-      "CRON_SECRET is required for cron endpoints. Set it in .env.local",
-    );
-  }
-  return secret;
 }
 
 let cachedEnv: Env | null = null;
