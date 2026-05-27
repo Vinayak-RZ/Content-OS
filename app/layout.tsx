@@ -22,9 +22,9 @@ const display = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Content OS — Thinking amplification for technical founders",
+  title: "Content OS — Thinking amplification for founders & creators",
   description:
-    "Discover high-signal topics, generate drafts in your voice, and publish on your terms.",
+    "Discover high-signal topics, generate drafts in your voice, and publish on your terms. Built for founders, engineers, creators, and anyone building in public.",
 };
 
 export default function RootLayout({

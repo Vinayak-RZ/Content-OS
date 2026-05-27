@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { Input } from "@/components/ui/input";
+import { ApiKeyField } from "@/components/ui/api-key-field";
 import { Label } from "@/components/ui/label";
 import {
   DRAFT_MODEL_CATALOG,
@@ -10,7 +10,17 @@ import {
   DRAFT_PROVIDER_LABELS,
   type DraftProviderKind,
 } from "@/lib/llm/models";
+import { PROVIDER_LINKS } from "@/lib/provider-links";
 import type { SettingsResponse } from "@/lib/user-settings";
+
+const DRAFT_KEY_FIELDS: Record<
+  DraftProviderKind,
+  { id: string; key: keyof SettingsResponse["keys"] }
+> = {
+  openrouter: { id: "openrouterKey", key: "openrouter" },
+  openai: { id: "openaiKey", key: "openai" },
+  nvidia: { id: "nvidiaKey", key: "nvidia" },
+};
 
 type DraftProviderSettingsProps = {
   settings: Pick<
@@ -19,11 +29,14 @@ type DraftProviderSettingsProps = {
   >;
   /** Hide provider/model pickers (e.g. compact onboarding). */
   showProviderPicker?: boolean;
+  /** Show all provider keys or only the selected one. */
+  showAllProviderKeys?: boolean;
 };
 
 export function DraftProviderSettings({
   settings,
   showProviderPicker = true,
+  showAllProviderKeys = false,
 }: DraftProviderSettingsProps) {
   const initialProvider =
     settings.draftProvider ??
@@ -41,6 +54,10 @@ export function DraftProviderSettings({
     settings.draftProvider === provider && settings.draftModelId
       ? settings.draftModelId
       : (modelOptions[0]?.modelId ?? "");
+
+  const visibleProviders = showAllProviderKeys
+    ? DRAFT_PROVIDER_KINDS
+    : ([provider] as DraftProviderKind[]);
 
   return (
     <div className="space-y-6 rounded-xl border border-border/60 bg-muted/30 p-4">
@@ -95,51 +112,18 @@ export function DraftProviderSettings({
         </>
       ) : null}
 
-      <DraftKeyField
-        id="openrouterKey"
-        title={DRAFT_PROVIDER_LABELS.openrouter}
-        configured={settings.keys.openrouter}
-      />
-      <DraftKeyField
-        id="openaiKey"
-        title={DRAFT_PROVIDER_LABELS.openai}
-        configured={settings.keys.openai}
-      />
-      <DraftKeyField
-        id="nvidiaKey"
-        title={DRAFT_PROVIDER_LABELS.nvidia}
-        configured={settings.keys.nvidia}
-      />
-    </div>
-  );
-}
-
-function DraftKeyField({
-  id,
-  title,
-  configured,
-}: {
-  id: string;
-  title: string;
-  configured: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <Label htmlFor={id}>{title} API key</Label>
-        {configured ? (
-          <span className="text-xs text-brand">Configured</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">Not set</span>
-        )}
-      </div>
-      <Input
-        id={id}
-        name={id}
-        type="password"
-        autoComplete="off"
-        placeholder={configured ? "Leave blank to keep" : "Paste API key"}
-      />
+      {visibleProviders.map((kind) => {
+        const field = DRAFT_KEY_FIELDS[kind];
+        return (
+          <ApiKeyField
+            key={kind}
+            id={field.id}
+            label={`${DRAFT_PROVIDER_LABELS[kind]} API key`}
+            configured={settings.keys[field.key]}
+            provider={PROVIDER_LINKS[kind]}
+          />
+        );
+      })}
     </div>
   );
 }

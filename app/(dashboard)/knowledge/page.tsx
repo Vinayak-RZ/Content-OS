@@ -1,8 +1,10 @@
 import { AppHeader } from "@/components/app-header";
 import { KnowledgeShell } from "@/components/knowledge-shell";
+import { ProfilePromptPanel } from "@/components/knowledge/profile-prompt-panel";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { isPersonaType } from "@/lib/personas/types";
 
 export default async function KnowledgePage() {
   const session = await getSession();
@@ -11,6 +13,11 @@ export default async function KnowledgePage() {
   }
 
   const userId = session.user.id;
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { personaType: true, personaCustom: true },
+  });
 
   const files = await prisma.knowledgeFile.findMany({
     where: { userId },
@@ -55,7 +62,17 @@ export default async function KnowledgePage() {
         breadcrumb="Workspace"
         description="Context files that ground discovery and draft generation in your voice."
       />
-      <KnowledgeShell initialFiles={initialFiles} />
+      <div className="page-x flex flex-1 flex-col gap-4 pb-8 pt-4 sm:gap-6 sm:pt-6">
+        <ProfilePromptPanel
+          personaType={
+            user.personaType && isPersonaType(user.personaType)
+              ? user.personaType
+              : null
+          }
+          personaCustom={user.personaCustom}
+        />
+        <KnowledgeShell initialFiles={initialFiles} />
+      </div>
     </>
   );
 }

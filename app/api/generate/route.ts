@@ -86,6 +86,8 @@ export async function POST(request: Request) {
       topicTitle,
       topicSummary: summaryBlock,
       sources,
+      personaType: user.personaType,
+      personaCustom: user.personaCustom,
     });
 
     let raw: string;

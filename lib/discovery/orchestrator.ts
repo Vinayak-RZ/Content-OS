@@ -11,9 +11,7 @@ import {
   computeFetchBudget,
   getSavedTrendsForDiscovery,
 } from "@/lib/discovery/carry-over";
-import {
-  DEFAULT_FIRECRAWL_QUERIES,
-} from "@/lib/discovery/constants";
+import { getDiscoveryQueries } from "@/lib/personas/discovery-queries";
 import { POOL_TARGET } from "@/lib/discovery/carry-over";
 import { DISCOVERY_NEW_PER_RUN } from "@/lib/discovery/founder-profile";
 import { trimVisibleTopicPool } from "@/lib/discovery/pool-trim";
@@ -63,6 +61,10 @@ export async function runDiscoveryForUser(
 
   const tavilyKey = getDecryptedKey(user, "tavilyApiKey");
   const firecrawlKey = getDecryptedKey(user, "firecrawlApiKey");
+  const discoveryQueries = getDiscoveryQueries(
+    user.personaType,
+    user.personaCustom,
+  );
 
   const saved = await getSavedTrendsForDiscovery(userId);
   const { newFetchBudget } = computeFetchBudget(saved.length);
@@ -87,7 +89,7 @@ export async function runDiscoveryForUser(
   const ghTake = Math.min(6, Math.max(2, b + 1));
   const tvTake = tavilyKey ? Math.min(16, Math.max(8, b * 3)) : 0;
   const fcTake =
-    firecrawlKey && b > 0 && DEFAULT_FIRECRAWL_QUERIES[0] ? 2 : 0;
+    firecrawlKey && b > 0 && discoveryQueries.firecrawl[0] ? 2 : 0;
 
   const adapterResults = await Promise.all([
     fetchHackerNews(hnTake),
@@ -95,12 +97,12 @@ export async function runDiscoveryForUser(
     fetchRedditHot(rdTake),
     fetchGitHubTrending(ghTake, platformGithubToken()),
     tavilyKey
-      ? fetchTavily(tavilyKey, tvTake)
+      ? fetchTavily(tavilyKey, tvTake, discoveryQueries.tavily)
       : Promise.resolve({ sourceType: "tavily" as const, fetched: 0, candidates: [] }),
-    firecrawlKey && fcTake > 0 && DEFAULT_FIRECRAWL_QUERIES[0]
+    firecrawlKey && fcTake > 0 && discoveryQueries.firecrawl[0]
       ? fetchFirecrawlSearch(
           firecrawlKey,
-          DEFAULT_FIRECRAWL_QUERIES[0]!,
+          discoveryQueries.firecrawl[0]!,
           fcTake,
         )
       : Promise.resolve({

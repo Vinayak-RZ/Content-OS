@@ -14,7 +14,7 @@ function seedRoot(): string {
   return join(process.cwd(), ...KNOWLEDGE_SEED_DIR);
 }
 
-/** Insert missing system files from `seeds/founder/` and chunk + embed each. */
+/** Insert missing system files from `seeds/starter/` and chunk + embed each. */
 export async function seedKnowledgeFromRepo(userId: string): Promise<{
   created: string[];
   skipped: string[];
@@ -46,7 +46,7 @@ export async function seedKnowledgeFromRepo(userId: string): Promise<{
       if (code === "ENOENT") {
         throw new ApiError(
           "SEED_UNAVAILABLE",
-          `Missing seed file: ${meta.fileName} under seeds/founder/`,
+          `Missing seed file: ${meta.fileName} under seeds/starter/`,
           500,
         );
       }

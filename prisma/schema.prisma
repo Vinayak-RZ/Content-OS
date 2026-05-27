@@ -22,6 +22,8 @@ model User {
   openaiKey       String?
   draftProvider   String? // openrouter | nvidia | openai
   draftModelId    String?
+  personaType        String?  // student | founder | engineer | content_creator | finance | other
+  personaCustom      String?  @db.VarChar(500)
   onboardingCompletedAt DateTime?
   emailDigest     Boolean  @default(true)
   sourceConfig    Json?

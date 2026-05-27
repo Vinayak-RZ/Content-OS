@@ -14,6 +14,8 @@ import {
   getDefaultModelId,
   isValidDraftModel,
 } from "@/lib/llm/models";
+import type { PersonaType } from "@/lib/personas/types";
+import { isPersonaType } from "@/lib/personas/types";
 import type { SettingsPatchInput } from "@/lib/validations/settings";
 
 export type SettingsResponse = {
@@ -22,6 +24,8 @@ export type SettingsResponse = {
   timezone: string;
   emailDigest: boolean;
   onboardingCompleted: boolean;
+  personaType: PersonaType | null;
+  personaCustom: string | null;
   keys: {
     tavily: boolean;
     firecrawl: boolean;
@@ -50,6 +54,11 @@ export function toSettingsResponse(user: User): SettingsResponse {
     timezone: user.timezone,
     emailDigest: user.emailDigest,
     onboardingCompleted: Boolean(user.onboardingCompletedAt),
+    personaType:
+      user.personaType && isPersonaType(user.personaType)
+        ? user.personaType
+        : null,
+    personaCustom: user.personaCustom ?? null,
     keys: {
       tavily: hasEncryptedSecret(user.tavilyApiKey),
       firecrawl: hasEncryptedSecret(user.firecrawlApiKey),
@@ -102,6 +111,15 @@ export function buildSettingsUpdate(
   }
   if (input.onboardingCompleted === true) {
     data.onboardingCompletedAt = new Date();
+  }
+  if (input.personaType !== undefined) {
+    data.personaType = input.personaType;
+    if (input.personaType !== "other") {
+      data.personaCustom = null;
+    }
+  }
+  if (input.personaCustom !== undefined) {
+    data.personaCustom = input.personaCustom?.trim() || null;
   }
   if (input.draftProvider !== undefined) {
     data.draftProvider = input.draftProvider;

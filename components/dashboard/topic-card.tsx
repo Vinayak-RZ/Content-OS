@@ -74,7 +74,7 @@ export function TopicCard({
   const tagHint =
     trend.tags.length > 0
       ? trend.tags.slice(0, 3).join(", ")
-      : "your founder knowledge base";
+      : "your knowledge base";
 
   return (
     <Card
@@ -116,7 +116,7 @@ export function TopicCard({
       <CardContent className="flex min-h-0 flex-1 flex-col gap-2 pb-0 pt-0">
         <p className="text-sm text-foreground/90">
           <span className="font-medium">Suggested angle: </span>
-          Lead with how this shifts incentives for technical founders building in{" "}
+          Lead with how this connects to your audience and what you&apos;d add from experience in{" "}
           {trend.tags[0] ?? "this space"}.
         </p>
         <a

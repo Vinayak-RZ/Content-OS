@@ -15,8 +15,8 @@ type TavilyResponse = {
 };
 
 /** Rotate queries each run so discovery is not locked to one theme. */
-function pickQueriesForRun(): string[] {
-  const pool = [...DEFAULT_TAVILY_QUERIES];
+function pickQueriesForRun(queries: string[]): string[] {
+  const pool = [...queries];
   for (let i = pool.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     const tmp = pool[i]!;
@@ -30,12 +30,13 @@ function pickQueriesForRun(): string[] {
 export async function fetchTavily(
   apiKey: string,
   budget: number,
+  queryPool: string[] = DEFAULT_TAVILY_QUERIES,
 ): Promise<AdapterRunResult> {
   if (budget <= 0 || !apiKey) {
     return { sourceType: "tavily", fetched: 0, candidates: [] };
   }
 
-  const queries = pickQueriesForRun();
+  const queries = pickQueriesForRun(queryPool);
   const perQuery = Math.max(2, Math.ceil(budget / queries.length));
 
   const all: TrendCandidate[] = [];

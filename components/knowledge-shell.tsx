@@ -394,7 +394,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
         <nav className="flex flex-1 flex-col gap-3 overflow-y-auto">
           {files.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No documents yet. Import founder seeds or add your first document.
+              No documents yet. Import starter templates or add your first document.
             </p>
           ) : (
             grouped.map((group) => (
@@ -451,7 +451,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
             disabled={seeding}
             className="rounded-full border border-border/60 bg-card px-4 py-2 text-sm font-medium shadow-pill hover:bg-card/80 disabled:opacity-50"
           >
-            {seeding ? "Importing…" : "Import founder seeds"}
+            {seeding ? "Importing…" : "Import starter templates"}
           </button>
         </div>
       </div>
@@ -528,7 +528,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <p className="max-w-md text-muted-foreground">
-              Add founder seeds, create custom documents (technical notes, LinkedIn
+              Import starter templates, create custom documents (notes, LinkedIn
               profile, etc.), then save to chunk and embed with{" "}
               <span className="font-medium">OPENAI_API_KEY</span>.
             </p>
@@ -547,7 +547,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
                 disabled={seeding}
                 className="rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-white shadow-pill disabled:opacity-50"
               >
-                {seeding ? "Importing…" : "Import founder seeds"}
+                {seeding ? "Importing…" : "Import starter templates"}
               </button>
             </div>
           </div>

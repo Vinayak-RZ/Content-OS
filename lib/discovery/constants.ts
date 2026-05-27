@@ -1,23 +1,12 @@
 /**
  * Broad, high-signal discovery sources.
- * Insurance/BFSI is one lane among many — personalization is via Knowledge + ranking.
+ * Persona-specific queries live in lib/personas/discovery-queries.ts.
  */
 
-export const DEFAULT_TAVILY_QUERIES: string[] = [
-  "OpenAI Anthropic Google AI model release analysis",
-  "LLM inference distributed systems GPU serving",
-  "agentic AI systems architecture engineering blog",
-  "technical founder startup engineering lessons",
-  "generative AI enterprise production deployment",
-  "insurtech fintech BFSI AI news",
-  "open source AI developer tools launch",
-  "software architecture technical deep dive blog",
-];
-
-export const DEFAULT_FIRECRAWL_QUERIES: string[] = [
-  "technical analysis AI infrastructure engineering",
-  "startup founder product engineering essay",
-];
+export {
+  DEFAULT_FIRECRAWL_QUERIES,
+  DEFAULT_TAVILY_QUERIES,
+} from "@/lib/personas/discovery-queries";
 
 export const REDDIT_SUBREDDITS: string[] = [
   "MachineLearning",
@@ -28,6 +17,8 @@ export const REDDIT_SUBREDDITS: string[] = [
   "devops",
   "ExperiencedDevs",
   "insurtech",
+  "personalfinance",
+  "Entrepreneur",
 ];
 
 export const DEFAULT_RSS_FEEDS: string[] = [

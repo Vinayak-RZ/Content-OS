@@ -62,6 +62,8 @@ export async function POST(request: Request, context: RouteParams) {
       currentDraft: draft.currentContent,
       command: parsed.data.command,
       customInstruction: parsed.data.customInstruction,
+      personaType: user.personaType,
+      personaCustom: user.personaCustom,
     });
 
     const newContent = await draftChatComplete({

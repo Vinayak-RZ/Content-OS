@@ -12,8 +12,8 @@ export type KnowledgeRole = (typeof KNOWLEDGE_ROLES)[number];
 export const MAX_KNOWLEDGE_FILES_PER_USER = 25;
 export const MAX_KNOWLEDGE_BYTES = 100 * 1024;
 
-/** Founder seeds copied from repo `seeds/founder/` for standalone deploy */
-export const KNOWLEDGE_SEED_DIR = ["seeds", "founder"] as const;
+/** Starter templates copied from repo `seeds/starter/` for standalone deploy */
+export const KNOWLEDGE_SEED_DIR = ["seeds", "starter"] as const;
 export const KNOWLEDGE_TEMPLATE_DIR = ["seeds", "templates"] as const;
 
 export type SystemKnowledgeMeta = {
@@ -24,7 +24,7 @@ export type SystemKnowledgeMeta = {
   sortOrder: number;
 };
 
-/** Canonical six system documents (bootstrap import). */
+/** Canonical four system documents (bootstrap import). */
 export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
   {
     slug: "writing-style",
@@ -41,32 +41,18 @@ export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
     sortOrder: 1,
   },
   {
-    slug: "startup-journey",
-    fileName: "startup-journey.md",
-    displayName: "Startup journey",
-    role: "narrative",
-    sortOrder: 2,
-  },
-  {
     slug: "technical-interests",
     fileName: "technical-interests.md",
-    displayName: "Technical interests",
+    displayName: "Interests & expertise",
     role: "technical",
-    sortOrder: 3,
+    sortOrder: 2,
   },
   {
     slug: "thoughts",
     fileName: "thoughts.md",
     displayName: "Thoughts",
     role: "technical",
-    sortOrder: 4,
-  },
-  {
-    slug: "platform-context",
-    fileName: "platform-context.md",
-    displayName: "Platform context",
-    role: "technical",
-    sortOrder: 5,
+    sortOrder: 3,
   },
 ];
 
@@ -86,10 +72,10 @@ export const ROLE_LABELS: Record<KnowledgeRole, string> = {
 export const ROLE_DESCRIPTIONS: Record<KnowledgeRole, string> = {
   style:
     "Voice and tone — always included when generating drafts (like writing-style).",
-  narrative: "Founder story — used for relevance ranking and topic-matched context.",
+  narrative: "Background and story — used for relevance ranking and topic-matched context.",
   technical:
-    "Domains and expertise — ranking alignment and technical context in drafts.",
+    "Interests and expertise — ranking alignment and domain context in drafts.",
   brand:
-    "LinkedIn, positioning, public profile — topic-matched founder context.",
+    "Public profile and positioning — topic-matched personal context.",
   general: "Anything else — topic-matched context; not used in discovery ranking.",
 };

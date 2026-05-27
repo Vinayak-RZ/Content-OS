@@ -28,7 +28,7 @@ const features = [
   {
     icon: BookOpen,
     title: "Grounded in you",
-    body: "Upload context files and interests. Every recommendation cites why it fits your founder profile, not generic trends.",
+    body: "Upload context files and interests. Every recommendation is ranked against your profile, not generic trends.",
   },
   {
     icon: PenLine,
@@ -125,7 +125,7 @@ export function LandingPage({
               data-hero-reveal
               className="mb-6 font-heading text-xs font-semibold uppercase tracking-[0.12em] text-brand"
             >
-              For technical founders
+              For founders & creators
             </p>
             <h1
               data-hero-reveal
@@ -301,7 +301,7 @@ export function LandingPage({
         <div className="container-stamped flex flex-col items-center justify-between gap-4 sm:flex-row">
           <Logo size="sm" />
           <p className="text-sm text-muted-foreground">
-            Content OS · Thinking amplification for technical founders
+            Content OS · Thinking amplification for founders & creators
           </p>
         </div>
       </footer>

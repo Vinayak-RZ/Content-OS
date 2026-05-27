@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -12,8 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ApiKeyField } from "@/components/ui/api-key-field";
+import { PersonaPicker } from "@/components/onboarding/persona-picker";
 import { DraftProviderSettings } from "@/components/draft-provider-fields";
 import type { SettingsResponse } from "@/lib/user-settings";
+import type { PersonaType } from "@/lib/personas/types";
+import { PROVIDER_LINKS } from "@/lib/provider-links";
 import {
   discoveryKeysPatchFromForm,
   draftSettingsPatchFromForm,
@@ -36,6 +38,12 @@ interface SettingsFormProps {
 export function SettingsForm({ initial }: SettingsFormProps) {
   const { update } = useSession();
   const [settings, setSettings] = useState(initial);
+  const [personaType, setPersonaType] = useState<PersonaType | null>(
+    initial.personaType,
+  );
+  const [personaCustom, setPersonaCustom] = useState(
+    initial.personaCustom ?? "",
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -70,6 +78,9 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     const form = new FormData(e.currentTarget);
     const patch: Record<string, unknown> = {
       timezone: String(form.get("timezone") ?? settings.timezone),
+      personaType: personaType ?? undefined,
+      personaCustom:
+        personaType === "other" ? personaCustom.trim() || undefined : undefined,
       ...draftSettingsPatchFromForm(form),
       ...discoveryKeysPatchFromForm(form, {
         tavily: "tavilyApiKey",
@@ -92,7 +103,9 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="timezone">Timezone</Label>
+            <label htmlFor="timezone" className="text-sm font-medium">
+              Timezone
+            </label>
             <select
               id="timezone"
               name="timezone"
@@ -111,6 +124,25 @@ export function SettingsForm({ initial }: SettingsFormProps) {
 
       <Card>
         <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>
+            Shapes topic discovery and how drafts are framed for you.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PersonaPicker
+            value={personaType}
+            customValue={personaCustom}
+            onChange={(p, custom) => {
+              setPersonaType(p);
+              setPersonaCustom(custom);
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Draft generation</CardTitle>
           <CardDescription>
             Active when generating or editing drafts:{" "}
@@ -118,7 +150,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DraftProviderSettings settings={settings} />
+          <DraftProviderSettings settings={settings} showAllProviderKeys />
         </CardContent>
       </Card>
 
@@ -126,19 +158,22 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         <CardHeader>
           <CardTitle>Discovery</CardTitle>
           <CardDescription>
-            Optional. Values are never shown again after save.
+            Optional keys for topic discovery and URL scraping. Values are
+            encrypted and never shown again after save.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <KeyField
+          <ApiKeyField
             id="tavilyApiKey"
             label="Tavily"
             configured={settings.keys.tavily}
+            provider={PROVIDER_LINKS.tavily}
           />
-          <KeyField
+          <ApiKeyField
             id="firecrawlApiKey"
             label="Firecrawl"
             configured={settings.keys.firecrawl}
+            provider={PROVIDER_LINKS.firecrawl}
           />
         </CardContent>
       </Card>
@@ -152,35 +187,5 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         {isSaving ? "Saving…" : "Save settings"}
       </Button>
     </form>
-  );
-}
-
-function KeyField({
-  id,
-  label,
-  configured,
-}: {
-  id: string;
-  label: string;
-  configured: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
-        {configured ? (
-          <span className="text-xs text-brand">Configured</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">Not set</span>
-        )}
-      </div>
-      <Input
-        id={id}
-        name={id}
-        type="password"
-        autoComplete="off"
-        placeholder={configured ? "••••••••••••••••" : "Paste API key"}
-      />
-    </div>
   );
 }

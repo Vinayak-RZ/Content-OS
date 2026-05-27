@@ -19,7 +19,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </blockquote>
           <p className="mt-6 max-w-sm text-sm leading-relaxed text-forest-foreground/80">
             Content OS ranks topics against your knowledge base and generates
-            drafts you control. No auto-posting, no feed addiction.
+            drafts you control — for founders, creators, engineers, and anyone
+            building a public voice. No auto-posting.
           </p>
         </div>
         <p className="text-xs text-forest-foreground/50">

@@ -66,6 +66,8 @@ Open [http://localhost:3000](http://localhost:3000).
 2. **Database → Extensions →** enable `vector`.
 3. **Connect → ORMs →** copy the pooler URL (`6543`, `?pgbouncer=true`) → `DATABASE_URL`.
 4. Copy the direct URL (`5432`) → `DIRECT_URL`.
+5. Run migrations (`npm run db:migrate`) — includes **RLS hardening** so Supabase Security Advisor stops flagging public tables. Content OS only talks to Postgres via Prisma (server-side); `anon` / `authenticated` API access is blocked.
+6. Re-run **Security Advisor** in the Supabase dashboard to confirm lints are cleared.
 
 ### Google OAuth checklist
 
