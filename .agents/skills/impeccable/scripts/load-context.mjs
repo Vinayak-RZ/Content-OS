@@ -66,7 +66,7 @@ export function resolveContextDir(cwd = process.cwd()) {
     }
   }
 
-  // 4. Nothing found — keep the historical "default to cwd" behaviour so the
+  // 4. Nothing found - keep the historical "default to cwd" behaviour so the
   //    caller's `hasProduct === false` branch still fires the same way.
   return cwd;
 }
@@ -79,7 +79,7 @@ export function loadContext(cwd = process.cwd()) {
   let productPath = firstExisting(contextDir, PRODUCT_NAMES);
 
   // 2. Legacy: if no PRODUCT.md but .impeccable.md exists at cwd root, rename
-  //    it in place. We only migrate at the root — fallback dirs are read-only
+  //    it in place. We only migrate at the root - fallback dirs are read-only
   //    so we don't surprise users by mutating files under docs/ or .agents/.
   if (!productPath && contextDir === cwd) {
     const legacyPath = firstExisting(cwd, LEGACY_NAMES);
@@ -90,7 +90,7 @@ export function loadContext(cwd = process.cwd()) {
         productPath = newPath;
         migrated = true;
       } catch {
-        // Rename failed (permissions, etc.) — fall back to reading legacy in place
+        // Rename failed (permissions, etc.) - fall back to reading legacy in place
         productPath = legacyPath;
       }
     }
@@ -127,7 +127,7 @@ function safeRead(p) {
 }
 
 // ---------------------------------------------------------------------------
-// CLI mode — print the context as JSON
+// CLI mode - print the context as JSON
 // ---------------------------------------------------------------------------
 
 function cli() {

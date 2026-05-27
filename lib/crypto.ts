@@ -5,7 +5,7 @@ function getKeyBuffer(): Buffer {
   return Buffer.from(getEncryptionKeyHex(), "hex");
 }
 
-/** AES-256-GCM — stored as base64(iv):base64(tag):base64(ciphertext) */
+/** AES-256-GCM - stored as base64(iv):base64(tag):base64(ciphertext) */
 export function encryptSecret(plaintext: string): string {
   const key = getKeyBuffer();
   const iv = randomBytes(12);

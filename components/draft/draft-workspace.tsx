@@ -113,7 +113,7 @@ function AiEditsPanel({
           <CardTitle className="text-base">AI edits</CardTitle>
         </div>
         <CardDescription>
-          Applies to the post body above — uses your writing-style knowledge
+          Applies to the post body above - uses your writing-style knowledge
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -432,7 +432,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       selectedCta: ctaIx,
     });
     await navigator.clipboard.writeText(text);
-    setToast("Copied — hook + body + closing line.");
+    setToast("Copied - hook + body + closing line.");
   }
 
   const assembledPreview = useMemo(() => {
@@ -542,7 +542,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-8">
-        {/* Primary column — body, actions, AI edits */}
+        {/* Primary column - body, actions, AI edits */}
         <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
           <div className="grid gap-2">
             <div className="flex items-baseline justify-between gap-2">
@@ -618,7 +618,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
           </div>
         </div>
 
-        {/* Sidebar — hook, CTA, preview (desktop only) */}
+        {/* Sidebar - hook, CTA, preview (desktop only) */}
         <aside className="hidden flex-col gap-4 xl:flex">
           <HookCtaPanel
             draft={draft}

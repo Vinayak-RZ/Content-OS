@@ -1,5 +1,5 @@
 /**
- * Discovery carry-over queue — saved trends skip external API re-fetch.
+ * Discovery carry-over queue - saved trends skip external API re-fetch.
  * @see IMPLEMENTATION-PLAN.md §4.5
  */
 
@@ -30,7 +30,7 @@ export function computeFetchBudget(savedCount: number): DiscoveryFetchBudget {
   return {
     poolTarget: POOL_TARGET,
     savedCount: capped,
-    /** New topics per run — not reduced by saved carry-over. */
+    /** New topics per run - not reduced by saved carry-over. */
     newFetchBudget: POOL_TARGET,
   };
 }

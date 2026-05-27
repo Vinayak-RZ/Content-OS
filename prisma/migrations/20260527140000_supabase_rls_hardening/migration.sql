@@ -1,6 +1,6 @@
 -- Supabase security hardening: enable RLS on all public tables and lock down
 -- PostgREST roles (anon/authenticated). Content OS uses Prisma via DATABASE_URL
--- (postgres / service role), which bypasses RLS — app behavior is unchanged.
+-- (postgres / service role), which bypasses RLS - app behavior is unchanged.
 --
 -- Also moves pgvector to the extensions schema (Supabase linter recommendation).
 

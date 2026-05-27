@@ -85,7 +85,7 @@ Options:
     try {
       await postReply(base, info.token, { id, type: status, message, file: filePath });
 
-      // Success — silent exit (agent doesn't need output for replies)
+      // Success - silent exit (agent doesn't need output for replies)
     } catch (err) {
       if (err.cause?.code === 'ECONNREFUSED') {
         console.error('Live server not running. Start one with: npx impeccable live');
@@ -175,13 +175,13 @@ Options:
     }
 
     // Second signal path: stderr banner in case the agent parses stdout
-    // JSON but skips nested fields. One line is enough — the full checklist
+    // JSON but skips nested fields. One line is enough - the full checklist
     // is in reference/live.md.
     if (event._acceptResult?.carbonize === true) {
       process.stderr.write('\n⚠ Carbonize cleanup REQUIRED before next poll. After cleanup, run live-complete.mjs --id ' + event.id + '. See reference/live.md "Required after accept".\n\n');
     }
 
-    // Print the event as JSON — the agent reads this from stdout
+    // Print the event as JSON - the agent reads this from stdout
     console.log(JSON.stringify(event));
   } catch (err) {
     if (err.cause?.code === 'ECONNREFUSED') {

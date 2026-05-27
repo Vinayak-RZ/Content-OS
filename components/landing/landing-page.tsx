@@ -43,7 +43,7 @@ const features = [
 ];
 
 const steps = [
-  { num: "01", label: "Connect", detail: "Sign in free. Add optional API keys when you're ready — free tiers cover reasonable usage." },
+  { num: "01", label: "Connect", detail: "Sign in free. Add optional API keys when you're ready - free tiers cover reasonable usage." },
   { num: "02", label: "Seed knowledge", detail: "Upload context files that define your angle." },
   { num: "03", label: "Discover", detail: "Run discovery to populate your topic board." },
   { num: "04", label: "Draft", detail: "Generate, edit, and ship when ready." },
@@ -145,7 +145,7 @@ export function LandingPage({
               data-hero-reveal
               className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/90"
             >
-              Free forever — use your own API keys and stay within provider free
+              Free forever - use your own API keys and stay within provider free
               tiers for reasonable everyday usage.
             </p>
             <div
@@ -236,7 +236,7 @@ export function LandingPage({
               </p>
               <p className="mt-2 text-sm text-muted-foreground/90">
                 The app is free forever. Optional AI and discovery keys are yours
-                — most providers&apos; free tiers are enough for regular use.
+                - most providers&apos; free tiers are enough for regular use.
               </p>
             </div>
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:gap-8">
@@ -294,7 +294,7 @@ export function LandingPage({
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-forest-foreground/80">
               Free forever. Sign in with Google, set up in minutes, and add API
-              keys only when you want drafts or discovery — your keys stay
+              keys only when you want drafts or discovery - your keys stay
               encrypted.
             </p>
             <div className="mt-8">

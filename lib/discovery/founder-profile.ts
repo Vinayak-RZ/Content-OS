@@ -1,5 +1,5 @@
 /**
- * Discovery quality bar — not a topic whitelist.
+ * Discovery quality bar - not a topic whitelist.
  * Personalization comes from Knowledge embeddings + ranking, not hard-coded themes.
  */
 
@@ -21,7 +21,7 @@ export const DISCOVERY_VISIBLE_POOL_MAX = 15;
 /** Soft minimum pool size guidance for UI copy. */
 export const DISCOVERY_VISIBLE_POOL_MIN = 10;
 
-/** Obvious spam / low-signal — filtered before ranking. */
+/** Obvious spam / low-signal - filtered before ranking. */
 export const DISCOVERY_NOISE_PATTERNS: readonly RegExp[] = [
   /\bleetcode\b/i,
   /\bcoding interview\b/i,

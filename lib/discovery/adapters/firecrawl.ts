@@ -39,7 +39,7 @@ function extractSearchHits(json: unknown): FirecrawlHit[] {
   return [];
 }
 
-/** Firecrawl search — max ~2 hits per discovery run per plan §4.3 */
+/** Firecrawl search - max ~2 hits per discovery run per plan §4.3 */
 export async function fetchFirecrawlSearch(
   apiKey: string,
   query: string,

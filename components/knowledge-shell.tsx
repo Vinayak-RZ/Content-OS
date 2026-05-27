@@ -145,7 +145,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
         throw new Error(data.error ?? "Save failed");
       }
       setDirty(false);
-      setMsg("Saved — chunks and embeddings updated.");
+      setMsg("Saved - chunks and embeddings updated.");
       await loadList();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Save failed");

@@ -1,5 +1,5 @@
 /**
- * Content OS design tokens — Tavily-inspired layout, brand orange #F75440.
+ * Content OS design tokens - Tavily-inspired layout, brand orange #F75440.
  * CSS variables live in app/globals.css; use Tailwind classes in components.
  */
 export const brand = {

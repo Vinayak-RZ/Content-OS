@@ -173,7 +173,7 @@ export function getDecryptedKey(
   return decryptSecret(value);
 }
 
-/** For display in forms — never exposes real secret */
+/** For display in forms - never exposes real secret */
 export function keyFieldPlaceholder(hasKey: boolean): string {
   return hasKey ? maskSecret("placeholder") ?? "" : "Paste API key";
 }

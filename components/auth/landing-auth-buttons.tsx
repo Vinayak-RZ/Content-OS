@@ -50,7 +50,7 @@ export function LandingAuthButtons({
             Sign in
           </Button>
         </Link>
-        <SignInButton size={size} callbackUrl="/dashboard" label="Start free" />
+        <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export function LandingAuthButtons({
   if (layout === "cta") {
     return (
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <SignInButton size={size} callbackUrl="/dashboard" label="Get started free" />
+        <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
         <Link href="/login">
           <Button
             variant="ghost"
@@ -74,7 +74,7 @@ export function LandingAuthButtons({
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-3">
-      <SignInButton size={size} callbackUrl="/dashboard" label="Start free" />
+      <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
       <Link href="/login">
         <Button variant="ghost" size={size}>
           Sign in

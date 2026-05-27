@@ -26,7 +26,7 @@ const MARKER_CLOSE_TEXT = 'impeccable-live-end';
 /**
  * Hard-excluded directory patterns. These are NEVER user-facing pages and
  * matching them would silently inject tracking scripts into third-party
- * code. The user cannot turn these off via config — they are the floor.
+ * code. The user cannot turn these off via config - they are the floor.
  */
 const HARD_EXCLUDES = [
   '**/node_modules/**',
@@ -103,7 +103,7 @@ Output (JSON):
     return;
   }
 
-  // Insert mode — need --port
+  // Insert mode - need --port
   const portIdx = args.indexOf('--port');
   const port = portIdx !== -1 ? parseInt(args[portIdx + 1], 10) : NaN;
   if (!Number.isFinite(port)) {
@@ -153,7 +153,7 @@ export function resolveFiles(rootDir, config) {
   const out = [];
   for (const pat of patterns) {
     if (!isGlob(pat)) {
-      // Literal path — include even if it doesn't exist yet; the caller
+      // Literal path - include even if it doesn't exist yet; the caller
       // reports file_not_found per-entry. Exclude list doesn't apply to
       // explicit literal entries (user named it on purpose).
       if (!seen.has(pat)) {
@@ -195,7 +195,7 @@ function globToRegex(pattern) {
     const c = pattern[i];
     if (c === '*') {
       if (pattern[i + 1] === '*') {
-        // ** — any number of segments, including zero. Handle the common
+        // ** - any number of segments, including zero. Handle the common
         // **/ and /** forms so `a/**/b` matches `a/b` as well as `a/x/y/b`.
         if (pattern[i + 2] === '/') {
           re += '(?:.*/)?';
@@ -276,7 +276,7 @@ function insertTag(content, config, port) {
     if (idx === -1) return content;
     return content.slice(0, idx) + block + content.slice(idx);
   }
-  // insertAfter: match the FIRST occurrence — typical anchors like `<head>` or
+  // insertAfter: match the FIRST occurrence - typical anchors like `<head>` or
   // `<body>` open near the top of the document.
   const idx = content.indexOf(config.insertAfter);
   if (idx === -1) return content;
@@ -324,7 +324,7 @@ function removeTag(content, _syntax) {
 // content value verbatim, drop the marker.
 //
 // Header-based CSP (Next.js headers, Nuxt routeRules, SvelteKit kit.csp,
-// shared helpers) is NOT patched here — those need framework-specific config
+// shared helpers) is NOT patched here - those need framework-specific config
 // edits and are handled via the existing detect-csp.mjs reference output.
 // Only the in-source meta-tag form gets the auto-patch.
 // ---------------------------------------------------------------------------
@@ -357,7 +357,7 @@ function appendOriginToDirective(csp, directive, origin) {
     if (tokens.includes(origin)) return csp;
     return csp.replace(re, `${m[1]}${m[2]}${m[3]} ${[...tokens, origin].join(' ')}`);
   }
-  // Directive missing — add it. Use 'self' + origin so we don't inadvertently
+  // Directive missing - add it. Use 'self' + origin so we don't inadvertently
   // narrow the policy compared to the default-src fallback (most users with
   // an explicit CSP have 'self' there).
   return csp.trim().replace(/;?\s*$/, '') + `; ${directive} 'self' ${origin}`;
@@ -382,7 +382,7 @@ export function patchCspMeta(content, port) {
     patched = appendOriginToDirective(patched, 'script-src', origin);
     patched = appendOriginToDirective(patched, 'connect-src', origin);
     // The shader overlay during 'generating' creates a screenshot via
-    // URL.createObjectURL, producing a `blob:` URL — img-src 'self' rejects
+    // URL.createObjectURL, producing a `blob:` URL - img-src 'self' rejects
     // those. Add `blob:` so the overlay doesn't throw a CSP violation.
     patched = appendOriginToDirective(patched, 'img-src', 'blob:');
     if (patched === original) continue;

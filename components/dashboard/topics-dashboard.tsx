@@ -89,7 +89,7 @@ const TOP_PICKS_COUNT = 3;
               Each run researches ~{DISCOVERY_NEW_PER_RUN} new topics. Your pool
               holds {DISCOVERY_VISIBLE_POOL_MIN}–{DISCOVERY_VISIBLE_POOL_MAX}{" "}
               ranked items (new + undrafted backlog). Generate drafts from any
-              topic — top cards, expanded grid, or the full table.
+              topic - top cards, expanded grid, or the full table.
             </p>
           </div>
           <DiscoveryRunButton onCompleted={refresh} compact />
@@ -102,7 +102,7 @@ const TOP_PICKS_COUNT = 3;
             <CardHeader>
               <CardTitle>
                 {visiblePoolCount > 0
-                  ? "Topics in pool — refresh the page"
+                  ? "Topics in pool - refresh the page"
                   : lastDiscovery && lastDiscovery.totalDiscovered > 0
                     ? "Topics stored but hidden"
                     : "No topics yet"}
@@ -166,7 +166,7 @@ const TOP_PICKS_COUNT = 3;
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  More topics ({rest.length}) — all can be drafted
+                  More topics ({rest.length}) - all can be drafted
                 </h3>
                 <Button
                   type="button"
@@ -293,7 +293,7 @@ function CustomTopicComposer({
       <CardHeader>
         <CardTitle className="text-lg">Custom topic</CardTitle>
         <CardDescription>
-          Paste a URL (Firecrawl key required) or write your own angle — generates a draft with your Knowledge context.
+          Paste a URL (Firecrawl key required) or write your own angle - generates a draft with your Knowledge context.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

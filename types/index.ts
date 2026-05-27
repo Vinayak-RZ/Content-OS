@@ -1,4 +1,4 @@
-/** Shared API types — expanded per phase. */
+/** Shared API types - expanded per phase. */
 export type ApiError = {
   error: string;
   code: string;

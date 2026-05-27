@@ -10,7 +10,7 @@ Thinking amplification for technical founders. Discover high-signal topics, gene
 
 | Area | What it does |
 |------|----------------|
-| **Discovery** | Manual run only — pulls from HN, Reddit, RSS, GitHub, Tavily/Firecrawl (when keys are set). Topics ranked against your knowledge base. |
+| **Discovery** | Manual run only - pulls from HN, Reddit, RSS, GitHub, Tavily/Firecrawl (when keys are set). Topics ranked against your knowledge base. |
 | **Topic board** | Top picks, full pool table, save/dismiss/remove topics, generate drafts from any row. |
 | **Knowledge** | Upload context files (style, narrative, technical) used for ranking and draft generation. |
 | **Drafts** | AI-generated long-form drafts with hook/CTA variants, inline edit, revision history. |
@@ -48,7 +48,7 @@ cp .env.example .env.local
 
 Fill in `.env.local` (see [Environment variables](#environment-variables) below).
 
-Also copy database URLs into `.env` if you use the Prisma CLI — keep `.env` and `.env.local` in sync for `DATABASE_URL` / `DIRECT_URL`.
+Also copy database URLs into `.env` if you use the Prisma CLI - keep `.env` and `.env.local` in sync for `DATABASE_URL` / `DIRECT_URL`.
 
 ```bash
 # Apply migrations
@@ -66,7 +66,7 @@ Open [http://localhost:3000](http://localhost:3000).
 2. **Database → Extensions →** enable `vector`.
 3. **Connect → ORMs →** copy the pooler URL (`6543`, `?pgbouncer=true`) → `DATABASE_URL`.
 4. Copy the direct URL (`5432`) → `DIRECT_URL`.
-5. Run migrations (`npm run db:migrate`) — includes **RLS hardening** so Supabase Security Advisor stops flagging public tables. Content OS only talks to Postgres via Prisma (server-side); `anon` / `authenticated` API access is blocked.
+5. Run migrations (`npm run db:migrate`) - includes **RLS hardening** so Supabase Security Advisor stops flagging public tables. Content OS only talks to Postgres via Prisma (server-side); `anon` / `authenticated` API access is blocked.
 6. Re-run **Security Advisor** in the Supabase dashboard to confirm lints are cleared.
 
 ### Google OAuth checklist
@@ -82,7 +82,7 @@ Open [http://localhost:3000](http://localhost:3000).
 # NEXTAUTH_SECRET (32+ chars)
 openssl rand -base64 32
 
-# ENCRYPTION_KEY (exactly 64 hex chars — used to encrypt user API keys at rest)
+# ENCRYPTION_KEY (exactly 64 hex chars - used to encrypt user API keys at rest)
 openssl rand -hex 32
 ```
 
@@ -170,7 +170,7 @@ content-os/
 ### Vercel notes
 
 - **Discovery and draft generation** call external APIs and can run 30–120+ seconds. Use a **Pro** plan (or higher) so serverless functions can exceed the Hobby 10s limit (`maxDuration = 300` on `/api/discover` and `/api/generate`).
-- Discovery is **manual only** — there is no scheduled cron. Users click **Run discovery** on the dashboard.
+- Discovery is **manual only** - there is no scheduled cron. Users click **Run discovery** on the dashboard.
 - `.env.local` is not deployed; every secret must be set in the Vercel dashboard.
 
 ---
@@ -178,10 +178,10 @@ content-os/
 ## User workflow
 
 1. **Sign in** with Google.
-2. **Onboarding** — optional API keys, seed knowledge files, set interests, first discovery.
-3. **Dashboard** — review ranked topics, remove unwanted ones, generate drafts.
-4. **Draft editor** — edit body, pick hook/CTA, revise with AI, mark as published.
-5. **Analytics** — track published output and manual discovery runs.
+2. **Onboarding** - optional API keys, seed knowledge files, set interests, first discovery.
+3. **Dashboard** - review ranked topics, remove unwanted ones, generate drafts.
+4. **Draft editor** - edit body, pick hook/CTA, revise with AI, mark as published.
+5. **Analytics** - track published output and manual discovery runs.
 
 ---
 
@@ -210,12 +210,12 @@ content-os/
 
 ## Related docs
 
-- [DESIGN_v1.md](../DESIGN_v1.md) — Stamped design system reference
-- [IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md) — Build phases
-- [docs/phases/](../docs/phases/) — Phase reports
+- [DESIGN_v1.md](../DESIGN_v1.md) - Stamped design system reference
+- [IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md) - Build phases
+- [docs/phases/](../docs/phases/) - Phase reports
 
 ---
 
 ## License
 
-Private — all rights reserved.
+Private - all rights reserved.

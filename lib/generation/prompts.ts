@@ -12,7 +12,7 @@ function buildGenerationSystemBase(
 
   return `You are generating a social post (LinkedIn / X style) for ${audience}.
 
-Match WRITING STYLE from the knowledge base — that defines voice, not the topic list.
+Match WRITING STYLE from the knowledge base - that defines voice, not the topic list.
 Topics can be anything substantive where this person has a credible take.
 
 Never use generic AI hype phrases. Never use listicle formats.
@@ -34,7 +34,7 @@ export function buildGenerationMessages(params: {
   const writing =
     params.retrieved.writingStyleBlock.trim().length > 0
       ? params.retrieved.writingStyleBlock
-      : "(No writing-style.md chunks yet — use a concise, credible voice.)";
+      : "(No writing-style.md chunks yet - use a concise, credible voice.)";
 
   const narrative =
     params.retrieved.founderContextBlock.trim().length > 0
@@ -69,7 +69,7 @@ Sources:
 ${sourcesLine}
 
 TASK:
-Write a social post with your genuine take on this topic — react, interpret, or connect to your work, not just summarize.
+Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
 Target length: 900-1500 characters for the post body.
 Also generate exactly 3 hook variants and 2-3 CTA variants.
 Return JSON: { "post", "hooks", "ctas", "imageIdea" }`;
@@ -86,7 +86,7 @@ export const EDIT_COMMAND_INSTRUCTIONS: Record<string, string> = {
   shorten100:
     "Shorten by approximately 100 words. Cut repetition and secondary asides; keep the core thesis, best evidence, and voice intact.",
   shortenHeavy:
-    "Shorten substantially — remove roughly 300–400 words (or cut to ~40% of current length if shorter). Keep only the strongest points. Be aggressive but preserve the main take and credibility.",
+    "Shorten substantially - remove roughly 300–400 words (or cut to ~40% of current length if shorter). Keep only the strongest points. Be aggressive but preserve the main take and credibility.",
   shorten:
     "Reduce by ~30%. Remove redundancy. Preserve core argument and voice.",
   rewrite:

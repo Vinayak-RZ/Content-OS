@@ -5,7 +5,7 @@ function envVar(key: string): string | undefined {
   return process.env[key];
 }
 
-/** AES-256-GCM key only — used by `lib/crypto.ts` so encrypt/decrypt does not pull the full env gate. */
+/** AES-256-GCM key only - used by `lib/crypto.ts` so encrypt/decrypt does not pull the full env gate. */
 export function getEncryptionKeyHex(): string {
   const raw = envVar("ENCRYPTION_KEY");
   const parsed = z
@@ -49,7 +49,7 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-/** Call from embedding pipelines only — fails fast if unset. */
+/** Call from embedding pipelines only - fails fast if unset. */
 export function requireOpenAiApiKey(): string {
   const key =
     typeof process.env["OPENAI_API_KEY"] === "string"

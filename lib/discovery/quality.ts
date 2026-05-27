@@ -22,7 +22,7 @@ export function isDiscoveryNoise(candidate: TrendCandidate): boolean {
 }
 
 /**
- * Light quality nudge only — ranking + your Knowledge files decide fit.
+ * Light quality nudge only - ranking + your Knowledge files decide fit.
  * Slightly prefer substantive summaries over title-only stubs.
  */
 function substanceBoost(candidate: TrendCandidate): number {

@@ -25,7 +25,7 @@ export type DashboardTrendRow = Prisma.TrendGetPayload<{
   select: typeof trendDashboardSelect;
 }>;
 
-/** Prisma where for non-dismissed trends (includes NULL feedbackStatus — required for Postgres). */
+/** Prisma where for non-dismissed trends (includes NULL feedbackStatus - required for Postgres). */
 function activeTrendWhere(
   userId: string,
   now: Date,

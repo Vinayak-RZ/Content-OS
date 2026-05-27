@@ -1,4 +1,4 @@
-/** Knowledge document roles — drive retrieval buckets and ranking centroids. */
+/** Knowledge document roles - drive retrieval buckets and ranking centroids. */
 export const KNOWLEDGE_ROLES = [
   "style",
   "narrative",
@@ -56,7 +56,7 @@ export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
   },
 ];
 
-/** @deprecated Use SYSTEM_KNOWLEDGE_FILES — filenames only for seed loop compatibility */
+/** @deprecated Use SYSTEM_KNOWLEDGE_FILES - filenames only for seed loop compatibility */
 export const CANONICAL_KNOWLEDGE_FILES = SYSTEM_KNOWLEDGE_FILES.map(
   (f) => f.fileName,
 ) as readonly string[];
@@ -71,11 +71,11 @@ export const ROLE_LABELS: Record<KnowledgeRole, string> = {
 
 export const ROLE_DESCRIPTIONS: Record<KnowledgeRole, string> = {
   style:
-    "Voice and tone — always included when generating drafts (like writing-style).",
-  narrative: "Background and story — used for relevance ranking and topic-matched context.",
+    "Voice and tone - always included when generating drafts (like writing-style).",
+  narrative: "Background and story - used for relevance ranking and topic-matched context.",
   technical:
-    "Interests and expertise — ranking alignment and domain context in drafts.",
+    "Interests and expertise - ranking alignment and domain context in drafts.",
   brand:
-    "Public profile and positioning — topic-matched personal context.",
-  general: "Anything else — topic-matched context; not used in discovery ranking.",
+    "Public profile and positioning - topic-matched personal context.",
+  general: "Anything else - topic-matched context; not used in discovery ranking.",
 };

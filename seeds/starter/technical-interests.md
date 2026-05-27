@@ -1,11 +1,11 @@
-# technical-interests.md — Interests & Expertise
+# technical-interests.md - Interests & Expertise
 
-> Domains they follow with depth — used for topic ranking and draft context.
+> Domains they follow with depth - used for topic ranking and draft context.
 > Name stays technical-interests.md in Content OS even if topics aren't purely technical.
 
 ## Primary Domains
 
-[Areas with genuine depth — what they know, follow, and opine on]
+[Areas with genuine depth - what they know, follow, and opine on]
 
 ## Secondary Domains
 
@@ -13,7 +13,7 @@
 
 ## Their Actual Opinions
 
-[Per domain — specific takes, not neutral summaries]
+[Per domain - specific takes, not neutral summaries]
 
 ## What to Monitor
 

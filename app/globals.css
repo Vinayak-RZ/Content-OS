@@ -3,19 +3,19 @@
 @tailwind utilities;
 
 /**
- * Stamped Design System — Content OS
+ * Stamped Design System - Content OS
  * Forest Night anchor · Stamped Orange accent · tonal layering
  */
 @layer base {
   :root {
-    /* Surfaces — crisp white / light grey */
+    /* Surfaces - crisp white / light grey */
     --background: 0 0% 98%;
     --foreground: 160 100% 4%;
     --sidebar: 0 0% 98%;
     --card: 0 0% 100%;
     --card-foreground: 160 100% 4%;
 
-    /* Brand — Stamped Orange #F75440 */
+    /* Brand - Stamped Orange #F75440 */
     --brand: 8 92% 61%;
     --brand-foreground: 0 0% 100%;
     --brand-muted: 8 85% 96%;

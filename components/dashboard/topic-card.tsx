@@ -109,7 +109,7 @@ export function TopicCard({
         </CardDescription>
         <CardDescription className="text-sm leading-relaxed text-muted-foreground">
           <span className="font-medium text-foreground">Why it fits you: </span>
-          Aligns with themes you track ({tagHint}) — grounded in your Knowledge
+          Aligns with themes you track ({tagHint}) - grounded in your Knowledge
           files.
         </CardDescription>
       </CardHeader>

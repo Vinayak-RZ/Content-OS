@@ -137,7 +137,7 @@ function handleAccept(id, variantNum, lines, targetFile, paramValues) {
   const commentSyntax = detectCommentSyntax(targetFile);
   const isJsx = commentSyntax.open === '{/*';
   // Anchor indent on the line we're replacing FROM (the outer wrapper),
-  // not on `block.start` — for JSX that's the marker comment 2 spaces
+  // not on `block.start` - for JSX that's the marker comment 2 spaces
   // deeper than the original element. See handleDiscard for the full
   // rationale.
   const replaceRange = expandReplaceRange(block, lines, isJsx);
@@ -185,7 +185,7 @@ function handleAccept(id, variantNum, lines, targetFile, paramValues) {
   // isn't affected). The carbonize agent strips this attribute + wrapper when
   // it moves the CSS to a proper stylesheet.
   //
-  // Style attribute syntax has to follow the host file's flavor — JSX files
+  // Style attribute syntax has to follow the host file's flavor - JSX files
   // need the object form, otherwise React 19 throws "Failed to set indexed
   // property [0] on CSSStyleDeclaration" while parsing the string char-by-char.
   if (cssContent) {
@@ -233,7 +233,7 @@ function findMarkerBlock(id, lines) {
  * Compute the line range to REPLACE (vs. just the marker range to extract
  * from). For JSX/TSX wrappers, live-wrap places the marker comments INSIDE
  * the `<div data-impeccable-variants="ID">` outer wrapper so the picked
- * element's JSX slot keeps a single child — a Fragment `<></>` would have
+ * element's JSX slot keeps a single child - a Fragment `<></>` would have
  * solved the multi-sibling case but failed inside `asChild` / cloneElement
  * parents with "Invalid prop supplied to React.Fragment".
  *
@@ -403,9 +403,9 @@ function extractVariant(lines, block, variantNum) {
  * Returns an array of CSS lines, or null if no style block found.
  *
  * Handles three shapes of `<style data-impeccable-css="ID" ...>`:
- *   1. Self-closing: `<style ... />` — no body; return null (nothing to carbonize).
- *   2. Same-line open+close: `<style>...</style>` — return the inner content.
- *   3. Multi-line: `<style>` on one line, `</style>` on a later line — return
+ *   1. Self-closing: `<style ... />` - no body; return null (nothing to carbonize).
+ *   2. Same-line open+close: `<style>...</style>` - return the inner content.
+ *   3. Multi-line: `<style>` on one line, `</style>` on a later line - return
  *      the lines between them.
  */
 function extractCss(lines, block, id) {
@@ -430,7 +430,7 @@ function extractCss(lines, block, id) {
     }
 
     if (inStyle) {
-      // Detect </style> anywhere on the line — JSX template-literal closes
+      // Detect </style> anywhere on the line - JSX template-literal closes
       // (`}</style>`) put the close mid-line, and we don't want to absorb the
       // template-literal punctuation as CSS content.
       const closeIdx = line.indexOf('</style>');
@@ -447,7 +447,7 @@ function extractCss(lines, block, id) {
  * Strip a JSX template-literal wrap (`{` … `}`) from CSS extracted out of a
  * `<style>` element in a JSX/TSX file. The agent may write the wrap with
  * `{` and `}` directly attached to the `<style>` tags, on their own lines,
- * or attached to the first/last CSS lines — all three are JSX-legal.
+ * or attached to the first/last CSS lines - all three are JSX-legal.
  *
  * Stripping is required because handleAccept re-wraps the CSS itself when
  * carbonizing. Without this, two consecutive accepts (or a previously-

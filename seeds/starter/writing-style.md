@@ -1,11 +1,11 @@
-# writing-style.md — Writing Style
+# writing-style.md - Writing Style
 
 > Replace this template with your AI-generated profile (or write your own).
 > Content OS uses this file for draft voice. Keep it self-contained.
 
 ## Who Is Writing
 
-[Name, role, what their writing is for — 2–3 sentences]
+[Name, role, what their writing is for - 2–3 sentences]
 
 ## Core Voice
 

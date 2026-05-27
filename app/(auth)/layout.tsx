@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div className="relative flex min-h-screen">
       <div className="pointer-events-none absolute inset-0 mesh-gradient" aria-hidden />
 
-      {/* Brand panel — desktop only */}
+      {/* Brand panel - desktop only */}
       <aside className="surface-forest relative hidden w-[45%] max-w-xl flex-col justify-between border-r border-forest-foreground/10 p-12 lg:flex">
         <Logo
           href="/"
@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </blockquote>
           <p className="mt-6 max-w-sm text-sm leading-relaxed text-forest-foreground/80">
             Content OS ranks topics against your knowledge base and generates
-            drafts you control — for founders, creators, engineers, and anyone
+            drafts you control - for founders, creators, engineers, and anyone
             building a public voice. No auto-posting.
           </p>
         </div>

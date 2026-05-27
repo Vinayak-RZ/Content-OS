@@ -1,5 +1,5 @@
 /**
- * Topic engagements — selected / published — for ranking originality and dashboard filtering.
+ * Topic engagements - selected / published - for ranking originality and dashboard filtering.
  * @see IMPLEMENTATION-PLAN.md §5
  */
 
@@ -35,7 +35,7 @@ export async function getEngagementVectorsForOriginality(
 }
 
 /**
- * URL hashes the user has already covered — hide from GET /api/trends (published + recent selected).
+ * URL hashes the user has already covered - hide from GET /api/trends (published + recent selected).
  */
 export async function getExcludedUrlHashesForDashboard(
   userId: string,
@@ -59,7 +59,7 @@ export async function getExcludedUrlHashesForDashboard(
   return set;
 }
 
-/** After generate draft — embedding title+summary for originality signal. */
+/** After generate draft - embedding title+summary for originality signal. */
 export async function recordTopicEngagementSelected(params: {
   userId: string;
   trendId: string | null;

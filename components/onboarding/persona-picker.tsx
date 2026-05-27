@@ -72,7 +72,7 @@ export function PersonaPicker({
                   </span>
                 ) : (
                   <span className="mt-1.5 pl-6 text-xs text-muted-foreground">
-                    Something else — describe in your own words
+                    Something else - describe in your own words
                   </span>
                 )}
               </label>

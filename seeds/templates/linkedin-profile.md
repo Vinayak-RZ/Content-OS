@@ -12,8 +12,8 @@ Paste your public profile details below. This document is used as **brand** cont
 
 ## Experience highlights
 
-- Role @ Company — one line impact
-- Role @ Company — one line impact
+- Role @ Company - one line impact
+- Role @ Company - one line impact
 
 ## Themes I post about
 

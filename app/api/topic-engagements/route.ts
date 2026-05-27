@@ -4,7 +4,7 @@ import { errorResponse } from "@/lib/api-error";
 import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 
-/** Covered topics — topic memory engagements for dashboard “published” view. */
+/** Covered topics - topic memory engagements for dashboard “published” view. */
 export async function GET(request: Request) {
   try {
     const session = await requireSession();

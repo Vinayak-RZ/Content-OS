@@ -7,7 +7,7 @@ import { fetchTrendsForDashboard } from "@/lib/trends/list";
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
 
-/** Ranked trends for dashboard — excludes dismissed, expired, and topic-memory “covered” URLs. */
+/** Ranked trends for dashboard - excludes dismissed, expired, and topic-memory “covered” URLs. */
 export async function GET(request: Request) {
   try {
     const session = await requireSession();

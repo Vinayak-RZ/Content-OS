@@ -18,7 +18,7 @@ export const PROVIDER_LINKS: Record<ProviderLinkKey, ProviderLink> = {
     label: "OpenRouter",
     signupUrl: "https://openrouter.ai/keys",
     signupLabel: "Get an OpenRouter key",
-    blurb: "One key for many models — good default for draft generation.",
+    blurb: "One key for many models - good default for draft generation.",
   },
   openai: {
     label: "OpenAI",
@@ -30,13 +30,13 @@ export const PROVIDER_LINKS: Record<ProviderLinkKey, ProviderLink> = {
     label: "NVIDIA NIM",
     signupUrl: "https://build.nvidia.com/",
     signupLabel: "Get an NVIDIA NIM key",
-    blurb: "NVIDIA-hosted models via NIM — create a key in the build portal.",
+    blurb: "NVIDIA-hosted models via NIM - create a key in the build portal.",
   },
   tavily: {
     label: "Tavily",
     signupUrl: "https://tavily.com",
     signupLabel: "Sign up for Tavily",
-    blurb: "Web search for topic discovery — optional but improves results.",
+    blurb: "Web search for topic discovery - optional but improves results.",
   },
   firecrawl: {
     label: "Firecrawl",

@@ -1,18 +1,18 @@
-# soul.md — Who They Are
+# soul.md - Who They Are
 
-> Background and personality — used for narrative context in drafts and ranking.
+> Background and personality - used for narrative context in drafts and ranking.
 
 ## The Person
 
-[Who they are at a glance — energy, personality]
+[Who they are at a glance - energy, personality]
 
 ## Background
 
-[Relevant history — education, path, context]
+[Relevant history - education, path, context]
 
 ## What Drives Them
 
-[What they actually want — real, not polished]
+[What they actually want - real, not polished]
 
 ## Formative Experiences
 
@@ -20,4 +20,4 @@
 
 ## Personality Notes
 
-[Humor, quirks, how they show up — for content voice]
+[Humor, quirks, how they show up - for content voice]

@@ -1,6 +1,6 @@
-# thoughts.md — How They Think
+# thoughts.md - How They Think
 
-> Mental models and beliefs — used for opinionated drafts and ranking alignment.
+> Mental models and beliefs - used for opinionated drafts and ranking alignment.
 
 ## On [Primary Domain]
 
@@ -20,4 +20,4 @@
 
 ## How Their Thinking Has Changed
 
-[What used to be true and isn't anymore — and why]
+[What used to be true and isn't anymore - and why]

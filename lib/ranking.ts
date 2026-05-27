@@ -10,7 +10,7 @@ import {
   parsePgVectorText,
 } from "@/lib/vector/math";
 
-/** Cursor prompt §ranking — weights sum to 1. */
+/** Cursor prompt §ranking - weights sum to 1. */
 const W_TECH = 0.4;
 const W_MOMENTUM = 0.25;
 const W_FOUNDER = 0.2;

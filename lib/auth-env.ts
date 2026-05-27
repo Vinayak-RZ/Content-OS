@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Dynamic lookup — Next.js inlines `process.env.FOO` at build time; bracket access reads at runtime. */
+/** Dynamic lookup - Next.js inlines `process.env.FOO` at build time; bracket access reads at runtime. */
 function readEnv(key: string): string | undefined {
   return process.env[key];
 }

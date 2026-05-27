@@ -141,7 +141,7 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
         skipped?: string[];
       };
       if (!res.ok) {
-        throw new Error(data.error ?? "Import failed — check OPENAI_API_KEY");
+        throw new Error(data.error ?? "Import failed - check OPENAI_API_KEY");
       }
       const c = data.created?.length ?? 0;
       const s = data.skipped?.length ?? 0;
@@ -181,7 +181,7 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
     <div className="mx-auto w-full max-w-xl space-y-6">
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          Step {step} of {STEPS.length} — {STEPS[step - 1]?.title}
+          Step {step} of {STEPS.length} - {STEPS[step - 1]?.title}
         </p>
         <Progress value={progress} />
       </div>
@@ -192,7 +192,7 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
             <CardTitle>Tell us about you</CardTitle>
             <CardDescription>
               Content OS tailors topic discovery and drafts to your background.
-              Pick the closest fit — you can change this later in Settings.
+              Pick the closest fit - you can change this later in Settings.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

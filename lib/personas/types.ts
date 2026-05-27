@@ -1,4 +1,4 @@
-/** User persona — drives discovery queries, draft angles, and profile prompt tone. */
+/** User persona - drives discovery queries, draft angles, and profile prompt tone. */
 export const PERSONA_TYPES = [
   "student",
   "founder",
@@ -23,7 +23,7 @@ export const PERSONA_DESCRIPTIONS: Record<Exclude<PersonaType, "other">, string>
   student:
     "Learning, career growth, research, and ideas worth sharing while you build your path.",
   founder:
-    "Building a company — product, distribution, fundraising, and lessons from the trenches.",
+    "Building a company - product, distribution, fundraising, and lessons from the trenches.",
   engineer:
     "Systems, code, architecture, tools, and technical takes grounded in how things work.",
   content_creator:

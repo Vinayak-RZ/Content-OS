@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 
 /**
- * Canonical URL for dedup — strip fragments, trivial tracking params, lowercase host.
+ * Canonical URL for dedup - strip fragments, trivial tracking params, lowercase host.
  */
 export function canonicalizeUrl(raw: string): string {
   let u: URL;

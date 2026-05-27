@@ -25,7 +25,7 @@ const STEPS = [
   },
   {
     title: "Answer a few questions",
-    body: "The AI will interview you based on what it already knows about you, or ask targeted questions to fill gaps. Answer in as much detail as you can — or type SKIP anytime to generate from what it has so far.",
+    body: "The AI will interview you based on what it already knows about you, or ask targeted questions to fill gaps. Answer in as much detail as you can - or type SKIP anytime to generate from what it has so far.",
   },
   {
     title: "Paste into Knowledge",
@@ -96,8 +96,8 @@ export function ProfilePromptPanel({
 
           <p className="text-sm leading-relaxed text-muted-foreground">
             You don&apos;t have to write these files from scratch. The prompt
-            guides your AI through building a complete profile — writing style,
-            background, interests, and how you think — optimized for LinkedIn,
+            guides your AI through building a complete profile - writing style,
+            background, interests, and how you think - optimized for LinkedIn,
             X, and other social posts in Content OS.
           </p>
 
@@ -136,7 +136,7 @@ export function ProfilePromptPanel({
               <span className="font-medium text-foreground">
                 Import starter templates
               </span>{" "}
-              in the sidebar to create empty documents with the right names —
+              in the sidebar to create empty documents with the right names -
               then paste each AI-generated file into its match.
             </p>
           </div>

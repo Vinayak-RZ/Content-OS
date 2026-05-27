@@ -12,22 +12,22 @@ export const CONTENT_OS_KNOWLEDGE_FILES = [
   { slug: "thoughts", name: "Thoughts" },
 ] as const;
 
-const PROMPT_CORE = `# Content OS — Personal Profile Builder
+const PROMPT_CORE = `# Content OS - Personal Profile Builder
 
 ## YOUR ROLE
 
-You are a personal profile builder for **Content OS** — an agentic content system that discovers topics, ranks them against a person's knowledge base, and drafts posts for **LinkedIn, X (Twitter), and other social platforms**.
+You are a personal profile builder for **Content OS** - an agentic content system that discovers topics, ranks them against a person's knowledge base, and drafts posts for **LinkedIn, X (Twitter), and other social platforms**.
 
-Your job is to create **four markdown files** that capture who this person is, how they think, what they care about, and how they write. Content OS embeds these files and retrieves the right chunks when ranking topics and generating drafts — so **accuracy, specificity, and voice** matter more than speed.
+Your job is to create **four markdown files** that capture who this person is, how they think, what they care about, and how they write. Content OS embeds these files and retrieves the right chunks when ranking topics and generating drafts - so **accuracy, specificity, and voice** matter more than speed.
 
 The four files (use these exact filenames):
 
-1. **writing-style.md** — Voice, rhythm, vocabulary, banned phrases, and how tone shifts by context (professional vs casual, story vs analysis). Include a **Platform notes** subsection for LinkedIn and X (length, hooks, line breaks — keep it inside this file).
-2. **soul.md** — Who they are: background, personality, what drives them, formative experiences, what they're building toward.
-3. **technical-interests.md** — Domains they follow with **real depth**, opinions, sources to monitor, and what makes a good content opportunity for them (rename mentally to "interests" if they're not technical — file name stays technical-interests.md for Content OS).
-4. **thoughts.md** — Mental models, contrarian takes, how they decide, beliefs others around them don't share.
+1. **writing-style.md** - Voice, rhythm, vocabulary, banned phrases, and how tone shifts by context (professional vs casual, story vs analysis). Include a **Platform notes** subsection for LinkedIn and X (length, hooks, line breaks - keep it inside this file).
+2. **soul.md** - Who they are: background, personality, what drives them, formative experiences, what they're building toward.
+3. **technical-interests.md** - Domains they follow with **real depth**, opinions, sources to monitor, and what makes a good content opportunity for them (rename mentally to "interests" if they're not technical - file name stays technical-interests.md for Content OS).
+4. **thoughts.md** - Mental models, contrarian takes, how they decide, beliefs others around them don't share.
 
-Each file must work **standalone** (no "see other file"). Write in **third person**. Be **specific** — real examples, real opinions. Flag uncertainty as \`[inferred — add more context]\` rather than inventing facts.
+Each file must work **standalone** (no "see other file"). Write in **third person**. Be **specific** - real examples, real opinions. Flag uncertainty as \`[inferred - add more context]\` rather than inventing facts.
 
 ---
 
@@ -53,7 +53,7 @@ Ask **12–20 open-ended questions**, grouped by file. Tell them they can type *
 
 ## STEP 3: HANDLE RESPONSES
 
-Extract voice signals from how they phrase answers. If SKIP, proceed with memory + answers given. Mark thin sections \`[inferred — add more context]\`.
+Extract voice signals from how they phrase answers. If SKIP, proceed with memory + answers given. Mark thin sections \`[inferred - add more context]\`.
 
 ---
 
@@ -98,7 +98,7 @@ function personaContextBlock(
 This person identifies as: **${PERSONA_LABELS[personaType]}**.
 ${PERSONA_DESCRIPTIONS[personaType as Exclude<PersonaType, "other">]}
 
-Tailor questions and file content to this lens — but keep files accurate to the individual, not a stereotype.`;
+Tailor questions and file content to this lens - but keep files accurate to the individual, not a stereotype.`;
   }
   if (personaCustom?.trim()) {
     return `## AUDIENCE CONTEXT
@@ -135,7 +135,7 @@ export function buildProfilePromptBrief(
   personaCustom?: string | null,
 ): string {
   const label = resolvePersonaLabel(personaType ?? null, personaCustom);
-  return `Paste this prompt into ChatGPT, Claude, or your preferred AI. It builds four knowledge files tailored for ${label} — optimized for LinkedIn, X, and social drafts in Content OS. Copy each output into the matching Knowledge document and Save & re-embed.`;
+  return `Paste this prompt into ChatGPT, Claude, or your preferred AI. It builds four knowledge files tailored for ${label} - optimized for LinkedIn, X, and social drafts in Content OS. Copy each output into the matching Knowledge document and Save & re-embed.`;
 }
 
 export const PROFILE_PROMPT_BRIEF = buildProfilePromptBrief("founder");
