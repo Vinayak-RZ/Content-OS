@@ -16,6 +16,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
 import { Button } from "@/components/ui/button";
+import { LANDING_FAQ } from "@/lib/seo/faq";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -107,6 +108,12 @@ export function LandingPage({
               className="font-heading text-[15px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
               How it works
+            </a>
+            <a
+              href="#faq"
+              className="font-heading text-[15px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              FAQ
             </a>
           </nav>
           <LandingAuthButtons
@@ -286,6 +293,40 @@ export function LandingPage({
           </div>
         </section>
 
+        {/* FAQ — visible for users and search/AI crawlers */}
+        <section
+          id="faq"
+          aria-labelledby="faq-heading"
+          className="border-t border-subtle bg-muted/30 py-section"
+        >
+          <div className="container-stamped">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2
+                id="faq-heading"
+                className="font-heading text-headline-md font-semibold sm:text-headline-lg"
+              >
+                Frequently asked questions
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Quick answers about Content OS — what it is, how pricing works,
+                and how your data stays under your control.
+              </p>
+            </div>
+            <dl className="mx-auto mt-12 max-w-3xl divide-y divide-subtle rounded-xl border border-subtle bg-card">
+              {LANDING_FAQ.map((item) => (
+                <div key={item.question} className="px-6 py-5 sm:px-8">
+                  <dt className="font-heading text-base font-semibold text-foreground">
+                    {item.question}
+                  </dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.answer}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="surface-forest border-t border-forest-foreground/10 py-section">
           <div className="container-stamped text-center">
@@ -312,9 +353,18 @@ export function LandingPage({
       <footer className="relative z-10 border-t border-subtle py-10">
         <div className="container-stamped flex flex-col items-center justify-between gap-4 sm:flex-row">
           <Logo size="sm" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground sm:text-right">
             Content OS · Thinking amplification for founders & creators · Free
             forever
+            <span className="mx-2 text-muted-foreground/40" aria-hidden>
+              ·
+            </span>
+            <a
+              href="/llms.txt"
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              AI & crawlers welcome
+            </a>
           </p>
         </div>
       </footer>

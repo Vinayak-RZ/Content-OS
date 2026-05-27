@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -8,6 +9,13 @@ import {
 } from "@/components/ui/card";
 import { SignInButton } from "@/components/auth/sign-in-button";
 import { getSession } from "@/lib/session";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description:
+    "Sign in to Content OS with Google to access your topic board, knowledge base, and drafts.",
+  robots: { index: true, follow: true },
+};
 
 export default async function LoginPage() {
   const session = await getSession();

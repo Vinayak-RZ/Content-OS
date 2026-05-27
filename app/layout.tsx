@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Jost, Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { Providers } from "@/app/providers";
+import { buildRootMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
 const body = Source_Sans_3({
@@ -22,9 +23,23 @@ const display = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Content OS - Thinking amplification for founders & creators",
-  description:
-    "Discover high-signal topics, generate drafts in your voice, and publish on your terms. Built for founders, engineers, creators, and anyone building in public.",
+  ...buildRootMetadata(),
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF9F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#001410" },
+  ],
 };
 
 export default function RootLayout({
