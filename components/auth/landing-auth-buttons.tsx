@@ -50,7 +50,7 @@ export function LandingAuthButtons({
             Sign in
           </Button>
         </Link>
-        <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
+        <SignInButton size={size} callbackUrl="/dashboard" label="Start free" />
       </div>
     );
   }

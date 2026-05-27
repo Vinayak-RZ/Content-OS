@@ -43,7 +43,7 @@ const features = [
 ];
 
 const steps = [
-  { num: "01", label: "Connect", detail: "Sign in and add optional API keys." },
+  { num: "01", label: "Connect", detail: "Sign in free. Add optional API keys when you're ready — free tiers cover reasonable usage." },
   { num: "02", label: "Seed knowledge", detail: "Upload context files that define your angle." },
   { num: "03", label: "Discover", detail: "Run discovery to populate your topic board." },
   { num: "04", label: "Draft", detail: "Generate, edit, and ship when ready." },
@@ -141,6 +141,13 @@ export function LandingPage({
               Content OS discovers high-signal topics, drafts in your voice, and
               keeps you in control. Less scrolling, more publishing.
             </p>
+            <p
+              data-hero-reveal
+              className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/90"
+            >
+              Free forever — use your own API keys and stay within provider free
+              tiers for reasonable everyday usage.
+            </p>
             <div
               data-hero-reveal
               className="mt-10 flex flex-wrap items-center justify-center gap-3"
@@ -225,7 +232,11 @@ export function LandingPage({
               </h2>
               <p className="mt-4 text-muted-foreground">
                 A focused workflow from discovery to draft. No feed addiction,
-                no auto-publishing.
+                no auto-publishing, no subscription.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground/90">
+                The app is free forever. Optional AI and discovery keys are yours
+                — most providers&apos; free tiers are enough for regular use.
               </p>
             </div>
             <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:gap-8">
@@ -282,8 +293,9 @@ export function LandingPage({
               Ready to write with signal?
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-forest-foreground/80">
-              Sign in with Google. Onboarding takes a few minutes. Your API keys
-              stay encrypted.
+              Free forever. Sign in with Google, set up in minutes, and add API
+              keys only when you want drafts or discovery — your keys stay
+              encrypted.
             </p>
             <div className="mt-8">
               <LandingAuthButtons
@@ -301,7 +313,8 @@ export function LandingPage({
         <div className="container-stamped flex flex-col items-center justify-between gap-4 sm:flex-row">
           <Logo size="sm" />
           <p className="text-sm text-muted-foreground">
-            Content OS · Thinking amplification for founders & creators
+            Content OS · Thinking amplification for founders & creators · Free
+            forever
           </p>
         </div>
       </footer>
