@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Loader2, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Loader2,
+  Send,
+  Sparkles,
+} from "lucide-react";
 
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
@@ -31,24 +39,40 @@ type DraftPayload = {
   trend: { url: string; title: string } | null;
 };
 
-type MobileTab = "write" | "assemble" | "refine";
+type EditGroup = {
+  title: string;
+  description?: string;
+  commands: { id: string; label: string; hint?: string }[];
+};
 
-const EDIT_COMMANDS = [
-  ["shorten", "Shorten"],
-  ["rewrite", "Rewrite"],
-  ["strongerHook", "Stronger hook"],
-  ["moreTechnical", "More technical"],
-  ["lessDramatic", "Less dramatic"],
-  ["founderFraming", "Personal angle"],
-  ["clearerExplanation", "Clearer"],
-  ["addAnalogy", "Add analogy"],
-  ["improveEnding", "Better ending"],
-] as const;
-
-const MOBILE_TABS: { id: MobileTab; label: string }[] = [
-  { id: "write", label: "Write" },
-  { id: "assemble", label: "Assemble" },
-  { id: "refine", label: "Refine" },
+const AI_EDIT_GROUPS: EditGroup[] = [
+  {
+    title: "Length",
+    description: "Trim without losing your take",
+    commands: [
+      { id: "shortenLight", label: "Trim lightly", hint: "~50–80 words" },
+      { id: "shorten100", label: "Shorter", hint: "~100 words" },
+      { id: "shortenHeavy", label: "Much shorter", hint: "~300–400 words" },
+    ],
+  },
+  {
+    title: "Voice & tone",
+    commands: [
+      { id: "rewrite", label: "Rewrite" },
+      { id: "lessDramatic", label: "Less dramatic" },
+      { id: "moreTechnical", label: "More technical" },
+      { id: "founderFraming", label: "Personal angle" },
+    ],
+  },
+  {
+    title: "Structure",
+    commands: [
+      { id: "strongerHook", label: "Stronger opening" },
+      { id: "clearerExplanation", label: "Clearer" },
+      { id: "addAnalogy", label: "Add analogy" },
+      { id: "improveEnding", label: "Better ending" },
+    ],
+  },
 ];
 
 function assemblePost(d: DraftPayload): string {
@@ -70,6 +94,183 @@ function hasUnsavedChanges(
   );
 }
 
+function AiEditsPanel({
+  idle,
+  customEdit,
+  onCustomChange,
+  onRun,
+}: {
+  idle: boolean;
+  customEdit: string;
+  onCustomChange: (v: string) => void;
+  onRun: (command: string) => void;
+}) {
+  return (
+    <Card className="shadow-pill">
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-4 text-brand" />
+          <CardTitle className="text-base">AI edits</CardTitle>
+        </div>
+        <CardDescription>
+          Applies to the post body above — uses your writing-style knowledge
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        {AI_EDIT_GROUPS.map((group) => (
+          <div key={group.title}>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {group.title}
+            </p>
+            {group.description ? (
+              <p className="mb-2 text-xs text-muted-foreground">
+                {group.description}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-2">
+              {group.commands.map((cmd) => (
+                <Button
+                  key={cmd.id}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={!idle}
+                  className="h-auto min-h-8 flex-col items-start gap-0 px-3 py-1.5 text-left sm:flex-row sm:items-center sm:gap-2"
+                  onClick={() => onRun(cmd.id)}
+                >
+                  <span>{cmd.label}</span>
+                  {cmd.hint ? (
+                    <span className="text-[10px] font-normal text-muted-foreground sm:text-xs">
+                      {cmd.hint}
+                    </span>
+                  ) : null}
+                </Button>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="grid gap-2 border-t border-subtle pt-4">
+          <Label htmlFor="custom-edit">Custom instruction</Label>
+          <Textarea
+            id="custom-edit"
+            value={customEdit}
+            onChange={(e) => onCustomChange(e.target.value)}
+            placeholder='e.g. "Make the second paragraph punchier for X"'
+            className="min-h-[64px] text-sm"
+          />
+          <Button
+            type="button"
+            variant="brandOutline"
+            disabled={!idle || !customEdit.trim()}
+            className="gap-1 self-start"
+            onClick={() => onRun("custom")}
+          >
+            <Send className="size-4" />
+            Apply custom edit
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HookCtaPanel({
+  draft,
+  hookIx,
+  ctaIx,
+  onHookChange,
+  onCtaChange,
+  compact = false,
+}: {
+  draft: DraftPayload;
+  hookIx: number;
+  ctaIx: number;
+  onHookChange: (i: number) => void;
+  onCtaChange: (i: number) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cn("flex flex-col gap-4", compact && "gap-3")}>
+      <Card className={cn("shadow-pill", compact && "shadow-none")}>
+        <CardHeader className="pb-2 pt-4">
+          <CardTitle className={cn("text-base", compact && "text-sm")}>
+            Opening hook
+          </CardTitle>
+          {!compact ? (
+            <CardDescription>Prepended when you copy the full post</CardDescription>
+          ) : null}
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 pb-4">
+          {draft.hookVariants.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No hooks generated.</p>
+          ) : (
+            draft.hookVariants.map((h, i) => (
+              <label
+                key={`hook-${i}`}
+                className={cn(
+                  "flex cursor-pointer gap-2 rounded-lg border px-2.5 py-2 text-sm transition-colors",
+                  hookIx === i
+                    ? "border-brand bg-brand/5"
+                    : "border-border/70 bg-card/80",
+                  compact && "text-xs",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="hook"
+                  checked={hookIx === i}
+                  onChange={() => onHookChange(i)}
+                  className="mt-0.5 shrink-0"
+                />
+                <span className="leading-snug">{h}</span>
+              </label>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className={cn("shadow-pill", compact && "shadow-none")}>
+        <CardHeader className="pb-2 pt-4">
+          <CardTitle className={cn("text-base", compact && "text-sm")}>
+            Closing line
+          </CardTitle>
+          {!compact ? (
+            <CardDescription>Appended after the body when copying</CardDescription>
+          ) : null}
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2 pb-4">
+          {draft.ctaVariants.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No CTAs generated.</p>
+          ) : (
+            draft.ctaVariants.map((c, i) => (
+              <label
+                key={`cta-${i}`}
+                className={cn(
+                  "flex cursor-pointer gap-2 rounded-lg border px-2.5 py-2 text-sm transition-colors",
+                  ctaIx === i
+                    ? "border-brand bg-brand/5"
+                    : "border-border/70 bg-card/80",
+                  compact && "text-xs",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="cta"
+                  checked={ctaIx === i}
+                  onChange={() => onCtaChange(i)}
+                  className="mt-0.5 shrink-0"
+                />
+                <span className="leading-snug">{c}</span>
+              </label>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export function DraftWorkspace({ draftId }: { draftId: string }) {
   const router = useRouter();
   const [draft, setDraft] = useState<DraftPayload | null>(null);
@@ -82,8 +283,10 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   >("idle");
   const [customEdit, setCustomEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("write");
+  const [assembleOpen, setAssembleOpen] = useState(false);
   const saveInFlight = useRef(false);
+
+  const isIdle = busy === "idle";
 
   const load = useCallback(async () => {
     setBusy("load");
@@ -188,7 +391,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       const body = json as { draft: DraftPayload };
       setDraft(body.draft);
       setContent(body.draft.currentContent);
-      setToast("Edited.");
+      setToast("Edit applied.");
     } catch (e) {
       setToast(e instanceof Error ? e.message : "Edit failed");
     } finally {
@@ -229,7 +432,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       selectedCta: ctaIx,
     });
     await navigator.clipboard.writeText(text);
-    setToast("Copied — ready to paste on LinkedIn or X.");
+    setToast("Copied — hook + body + closing line.");
   }
 
   const assembledPreview = useMemo(() => {
@@ -243,6 +446,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   }, [draft, content, hookIx, ctaIx]);
 
   const charCount = content.length;
+  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const isDirty = draft
     ? hasUnsavedChanges(draft, content, hookIx, ctaIx)
     : false;
@@ -272,235 +476,39 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
     );
   }
 
-  const writePanel = (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-subtle bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-        <p>
-          <span className="font-medium text-foreground">How it works:</span>{" "}
-          Pick a hook and CTA in{" "}
-          <button
-            type="button"
-            className="font-medium text-brand underline-offset-4 hover:underline lg:pointer-events-none lg:no-underline"
-            onClick={() => setMobileTab("assemble")}
-          >
-            Assemble
-          </button>
-          , edit the body here, then copy the full post when ready.
-        </p>
-      </div>
-
-      <div className="grid gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <Label htmlFor="body">Post body</Label>
-          <span className="text-xs text-muted-foreground">{charCount} chars</span>
-        </div>
-        <Textarea
-          id="body"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="min-h-[240px] font-[inherit] leading-relaxed sm:min-h-[320px]"
-        />
-      </div>
-
-      <div className="hidden flex-wrap gap-2 lg:flex">
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy !== "idle"}
-          onClick={() => void saveBody()}
-        >
-          Save draft
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={busy !== "idle"}
-          onClick={() => void copyAssembled()}
-          className="gap-1"
-        >
-          <Copy className="size-4" />
-          Copy for LinkedIn / X
-        </Button>
-        <Button
-          type="button"
-          disabled={busy !== "idle" || draft.status === "published"}
-          onClick={() => void publish()}
-        >
-          Mark as published
-        </Button>
-      </div>
-    </div>
-  );
-
-  const assemblePanel = (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        <span className="rounded-full bg-brand/10 px-2.5 py-1 text-brand">
-          1 · Hook
-        </span>
-        <span aria-hidden>→</span>
-        <span className="rounded-full bg-muted px-2.5 py-1">2 · Body</span>
-        <span aria-hidden>→</span>
-        <span className="rounded-full bg-brand/10 px-2.5 py-1 text-brand">
-          3 · CTA
-        </span>
-      </div>
-
-      <Card className="shadow-pill">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Hooks</CardTitle>
-          <CardDescription>Opening line — shown first in the assembled post</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {draft.hookVariants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hook variants were returned — regenerate if needed.
-            </p>
-          ) : (
-            draft.hookVariants.map((h, i) => (
-              <label
-                key={`hook-${i}`}
-                className={cn(
-                  "flex cursor-pointer gap-2 rounded-xl border px-3 py-2 text-sm transition-colors",
-                  hookIx === i
-                    ? "border-brand bg-brand/5"
-                    : "border-border/70 bg-card/80",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="hook"
-                  checked={hookIx === i}
-                  onChange={() => setHookIx(i)}
-                  className="mt-1"
-                />
-                <span>{h}</span>
-              </label>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-pill">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">CTAs</CardTitle>
-          <CardDescription>Closing line — appended after the body</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {draft.ctaVariants.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No CTAs returned.</p>
-          ) : (
-            draft.ctaVariants.map((c, i) => (
-              <label
-                key={`cta-${i}`}
-                className={cn(
-                  "flex cursor-pointer gap-2 rounded-xl border px-3 py-2 text-sm transition-colors",
-                  ctaIx === i
-                    ? "border-brand bg-brand/5"
-                    : "border-border/70 bg-card/80",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="cta"
-                  checked={ctaIx === i}
-                  onChange={() => setCtaIx(i)}
-                  className="mt-1"
-                />
-                <span>{c}</span>
-              </label>
-            ))
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-dashed border-border/80 bg-muted/10 shadow-none">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Live preview</CardTitle>
-          <CardDescription>Hook + body + CTA combined</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded-lg bg-card p-3 text-sm leading-relaxed text-foreground">
-            {assembledPreview}
-          </pre>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const refinePanel = (
-    <div className="flex flex-col gap-5">
-      <Card className="shadow-pill">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">AI edits</CardTitle>
-          <CardDescription>Quick transforms using your writing-style knowledge</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            {EDIT_COMMANDS.map(([id, label]) => (
-              <Button
-                key={id}
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={busy !== "idle"}
-                onClick={() => void runEdit(id)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="custom-edit">Custom instruction</Label>
-            <Textarea
-              id="custom-edit"
-              value={customEdit}
-              onChange={(e) => setCustomEdit(e.target.value)}
-              placeholder="e.g. Make the opening more provocative for X"
-              className="min-h-[72px] text-sm"
-            />
-            <Button
-              type="button"
-              variant="brandOutline"
-              disabled={busy !== "idle" || !customEdit.trim()}
-              className="gap-1"
-              onClick={() => void runEdit("custom")}
-            >
-              <Send className="size-4" />
-              Apply custom
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-pill">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Sources</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
-          {draft.sources.length ? (
-            draft.sources.map((s) => (
-              <a
-                key={s}
-                href={s}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate text-brand underline-offset-4 hover:underline"
-              >
-                {s}
-              </a>
-            ))
-          ) : (
-            <span className="text-muted-foreground">None linked</span>
-          )}
-        </CardContent>
-      </Card>
+  const actionButtons = (
+    <div className="flex flex-wrap gap-2">
+      <Button
+        type="button"
+        variant="secondary"
+        disabled={!isIdle}
+        onClick={() => void saveBody()}
+      >
+        Save draft
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={!isIdle}
+        onClick={() => void copyAssembled()}
+        className="gap-1"
+      >
+        <Copy className="size-4" />
+        Copy full post
+      </Button>
+      <Button
+        type="button"
+        disabled={!isIdle || draft.status === "published"}
+        onClick={() => void publish()}
+      >
+        Mark as published
+      </Button>
     </div>
   );
 
   return (
-    <div className="pb-20 lg:pb-0">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+    <div className="pb-24 lg:pb-4">
+      <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4 sm:gap-3">
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="size-4" />
@@ -513,12 +521,12 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
         ) : busy === "save" ? (
           <span className="text-xs text-muted-foreground">Saving…</span>
         ) : (
-          <span className="text-xs text-brand">All changes saved</span>
+          <span className="text-xs text-brand">Saved</span>
         )}
       </div>
 
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-lg font-semibold tracking-tight sm:text-2xl">
           {draft.topicTitle}
         </h1>
         {draft.trend?.url ? (
@@ -533,70 +541,133 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
         ) : null}
       </div>
 
-      {/* Mobile tabs */}
-      <div
-        className="mb-4 flex gap-1 rounded-xl border border-subtle bg-muted/30 p-1 lg:hidden"
-        role="tablist"
-        aria-label="Draft sections"
-      >
-        {MOBILE_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={mobileTab === tab.id}
-            onClick={() => setMobileTab(tab.id)}
-            className={cn(
-              "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              mobileTab === tab.id
-                ? "bg-card text-foreground shadow-pill"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-8">
+        {/* Primary column — body, actions, AI edits */}
+        <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
+          <div className="grid gap-2">
+            <div className="flex items-baseline justify-between gap-2">
+              <Label htmlFor="body" className="text-base font-semibold">
+                Post body
+              </Label>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {wordCount} words · {charCount} chars
+              </span>
+            </div>
+            <Textarea
+              id="body"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              disabled={!isIdle}
+              className="min-h-[min(50vh,420px)] resize-y text-[15px] leading-relaxed sm:min-h-[360px] sm:text-base lg:min-h-[400px]"
+            />
+          </div>
 
-      <div className="grid gap-6 lg:gap-8 xl:grid-cols-[1fr_340px]">
-        <div
-          className={cn(
-            mobileTab !== "write" && "hidden lg:block",
-          )}
-        >
-          {writePanel}
+          {actionButtons}
+
+          {busy === "edit" ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              Applying AI edit…
+            </div>
+          ) : null}
+
+          <AiEditsPanel
+            idle={isIdle}
+            customEdit={customEdit}
+            onCustomChange={setCustomEdit}
+            onRun={(cmd) => void runEdit(cmd)}
+          />
+
+          {/* Mobile: hook/CTA collapsed below the fold */}
+          <div className="xl:hidden">
+            <button
+              type="button"
+              onClick={() => setAssembleOpen((v) => !v)}
+              className="flex w-full items-center justify-between rounded-xl border border-subtle bg-muted/30 px-4 py-3 text-left text-sm font-medium"
+            >
+              <span>Hook & closing line</span>
+              <span className="flex items-center gap-1 text-xs font-normal text-muted-foreground">
+                Optional for copy
+                {assembleOpen ? (
+                  <ChevronUp className="size-4" />
+                ) : (
+                  <ChevronDown className="size-4" />
+                )}
+              </span>
+            </button>
+            {assembleOpen ? (
+              <div className="mt-3 rounded-xl border border-subtle bg-card/50 p-3">
+                <HookCtaPanel
+                  draft={draft}
+                  hookIx={hookIx}
+                  ctaIx={ctaIx}
+                  onHookChange={setHookIx}
+                  onCtaChange={setCtaIx}
+                  compact
+                />
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                    Preview full post
+                  </summary>
+                  <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-3 text-xs leading-relaxed">
+                    {assembledPreview}
+                  </pre>
+                </details>
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        <aside
-          className={cn(
-            "flex flex-col gap-5",
-            mobileTab === "write" && "hidden lg:flex",
-          )}
-        >
-          <div
-            className={cn(
-              mobileTab !== "assemble" && "hidden lg:block",
-            )}
-          >
-            {assemblePanel}
-          </div>
-          <div
-            className={cn(
-              mobileTab !== "refine" && "hidden lg:block",
-            )}
-          >
-            {refinePanel}
-          </div>
+        {/* Sidebar — hook, CTA, preview (desktop only) */}
+        <aside className="hidden flex-col gap-4 xl:flex">
+          <HookCtaPanel
+            draft={draft}
+            hookIx={hookIx}
+            ctaIx={ctaIx}
+            onHookChange={setHookIx}
+            onCtaChange={setCtaIx}
+          />
+          <Card className="border-dashed border-border/80 bg-muted/10 shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Full post preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground">
+                {assembledPreview}
+              </pre>
+            </CardContent>
+          </Card>
+          {draft.sources.length > 0 ? (
+            <Card className="shadow-pill">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Sources</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-1.5 text-xs">
+                {draft.sources.map((s) => (
+                  <a
+                    key={s}
+                    href={s}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="truncate text-brand underline-offset-4 hover:underline"
+                  >
+                    {s}
+                  </a>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-subtle bg-background/95 px-4 py-3 backdrop-blur-sm lg:hidden">
-        <div className="flex flex-wrap gap-2">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-subtle bg-background/95 px-4 py-2.5 backdrop-blur-sm xl:hidden">
+        <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
             size="sm"
-            disabled={busy !== "idle"}
+            className="flex-1"
+            disabled={!isIdle}
             onClick={() => void saveBody()}
           >
             Save
@@ -605,17 +676,18 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={busy !== "idle"}
+            className="flex-1 gap-1"
+            disabled={!isIdle}
             onClick={() => void copyAssembled()}
-            className="gap-1"
           >
-            <Copy className="size-4" />
+            <Copy className="size-3.5" />
             Copy
           </Button>
           <Button
             type="button"
             size="sm"
-            disabled={busy !== "idle" || draft.status === "published"}
+            className="flex-1"
+            disabled={!isIdle || draft.status === "published"}
             onClick={() => void publish()}
           >
             Publish
@@ -624,7 +696,10 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       </div>
 
       {toast ? (
-        <p className="mt-3 text-sm text-muted-foreground lg:mt-4" role="status">
+        <p
+          className="fixed bottom-16 left-4 right-4 z-30 rounded-lg border border-subtle bg-card px-3 py-2 text-center text-sm shadow-pill xl:static xl:mt-4 xl:border-0 xl:bg-transparent xl:p-0 xl:text-left xl:shadow-none"
+          role="status"
+        >
           {toast}
         </p>
       ) : null}

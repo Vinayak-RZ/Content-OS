@@ -7,113 +7,77 @@ import { CopyButton } from "@/components/ui/copy-button";
 import {
   CONTENT_OS_KNOWLEDGE_FILES,
   buildProfileGenerationPrompt,
-  buildProfilePromptBrief,
 } from "@/lib/knowledge/profile-generation-prompt";
 import type { PersonaType } from "@/lib/personas/types";
 import { cn } from "@/lib/utils";
 
 type ProfilePromptPanelProps = {
-  variant?: "compact" | "full";
   className?: string;
   personaType?: PersonaType | null;
   personaCustom?: string | null;
 };
 
 export function ProfilePromptPanel({
-  variant = "full",
   className,
   personaType = null,
   personaCustom = null,
 }: ProfilePromptPanelProps) {
-  const [expanded, setExpanded] = useState(variant === "full");
+  const [expanded, setExpanded] = useState(false);
 
   const prompt = useMemo(
     () => buildProfileGenerationPrompt(personaType, personaCustom),
-    [personaType, personaCustom],
-  );
-  const brief = useMemo(
-    () => buildProfilePromptBrief(personaType, personaCustom),
     [personaType, personaCustom],
   );
 
   return (
     <section
       className={cn(
-        "rounded-xl border border-brand/20 bg-brand/5 p-4 sm:p-5",
+        "rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 sm:px-4 sm:py-3",
         className,
       )}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1 space-y-1">
-          <h3 className="font-heading text-sm font-semibold tracking-tight">
-            Build your knowledge files with AI
-          </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{brief}</p>
-        </div>
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground">
+          Build knowledge files with AI
+        </p>
         <CopyButton
           text={prompt}
           label="Copy prompt"
           copiedLabel="Copied!"
-          size="default"
+          size="sm"
           variant="default"
           className="shrink-0"
         />
-      </div>
-
-      <ol className="mt-4 space-y-1.5 text-sm text-muted-foreground">
-        <li>
-          <span className="font-medium text-foreground">1.</span> Copy the prompt
-          into your AI assistant (ChatGPT, Claude, etc.)
-        </li>
-        <li>
-          <span className="font-medium text-foreground">2.</span> Answer its
-          questions — or type SKIP to generate from what it already knows
-        </li>
-        <li>
-          <span className="font-medium text-foreground">3.</span> Paste each
-          generated file into the matching Knowledge document below
-        </li>
-      </ol>
-
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {CONTENT_OS_KNOWLEDGE_FILES.map((f) => (
-          <span
-            key={f.slug}
-            className="rounded-full border border-border/60 bg-card px-2.5 py-0.5 text-xs font-medium text-foreground"
-          >
-            {f.name}
-          </span>
-        ))}
-      </div>
-
-      {variant === "compact" ? (
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline"
+          className="inline-flex shrink-0 items-center gap-0.5 text-xs font-medium text-brand hover:underline"
         >
+          {expanded ? "Less" : "How it works"}
           {expanded ? (
-            <>
-              Hide prompt preview
-              <ChevronUp className="size-3.5" />
-            </>
+            <ChevronUp className="size-3.5" />
           ) : (
-            <>
-              Preview prompt
-              <ChevronDown className="size-3.5" />
-            </>
+            <ChevronDown className="size-3.5" />
           )}
         </button>
-      ) : null}
+      </div>
 
-      {expanded || variant === "full" ? (
-        <div className="mt-4">
-          <pre className="max-h-48 overflow-auto rounded-lg border border-border/60 bg-card p-3 text-[11px] leading-relaxed text-muted-foreground sm:max-h-64 sm:text-xs">
-            {prompt.slice(0, 1200)}…
-          </pre>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Preview truncated — use <strong className="font-medium text-foreground">Copy prompt</strong> for the full text.
+      {expanded ? (
+        <div className="mt-2.5 space-y-2 border-t border-brand/15 pt-2.5">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Paste into ChatGPT or Claude → answer questions (or SKIP) → paste
+            each file into the matching document below → Save & re-embed.
           </p>
+          <div className="flex flex-wrap gap-1">
+            {CONTENT_OS_KNOWLEDGE_FILES.map((f) => (
+              <span
+                key={f.slug}
+                className="rounded-full border border-border/60 bg-card px-2 py-0.5 text-[11px] font-medium text-foreground"
+              >
+                {f.name}
+              </span>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

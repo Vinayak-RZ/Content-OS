@@ -273,7 +273,6 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
       {step === 3 ? (
         <div className="space-y-4">
           <ProfilePromptPanel
-            variant="compact"
             personaType={settings.personaType}
             personaCustom={settings.personaCustom}
           />

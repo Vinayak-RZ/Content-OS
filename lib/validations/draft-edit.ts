@@ -2,6 +2,9 @@ import { z } from "zod";
 
 export const draftEditBodySchema = z.object({
   command: z.enum([
+    "shortenLight",
+    "shorten100",
+    "shortenHeavy",
     "shorten",
     "rewrite",
     "strongerHook",

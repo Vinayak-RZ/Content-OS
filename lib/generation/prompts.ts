@@ -81,8 +81,14 @@ Return JSON: { "post", "hooks", "ctas", "imageIdea" }`;
 }
 
 export const EDIT_COMMAND_INSTRUCTIONS: Record<string, string> = {
+  shortenLight:
+    "Tighten the post slightly: remove roughly 50–80 words of filler and redundancy. Keep every key argument and example. Preserve voice and structure.",
+  shorten100:
+    "Shorten by approximately 100 words. Cut repetition and secondary asides; keep the core thesis, best evidence, and voice intact.",
+  shortenHeavy:
+    "Shorten substantially — remove roughly 300–400 words (or cut to ~40% of current length if shorter). Keep only the strongest points. Be aggressive but preserve the main take and credibility.",
   shorten:
-    "Reduce by ~30%. Remove redundancy. Preserve core argument and voice. Do not change hook or CTA.",
+    "Reduce by ~30%. Remove redundancy. Preserve core argument and voice.",
   rewrite:
     "Rewrite entirely. Same topic, same context, different approach. Keep credibility and first-person voice.",
   strongerHook:
