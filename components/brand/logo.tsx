@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -8,9 +9,9 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: { mark: "size-7 text-[10px]", word: "text-base" },
-  md: { mark: "size-8 text-xs", word: "text-lg" },
-  lg: { mark: "size-10 text-sm", word: "text-xl" },
+  sm: { mark: 28, word: "text-base" },
+  md: { mark: 32, word: "text-lg" },
+  lg: { mark: 40, word: "text-xl" },
 };
 
 export function Logo({ className, size = "md", href = "/" }: LogoProps) {
@@ -18,15 +19,14 @@ export function Logo({ className, size = "md", href = "/" }: LogoProps) {
 
   const content = (
     <>
-      <span
-        className={cn(
-          "flex shrink-0 items-center justify-center rounded-md bg-forest font-heading font-semibold text-forest-foreground",
-          s.mark,
-        )}
+      <Image
+        src="/brand/logo-mark.png"
+        alt=""
+        width={s.mark}
+        height={s.mark}
+        className="shrink-0"
         aria-hidden
-      >
-        C
-      </span>
+      />
       <span className={cn("font-heading font-semibold tracking-tight", s.word)}>
         Content OS
       </span>
