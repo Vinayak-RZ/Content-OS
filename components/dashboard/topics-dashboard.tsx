@@ -43,7 +43,7 @@ export function TopicsDashboard({
   latestBatchId: string | null;
 }) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   const refresh = useCallback(() => {
     router.refresh();
@@ -78,8 +78,8 @@ const TOP_PICKS_COUNT = 3;
 
   return (
     <div className="flex flex-col gap-10 pb-20">
-      <section className="flex flex-col gap-4 rounded-xl border border-subtle bg-card px-6 py-6 shadow-ambient">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <section className="flex flex-col gap-4 rounded-xl border border-subtle bg-card px-4 py-5 shadow-ambient sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
           <div>
             <h2 className="font-heading text-xl font-semibold tracking-tight">
               Today&apos;s signals

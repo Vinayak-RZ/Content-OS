@@ -50,7 +50,7 @@ export default async function DashboardPage() {
         breadcrumb="Topic board"
         description="Ranked topics from your discovery sources. Generate drafts from anything worth your time."
       />
-      <div className="flex flex-1 flex-col px-8 pb-8 pt-6">
+      <div className="page-x flex flex-1 flex-col pb-8 pt-4 sm:pt-6">
         <TopicsDashboard
           initialTrends={serialized}
           lastDiscovery={lastDiscovery}

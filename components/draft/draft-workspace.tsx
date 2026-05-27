@@ -225,7 +225,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[1fr_340px]">
+    <div className="grid gap-6 lg:gap-8 xl:grid-cols-[1fr_340px]">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/dashboard">
@@ -237,7 +237,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
           <DraftStatusBadge status={draft.status} />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             {draft.topicTitle}
           </h1>
           {draft.trend?.url ? (
@@ -261,7 +261,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             id="body"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="min-h-[320px] font-[inherit] leading-relaxed"
+            className="min-h-[240px] font-[inherit] leading-relaxed sm:min-h-[320px]"
           />
           <div className="flex flex-wrap gap-2">
             <Button

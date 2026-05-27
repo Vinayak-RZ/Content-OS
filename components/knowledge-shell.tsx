@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   KNOWLEDGE_ROLES,
   ROLE_DESCRIPTIONS,
@@ -60,6 +62,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   const [newSlug, setNewSlug] = useState("");
   const [newRole, setNewRole] = useState<KnowledgeRole>("general");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [mobileShowList, setMobileShowList] = useState(true);
 
   const loadList = useCallback(async () => {
     const res = await fetch("/api/knowledge");
@@ -301,11 +304,17 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   function selectSlug(slug: string) {
     if (dirty && !confirm("Discard unsaved edits?")) return;
     setSelected(slug);
+    setMobileShowList(false);
   }
 
   return (
-    <div className="flex min-h-0 flex-1 gap-0 lg:gap-6">
-      <div className="flex w-full shrink-0 flex-col border-b border-border/60 bg-sidebar/50 p-4 lg:w-64 lg:border-b-0 lg:border-r">
+    <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-6">
+      <div
+        className={cn(
+          "flex w-full shrink-0 flex-col border-b border-border/60 bg-sidebar/50 p-4 lg:w-64 lg:border-b-0 lg:border-r",
+          mobileShowList ? "flex" : "hidden lg:flex",
+        )}
+      >
         <div className="mb-3 flex items-center justify-between gap-2">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Documents
@@ -447,9 +456,22 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
         </div>
       </div>
 
-      <div className="flex min-h-[50vh] flex-1 flex-col p-4 pt-6 lg:p-8">
+      <div
+        className={cn(
+          "flex min-h-[50vh] flex-1 flex-col p-4 pt-4 sm:pt-6 lg:p-8",
+          mobileShowList ? "hidden lg:flex" : "flex",
+        )}
+      >
         {selected && meta ? (
           <>
+            <button
+              type="button"
+              onClick={() => setMobileShowList(true)}
+              className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground lg:hidden"
+            >
+              <ArrowLeft className="size-4" />
+              All documents
+            </button>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="text-lg font-semibold">{meta.displayName}</h2>
@@ -498,7 +520,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
                   setDirty(true);
                 }}
                 spellCheck={false}
-                className="min-h-[480px] flex-1 resize-y rounded-2xl border border-input bg-card p-4 font-mono text-sm leading-relaxed shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-[280px] flex-1 resize-y rounded-2xl border border-input bg-card p-4 font-mono text-sm leading-relaxed shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[480px]"
                 aria-label="Knowledge document content"
               />
             )}

@@ -12,13 +12,13 @@ export function AppHeader({
   description,
 }: AppHeaderProps) {
   return (
-    <header className="border-b border-subtle bg-background px-8 py-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+    <header className="page-x border-b border-subtle bg-background py-4 sm:py-6">
+      <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
           <p className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {breadcrumb}
           </p>
-          <h1 className="mt-1 font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="mt-1 font-heading text-xl font-semibold tracking-tight sm:text-2xl lg:text-3xl">
             {title}
           </h1>
           {description ? (
@@ -27,7 +27,7 @@ export function AppHeader({
             </p>
           ) : null}
         </div>
-        <Badge variant="brand" dot>
+        <Badge variant="brand" dot className="shrink-0">
           Live
         </Badge>
       </div>

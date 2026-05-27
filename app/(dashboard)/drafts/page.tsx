@@ -31,7 +31,7 @@ export default async function DraftsLibraryPage() {
         breadcrumb="Library"
         description="Everything you've generated. Open any draft to keep editing."
       />
-      <div className="flex flex-1 flex-col gap-6 px-8 pb-16 pt-6">
+      <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:pt-6">
         {drafts.length === 0 ? (
           <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-16 text-center">
             <p className="font-heading text-base font-semibold text-foreground">
@@ -44,7 +44,8 @@ export default async function DraftsLibraryPage() {
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-subtle bg-card shadow-ambient">
-            <table className="w-full border-collapse text-left text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] border-collapse text-left text-sm">
               <thead className="border-b border-subtle bg-muted/40 font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Topic</th>
@@ -79,6 +80,7 @@ export default async function DraftsLibraryPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

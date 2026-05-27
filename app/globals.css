@@ -108,6 +108,10 @@
     text-wrap: balance;
   }
 
+  .page-x {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
   .container-stamped {
     @apply mx-auto w-full max-w-[var(--container-max)] px-4 sm:px-6;
   }

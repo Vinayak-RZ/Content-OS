@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppShell } from "@/components/app-shell";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { userNeedsOnboarding } from "@/lib/user-settings";
@@ -24,9 +24,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen">
-      <AppSidebar />
+    <AppShell>
       <div className="flex min-w-0 flex-1 flex-col bg-background">{children}</div>
-    </div>
+    </AppShell>
   );
 }

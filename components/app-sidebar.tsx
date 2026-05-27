@@ -26,14 +26,22 @@ const navItems: {
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function AppSidebar() {
+export function SidebarNav({
+  onNavigate,
+  showLogo = true,
+}: {
+  onNavigate?: () => void;
+  showLogo?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-subtle bg-sidebar">
-      <div className="px-5 py-6">
-        <Logo href="/" size="sm" />
-      </div>
+    <>
+      {showLogo ? (
+        <div className="px-5 py-6">
+          <Logo href="/" size="sm" />
+        </div>
+      ) : null}
 
       <nav className="flex flex-1 flex-col gap-0.5 px-3">
         {navItems.map((item) => {
@@ -45,6 +53,7 @@ export function AppSidebar() {
             <Link
               key={item.label}
               href={item.disabled ? "#" : item.href}
+              onClick={onNavigate}
               aria-disabled={item.disabled}
               aria-current={isActive ? "page" : undefined}
               className={cn(
@@ -65,6 +74,14 @@ export function AppSidebar() {
       <div className="border-t border-subtle p-4">
         <SignOutButton variant="ghost" size="sm" className="w-full justify-start" />
       </div>
+    </>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <aside className="flex w-60 shrink-0 flex-col border-r border-subtle bg-sidebar">
+      <SidebarNav />
     </aside>
   );
 }

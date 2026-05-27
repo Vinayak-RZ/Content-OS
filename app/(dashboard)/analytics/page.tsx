@@ -17,11 +17,11 @@ function StatCard({
   hint?: string;
 }) {
   return (
-    <article className="rounded-xl border border-subtle bg-card p-6 shadow-ambient">
+    <article className="rounded-xl border border-subtle bg-card p-4 shadow-ambient sm:p-6">
       <p className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-2 font-heading text-3xl font-semibold tabular-nums tracking-tight">
+      <p className="mt-2 font-heading text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl">
         {value}
       </p>
       {hint ? (
@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
         breadcrumb="Insights"
         description="Published output and discovery activity for your account."
       />
-      <div className="flex flex-1 flex-col gap-8 px-8 pb-16 pt-6">
+      <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:gap-8 sm:pt-6">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Published posts"
