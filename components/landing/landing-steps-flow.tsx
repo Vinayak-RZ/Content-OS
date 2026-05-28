@@ -6,6 +6,8 @@ import gsap from "gsap";
 
 import { cn } from "@/lib/utils";
 
+gsap.registerPlugin(useGSAP);
+
 export const LANDING_STEPS = [
   {
     num: "01",
@@ -32,28 +34,7 @@ export const LANDING_STEPS = [
 
 const STEP_COUNT = LANDING_STEPS.length;
 const HOLD_S = 2.35;
-const TRANSITION_S = 0.7;
-
-function useStepsAnimationEnabled() {
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const sync = () => setEnabled(desktop.matches && !reduced.matches);
-    sync();
-
-    desktop.addEventListener("change", sync);
-    reduced.addEventListener("change", sync);
-    return () => {
-      desktop.removeEventListener("change", sync);
-      reduced.removeEventListener("change", sync);
-    };
-  }, []);
-
-  return enabled;
-}
+const TRANSITION_S = 0.65;
 
 function setActiveStep(
   nodes: HTMLDivElement[],
@@ -86,17 +67,18 @@ function StaticStepsList({ className }: { className?: string }) {
   );
 }
 
-export function LandingStepsFlow() {
+type StepsGraphProps = {
+  motionEnabled: boolean;
+};
+
+function StepsGraph({ motionEnabled }: StepsGraphProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const captionRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const animateEnabled = useStepsAnimationEnabled();
 
   useGSAP(
     () => {
-      if (!animateEnabled) return;
-
       const progress = progressRef.current;
       const nodes = nodeRefs.current.filter(Boolean) as HTMLDivElement[];
       const captions = captionRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -106,7 +88,13 @@ export function LandingStepsFlow() {
       gsap.set(progress, { scaleX: 0, transformOrigin: "left center" });
       setActiveStep(nodes, captions, 0);
 
-      const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.4 });
+      if (!motionEnabled) {
+        setActiveStep(nodes, captions, 0);
+        gsap.set(progress, { scaleX: 0 });
+        return;
+      }
+
+      const tl = gsap.timeline({ repeat: -1, repeatDelay: 0.35 });
 
       for (let i = 0; i < STEP_COUNT; i += 1) {
         tl.add(() => setActiveStep(nodes, captions, i));
@@ -126,8 +114,83 @@ export function LandingStepsFlow() {
         tl.kill();
       };
     },
-    { scope: rootRef, dependencies: [animateEnabled] },
+    { scope: rootRef, dependencies: [motionEnabled] },
   );
+
+  return (
+    <div ref={rootRef} className="mx-auto mt-14 hidden max-w-4xl md:block">
+      <div className="relative px-4 lg:px-6">
+        <div
+          className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-5 h-px bg-border"
+          aria-hidden
+        />
+        <div
+          ref={progressRef}
+          className="pointer-events-none absolute left-[12.5%] top-5 h-px w-[75%] origin-left scale-x-0 bg-brand"
+          aria-hidden
+        />
+
+        <ol className="relative grid grid-cols-4 gap-3 lg:gap-4">
+          {LANDING_STEPS.map((step, index) => (
+            <li
+              key={step.num}
+              className="flex flex-col items-center text-center"
+            >
+              <div
+                ref={(el) => {
+                  nodeRefs.current[index] = el;
+                }}
+                data-active={index === 0 ? "true" : "false"}
+                className={cn(
+                  "relative z-10 flex size-10 items-center justify-center rounded-full border font-heading text-xs font-semibold",
+                  "border-subtle bg-card text-muted-foreground",
+                  "transition-[background-color,border-color,color,box-shadow,transform] duration-700 ease-out",
+                  "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-pill",
+                  !motionEnabled && "data-[active=false]:opacity-80",
+                )}
+              >
+                {step.num}
+              </div>
+
+              <div
+                ref={(el) => {
+                  captionRefs.current[index] = el;
+                }}
+                data-active={
+                  !motionEnabled || index === 0 ? "true" : "false"
+                }
+                className={cn(
+                  "mt-6 max-w-[11rem] transition-[opacity,transform] duration-700 ease-out lg:max-w-[12.5rem]",
+                  motionEnabled
+                    ? "opacity-40 translate-y-1 data-[active=true]:opacity-100 data-[active=true]:translate-y-0"
+                    : "opacity-100 translate-y-0",
+                )}
+              >
+                <h3 className="font-heading text-base font-semibold text-foreground">
+                  {step.label}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {step.detail}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+export function LandingStepsFlow() {
+  const [motionEnabled, setMotionEnabled] = useState(true);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setMotionEnabled(!reduced.matches);
+    sync();
+    reduced.addEventListener("change", sync);
+    return () => reduced.removeEventListener("change", sync);
+  }, []);
 
   return (
     <section id="how-it-works" className="py-section">
@@ -138,70 +201,8 @@ export function LandingStepsFlow() {
           </h2>
         </div>
 
-        {!animateEnabled ? (
-          <StaticStepsList className="md:grid-cols-4" />
-        ) : (
-          <>
-            <StaticStepsList className="md:hidden" />
-
-            <div ref={rootRef} className="mx-auto mt-14 hidden max-w-4xl md:block">
-              <div className="relative px-4 lg:px-6">
-                <div
-                  className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-5 h-px bg-border"
-                  aria-hidden
-                />
-                <div
-                  ref={progressRef}
-                  className="pointer-events-none absolute left-[12.5%] top-5 h-px w-[75%] origin-left scale-x-0 bg-brand"
-                  aria-hidden
-                />
-
-                <ol className="relative grid grid-cols-4 gap-3 lg:gap-4">
-                  {LANDING_STEPS.map((step, index) => (
-                    <li
-                      key={step.num}
-                      className="flex flex-col items-center text-center"
-                    >
-                      <div
-                        ref={(el) => {
-                          nodeRefs.current[index] = el;
-                        }}
-                        data-active={index === 0 ? "true" : "false"}
-                        className={cn(
-                          "relative z-10 flex size-10 items-center justify-center rounded-full border font-heading text-xs font-semibold",
-                          "border-subtle bg-card text-muted-foreground",
-                          "transition-[background-color,border-color,color,box-shadow,transform] duration-700 ease-out",
-                          "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-pill",
-                        )}
-                      >
-                        {step.num}
-                      </div>
-
-                      <div
-                        ref={(el) => {
-                          captionRefs.current[index] = el;
-                        }}
-                        data-active={index === 0 ? "true" : "false"}
-                        className={cn(
-                          "mt-6 max-w-[11rem] transition-[opacity,transform] duration-700 ease-out lg:max-w-[12.5rem]",
-                          "opacity-40 translate-y-1",
-                          "data-[active=true]:opacity-100 data-[active=true]:translate-y-0",
-                        )}
-                      >
-                        <h3 className="font-heading text-base font-semibold text-foreground">
-                          {step.label}
-                        </h3>
-                        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                          {step.detail}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </>
-        )}
+        <StaticStepsList className="md:hidden" />
+        <StepsGraph motionEnabled={motionEnabled} />
       </div>
     </section>
   );
