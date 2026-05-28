@@ -121,12 +121,12 @@ function StepsGraph({ motionEnabled }: StepsGraphProps) {
     <div ref={rootRef} className="mx-auto mt-14 hidden max-w-4xl md:block">
       <div className="relative px-4 lg:px-6">
         <div
-          className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-5 h-px bg-border"
+          className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-5 z-0 h-px bg-border"
           aria-hidden
         />
         <div
           ref={progressRef}
-          className="pointer-events-none absolute left-[12.5%] top-5 h-px w-[75%] origin-left scale-x-0 bg-brand"
+          className="pointer-events-none absolute left-[12.5%] top-5 z-0 h-px w-[75%] origin-left scale-x-0 bg-brand"
           aria-hidden
         />
 
@@ -143,9 +143,10 @@ function StepsGraph({ motionEnabled }: StepsGraphProps) {
                 data-active={index === 0 ? "true" : "false"}
                 className={cn(
                   "relative z-10 flex size-10 items-center justify-center rounded-full border font-heading text-xs font-semibold",
-                  "border-subtle bg-card text-muted-foreground",
+                  "border-subtle bg-background text-muted-foreground",
+                  "shadow-[0_0_0_4px_hsl(var(--background))]",
                   "transition-[background-color,border-color,color,box-shadow,transform] duration-700 ease-out",
-                  "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-pill",
+                  "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-[0_0_0_4px_hsl(var(--background)),0_1px_2px_rgba(0,0,0,0.06)]",
                   !motionEnabled && "data-[active=false]:opacity-80",
                 )}
               >
