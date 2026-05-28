@@ -16,6 +16,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
 import { LandingFaq } from "@/components/landing/landing-faq";
+import { LandingStepsFlow } from "@/components/landing/landing-steps-flow";
 import { FeatureRequestPanel } from "@/components/feature-request-panel";
 import { Button } from "@/components/ui/button";
 
@@ -42,13 +43,6 @@ const features = [
     title: "Publish on your terms",
     body: "No auto-posting. You approve every word before it leaves. Content OS amplifies thinking; you keep the pen.",
   },
-];
-
-const steps = [
-  { num: "01", label: "Connect", detail: "Sign in free. Add optional API keys when you're ready - free tiers cover reasonable usage." },
-  { num: "02", label: "Seed knowledge", detail: "Upload context files that define your angle." },
-  { num: "03", label: "Discover", detail: "Run discovery to populate your topic board." },
-  { num: "04", label: "Draft", detail: "Generate, edit, and ship when ready." },
 ];
 
 export function LandingPage({
@@ -271,29 +265,7 @@ export function LandingPage({
           </div>
         </section>
 
-        {/* How it works */}
-        <section id="how-it-works" className="py-section">
-          <div className="container-stamped">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-heading text-headline-md font-semibold sm:text-headline-lg">
-                Four steps to your first draft
-              </h2>
-            </div>
-            <ol className="mx-auto mt-14 grid max-w-4xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((step) => (
-                <li key={step.num} className="relative">
-                  <span className="font-display text-3xl font-bold text-brand/30">
-                    {step.num}
-                  </span>
-                  <h3 className="mt-2 font-heading text-base font-semibold">
-                    {step.label}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{step.detail}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+        <LandingStepsFlow />
 
         {/* FAQ - visible for users and search/AI crawlers */}
         <section
