@@ -30,7 +30,7 @@ export function buildHomeJsonLd() {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
-        description: "Free app — users bring their own API keys for AI features",
+        description: "Free app - users bring their own API keys for AI features",
       },
       featureList: [
         "Topic discovery from Hacker News, Reddit, RSS, and GitHub",

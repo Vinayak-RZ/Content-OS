@@ -13,7 +13,7 @@ export function buildRootMetadata(): Metadata {
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+      default: `${SITE_NAME} - ${SITE_TAGLINE}`,
       template: `%s · ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,
@@ -43,7 +43,7 @@ export function buildRootMetadata(): Metadata {
       locale: "en_US",
       url: siteUrl,
       siteName: SITE_NAME,
-      title: `${SITE_NAME} — From discovery to draft on your terms`,
+      title: `${SITE_NAME} - From discovery to draft on your terms`,
       description: SITE_DESCRIPTION,
       images: [
         {
@@ -56,7 +56,7 @@ export function buildRootMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: `${SITE_NAME} — From discovery to draft on your terms`,
+      title: `${SITE_NAME} - From discovery to draft on your terms`,
       description: SITE_DESCRIPTION,
       images: ["/brand/logo-mark.png"],
     },
@@ -70,7 +70,7 @@ export const homePageMetadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: `${SITE_NAME} — From discovery to draft on your terms`,
+    title: `${SITE_NAME} - From discovery to draft on your terms`,
     description: SITE_DESCRIPTION,
     url: "/",
   },

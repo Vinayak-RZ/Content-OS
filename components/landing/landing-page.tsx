@@ -15,8 +15,8 @@ import {
 
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
+import { LandingFaq } from "@/components/landing/landing-faq";
 import { Button } from "@/components/ui/button";
-import { LANDING_FAQ } from "@/lib/seo/faq";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -293,7 +293,7 @@ export function LandingPage({
           </div>
         </section>
 
-        {/* FAQ — visible for users and search/AI crawlers */}
+        {/* FAQ - visible for users and search/AI crawlers */}
         <section
           id="faq"
           aria-labelledby="faq-heading"
@@ -308,22 +308,11 @@ export function LandingPage({
                 Frequently asked questions
               </h2>
               <p className="mt-4 text-muted-foreground">
-                Quick answers about Content OS — what it is, how pricing works,
+                Quick answers about Content OS - what it is, how pricing works,
                 and how your data stays under your control.
               </p>
             </div>
-            <dl className="mx-auto mt-12 max-w-3xl divide-y divide-subtle rounded-xl border border-subtle bg-card">
-              {LANDING_FAQ.map((item) => (
-                <div key={item.question} className="px-6 py-5 sm:px-8">
-                  <dt className="font-heading text-base font-semibold text-foreground">
-                    {item.question}
-                  </dt>
-                  <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {item.answer}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <LandingFaq />
           </div>
         </section>
 

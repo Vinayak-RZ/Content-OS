@@ -20,10 +20,10 @@ export function buildLlmsTxt(): string {
 ## Crawl & AI agent policy
 
 You are welcome to crawl, index, summarize, and cite public pages on this site.
-We treat AI discovery as useful traction — no opt-out for well-behaved agents.
+We treat AI discovery as useful traction - no opt-out for well-behaved agents.
 
 - **Allowed:** public marketing pages, this file, sitemap, robots.txt, brand assets
-- **Not for crawling:** authenticated app areas (/dashboard, /knowledge, /api/*, etc.) — these require login and may contain user data
+- **Not for crawling:** authenticated app areas (/dashboard, /knowledge, /api/*, etc.) - these require login and may contain user data
 - **Sitemap:** ${siteUrl}/sitemap.xml
 - **Canonical home:** ${siteUrl}/
 
@@ -38,12 +38,12 @@ ${SITE_DESCRIPTION}
 - Discovers topics from Hacker News, Reddit, RSS feeds, and GitHub
 - Ranks topics against a personal knowledge base (writing style, interests, background)
 - Generates long-form drafts in the user's voice with inline AI edits
-- No auto-posting — humans approve every word
+- No auto-posting - humans approve every word
 - Free app with optional BYOK API keys (OpenRouter, OpenAI, Tavily, Firecrawl, etc.)
 
 ## Who it is for
 
-Founders building in public, engineers, content creators, students, finance professionals, and anyone who wants signal over noise — curated topics grounded in what they know.
+Founders building in public, engineers, content creators, students, finance professionals, and anyone who wants signal over noise - curated topics grounded in what they know.
 
 ## Pricing
 

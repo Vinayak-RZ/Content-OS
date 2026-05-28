@@ -22,11 +22,11 @@ export const LANDING_FAQ: FaqItem[] = [
   {
     question: "Does Content OS auto-post to social media?",
     answer:
-      "No. Content OS never auto-posts. You review, edit, and publish every word yourself. It amplifies your thinking and drafting — you keep full control of what goes live.",
+      "No. Content OS never auto-posts. You review, edit, and publish every word yourself. It amplifies your thinking and drafting - you keep full control of what goes live.",
   },
   {
     question: "Who is Content OS for?",
     answer:
-      "Founders building in public, engineers sharing technical insights, content creators, students, and anyone who wants signal over noise — curated topics grounded in what you actually know and care about.",
+      "Founders building in public, engineers sharing technical insights, content creators, students, and anyone who wants signal over noise - curated topics grounded in what you actually know and care about.",
   },
 ];

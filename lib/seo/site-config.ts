@@ -16,7 +16,7 @@ export const SITE_TAGLINE =
   "Thinking amplification for founders, creators, and builders";
 
 export const SITE_DESCRIPTION =
-  "Content OS discovers high-signal topics from Hacker News, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Free app — bring your own API keys. No auto-posting.";
+  "Content OS discovers high-signal topics from Hacker News, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Free app - bring your own API keys. No auto-posting.";
 
 export const SITE_KEYWORDS = [
   "content creation",

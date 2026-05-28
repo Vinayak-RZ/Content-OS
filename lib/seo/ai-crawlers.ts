@@ -1,4 +1,4 @@
-/** Known AI / LLM crawlers — explicitly allowed on public pages. */
+/** Known AI / LLM crawlers - explicitly allowed on public pages. */
 export const AI_CRAWLER_AGENTS = [
   "GPTBot",
   "ChatGPT-User",
@@ -29,7 +29,7 @@ export const PUBLIC_CRAWL_PATHS = [
   "/brand/",
 ] as const;
 
-/** Authenticated or sensitive routes — crawl discouraged. */
+/** Authenticated or sensitive routes - crawl discouraged. */
 export const PRIVATE_CRAWL_PATHS = [
   "/dashboard",
   "/draft/",
