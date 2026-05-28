@@ -1,6 +1,7 @@
 import { TopicsDashboard } from "@/components/dashboard/topics-dashboard";
 import { AppHeader } from "@/components/app-header";
 import { prisma } from "@/lib/db";
+import { userHasFilledKnowledge } from "@/lib/knowledge/is-filled";
 import { getSession } from "@/lib/session";
 import { DASHBOARD_POOL_FETCH_LIMIT } from "@/lib/discovery/founder-profile";
 import {
@@ -13,7 +14,8 @@ export default async function DashboardPage() {
   const session = await getSession();
   const userId = session!.user!.id;
 
-  const [trends, visiblePoolCount, latestBatchRow] = await Promise.all([
+  const [trends, visiblePoolCount, latestBatchRow, knowledgeFilled] =
+    await Promise.all([
     fetchTrendsForDashboard(userId, DASHBOARD_POOL_FETCH_LIMIT),
     countVisibleTrendsForDashboard(userId),
     prisma.trend.findFirst({
@@ -21,6 +23,7 @@ export default async function DashboardPage() {
       orderBy: { discoveredAt: "desc" },
       select: { discoveryBatchId: true },
     }),
+    userHasFilledKnowledge(userId),
   ]);
   const serialized = trends.map(serializeDashboardTrend);
   const latestBatchId = latestBatchRow?.discoveryBatchId ?? null;
@@ -56,6 +59,7 @@ export default async function DashboardPage() {
           lastDiscovery={lastDiscovery}
           visiblePoolCount={visiblePoolCount}
           latestBatchId={latestBatchId}
+          showKnowledgeBanner={!knowledgeFilled}
         />
       </div>
     </>

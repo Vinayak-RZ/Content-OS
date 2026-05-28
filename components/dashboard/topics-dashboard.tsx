@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
+import { KnowledgeEmptyBanner } from "@/components/dashboard/knowledge-empty-banner";
 import { TopicCard } from "@/components/dashboard/topic-card";
 import { TopicPickPlaceholder } from "@/components/dashboard/topic-pick-placeholder";
 import { TopicPoolTable } from "@/components/dashboard/topic-pool-table";
@@ -32,6 +33,7 @@ export function TopicsDashboard({
   lastDiscovery,
   visiblePoolCount,
   latestBatchId,
+  showKnowledgeBanner = false,
 }: {
   initialTrends: SerializedDashboardTrend[];
   lastDiscovery: {
@@ -41,6 +43,7 @@ export function TopicsDashboard({
   } | null;
   visiblePoolCount: number;
   latestBatchId: string | null;
+  showKnowledgeBanner?: boolean;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -132,6 +135,7 @@ const TOP_PICKS_COUNT = 3;
               <DiscoveryRunButton onCompleted={refresh} />
             </CardContent>
           </Card>
+          {showKnowledgeBanner ? <KnowledgeEmptyBanner /> : null}
           <section>
             <h3 className="mb-4 font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Top picks
@@ -145,6 +149,8 @@ const TOP_PICKS_COUNT = 3;
         </>
       ) : (
         <div className="flex flex-col gap-10">
+          {showKnowledgeBanner ? <KnowledgeEmptyBanner /> : null}
+
           <section>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Top picks
