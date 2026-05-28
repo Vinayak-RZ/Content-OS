@@ -35,7 +35,7 @@ ${SITE_DESCRIPTION}
 
 ## What it does
 
-- Discovers topics from Hacker News, Reddit, RSS feeds, and GitHub
+- Discovers topics from Hacker News, Instagram, Reddit, RSS feeds, and GitHub
 - Ranks topics against a personal knowledge base (writing style, interests, background)
 - Generates long-form drafts in the user's voice with inline AI edits
 - No auto-posting - humans approve every word
@@ -60,6 +60,6 @@ ${faqBlock}
 
 ## Keywords
 
-content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, founder content workflow
+content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, Instagram trends, founder content workflow
 `;
 }

@@ -24,12 +24,12 @@ const features = [
   {
     icon: Radar,
     title: "Signal discovery",
-    body: "Pulls from HN, Reddit, RSS, and GitHub. Ranks topics against your knowledge base so you see what matters, not what is loudest.",
+    body: "Pulls from Hacker News, Instagram, Reddit, RSS, and GitHub. Ranks topics against your knowledge base so you see what matters, not what is loudest.",
   },
   {
     icon: BookOpen,
     title: "Grounded in you",
-    body: "Upload context files and interests. Every recommendation is ranked against your profile, not generic trends.",
+    body: "Your knowledge base defines your angle. Topics rank against your profile - so posts sound like you, not a generic AI feed. Built for personal branding that compounds.",
   },
   {
     icon: PenLine,
@@ -132,7 +132,7 @@ export function LandingPage({
               data-hero-reveal
               className="mb-6 font-heading text-xs font-semibold uppercase tracking-[0.12em] text-brand"
             >
-              For founders & creators
+              For founders, creators & personal brands
             </p>
             <h1
               data-hero-reveal
@@ -146,7 +146,8 @@ export function LandingPage({
               className="mx-auto mt-6 max-w-2xl text-balance text-body-lg text-muted-foreground"
             >
               Content OS discovers high-signal topics, drafts in your voice, and
-              keeps you in control. Less scrolling, more publishing.
+              helps you build a personal brand - without the grind of starting
+              from a blank page every time.
             </p>
             <p
               data-hero-reveal
@@ -197,12 +198,12 @@ export function LandingPage({
                 {
                   score: "7.9",
                   title: "The hidden cost of default LLM routing in prod",
-                  tag: "New",
+                  tag: "HN",
                 },
                 {
                   score: "7.2",
                   title: "Founders writing in public: quality over cadence",
-                  tag: "HN",
+                  tag: "Insta",
                 },
               ].map((item) => (
                 <div

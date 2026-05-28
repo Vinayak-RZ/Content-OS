@@ -10,7 +10,7 @@ Thinking amplification for technical founders. Discover high-signal topics, gene
 
 | Area | What it does |
 |------|----------------|
-| **Discovery** | Manual run only - pulls from HN, Reddit, RSS, GitHub, Tavily/Firecrawl (when keys are set). Topics ranked against your knowledge base. |
+| **Discovery** | Manual run only — pulls from Hacker News, Instagram, Reddit, RSS, GitHub, Tavily/Firecrawl (when keys are set). Topics ranked against your knowledge base. |
 | **Topic board** | Top picks, full pool table, save/dismiss/remove topics, generate drafts from any row. |
 | **Knowledge** | Upload context files (style, narrative, technical) used for ranking and draft generation. |
 | **Drafts** | AI-generated long-form drafts with hook/CTA variants, inline edit, revision history. |

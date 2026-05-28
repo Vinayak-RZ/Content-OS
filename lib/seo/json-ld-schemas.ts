@@ -33,7 +33,7 @@ export function buildHomeJsonLd() {
         description: "Free app - users bring their own API keys for AI features",
       },
       featureList: [
-        "Topic discovery from Hacker News, Reddit, RSS, and GitHub",
+        "Topic discovery from Hacker News, Instagram, Reddit, RSS, and GitHub",
         "Knowledge-base ranking against your profile",
         "AI drafts in your voice",
         "Manual publish workflow with no auto-posting",

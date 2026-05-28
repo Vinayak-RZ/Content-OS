@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { SerializedDashboardTrend } from "@/lib/trends/list";
+import { formatSourceType } from "@/lib/discovery/source-labels";
 
 function domainLabel(url: string): string {
   try {
@@ -100,7 +101,7 @@ export function TopicCard({
             </Badge>
           ) : null}
           <Badge variant="muted" className="rounded-full text-[10px] capitalize">
-            {trend.sourceType}
+            {formatSourceType(trend.sourceType)}
           </Badge>
         </div>
         <CardDescription className="text-sm leading-relaxed text-muted-foreground">

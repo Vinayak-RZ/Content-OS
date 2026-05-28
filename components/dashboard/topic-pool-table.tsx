@@ -4,6 +4,7 @@ import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
 import { Badge } from "@/components/ui/badge";
 import type { SerializedDashboardTrend } from "@/lib/trends/list";
+import { formatSourceType } from "@/lib/discovery/source-labels";
 
 type TopicPoolTableProps = {
   trends: SerializedDashboardTrend[];
@@ -65,8 +66,8 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
                       {t.title.length > 72 ? `${t.title.slice(0, 72)}…` : t.title}
                     </a>
                   </td>
-                  <td className="px-4 py-3 capitalize text-muted-foreground">
-                    {t.sourceType}
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {formatSourceType(t.sourceType)}
                   </td>
                   <td className="px-4 py-3">
                     {isNew ? (
