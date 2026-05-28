@@ -16,6 +16,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
 import { LandingFaq } from "@/components/landing/landing-faq";
+import { FeatureRequestPanel } from "@/components/feature-request-panel";
 import { Button } from "@/components/ui/button";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -191,18 +192,18 @@ export function LandingPage({
             <div className="grid gap-4 p-6 sm:grid-cols-3 sm:p-8">
               {[
                 {
-                  score: "8.4",
-                  title: "Why infra teams are rethinking observability spend",
+                  score: "8.6",
+                  title: "Why one good post beats five rushed ones",
                   tag: "Saved",
                 },
                 {
-                  score: "7.9",
-                  title: "The hidden cost of default LLM routing in prod",
+                  score: "7.4",
+                  title: "Free tools replacing paid apps this year",
                   tag: "HN",
                 },
                 {
-                  score: "7.2",
-                  title: "Founders writing in public: quality over cadence",
+                  score: "6.9",
+                  title: "What creators wish they knew before posting daily",
                   tag: "Insta",
                 },
               ].map((item) => (
@@ -316,6 +317,8 @@ export function LandingPage({
             <LandingFaq />
           </div>
         </section>
+
+        <FeatureRequestPanel variant="landing" />
 
         {/* CTA */}
         <section className="surface-forest border-t border-forest-foreground/10 py-section">
