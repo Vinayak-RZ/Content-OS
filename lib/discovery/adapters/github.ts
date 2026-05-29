@@ -1,4 +1,3 @@
-import { load } from "cheerio";
 import type { AdapterRunResult, TrendCandidate } from "@/lib/discovery/types";
 import { canonicalizeUrl } from "@/lib/discovery/urls";
 
@@ -12,6 +11,42 @@ type GhRepo = {
 type GhSearch = {
   items?: GhRepo[];
 };
+
+/** Parse GitHub trending HTML without cheerio (keeps serverless bundles small). */
+function parseTrendingReposFromHtml(html: string, budget: number): TrendCandidate[] {
+  const out: TrendCandidate[] = [];
+  const articleRe = /<article[\s\S]*?<\/article>/gi;
+  let articleMatch: RegExpExecArray | null;
+
+  while ((articleMatch = articleRe.exec(html)) !== null && out.length < budget) {
+    const block = articleMatch[0];
+    const linkMatch = block.match(/<h2[^>]*>\s*<a[^>]*href="(\/[^"?#]+)[^"]*"[^>]*>([\s\S]*?)<\/a>/i);
+    if (!linkMatch) continue;
+
+    const href = linkMatch[1];
+    const rawTitle = linkMatch[2];
+    if (!href || !rawTitle) continue;
+    if (!href.startsWith("/") || !href.includes("/")) continue;
+
+    const title = rawTitle.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const pathPart = href.split("?")[0] ?? href;
+    const url = canonicalizeUrl(`https://github.com${pathPart}`);
+
+    out.push({
+      title: `[GitHub] ${title.slice(0, 200) || pathPart}`,
+      url,
+      summary: `Trending repository: ${title || pathPart}`,
+      source: "GitHub trending",
+      sourceType: "github",
+      tags: ["github"],
+      trendScore: 0.65,
+      discoveredAt: new Date(),
+      metadata: {},
+    });
+  }
+
+  return out;
+}
 
 async function trendingFromSearch(
   budget: number,
@@ -63,30 +98,7 @@ async function trendingFromHtml(budget: number): Promise<TrendCandidate[]> {
   });
   if (!res.ok) return [];
   const html = await res.text();
-  const $ = load(html);
-  const out: TrendCandidate[] = [];
-  $("article h2 a").each((_, el) => {
-    if (out.length >= budget) return false;
-    const href = $(el).attr("href");
-    if (!href || !href.startsWith("/")) return;
-    const pathPart = href.split("?")[0];
-    if (!pathPart || !pathPart.includes("/")) return;
-    const url = canonicalizeUrl(`https://github.com${pathPart}`);
-    const title = $(el).text().trim().slice(0, 200) || pathPart;
-    out.push({
-      title: `[GitHub] ${title}`,
-      url,
-      summary: `Trending repository: ${title}`,
-      source: "GitHub trending",
-      sourceType: "github",
-      tags: ["github"],
-      trendScore: 0.65,
-      discoveredAt: new Date(),
-      metadata: {},
-    });
-    return undefined;
-  });
-  return out;
+  return parseTrendingReposFromHtml(html, budget);
 }
 
 export async function fetchGitHubTrending(
