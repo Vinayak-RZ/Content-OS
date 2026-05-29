@@ -94,6 +94,9 @@ function hasUnsavedChanges(
   );
 }
 
+/** Wait this long after the last keystroke before auto-saving. */
+const AUTOSAVE_DEBOUNCE_MS = 15_000;
+
 function AiEditsPanel({
   idle,
   customEdit,
@@ -278,15 +281,22 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   const [content, setContent] = useState("");
   const [hookIx, setHookIx] = useState(0);
   const [ctaIx, setCtaIx] = useState(0);
-  const [busy, setBusy] = useState<
-    "idle" | "load" | "save" | "edit" | "publish"
+  const [busy, setBusy] = useState<"idle" | "load" | "edit" | "publish">(
+    "load",
+  );
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "saved" | "error"
   >("idle");
   const [customEdit, setCustomEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [assembleOpen, setAssembleOpen] = useState(false);
   const saveInFlight = useRef(false);
+  const latestDraftRef = useRef<DraftPayload | null>(null);
+  const latestContentRef = useRef("");
+  const latestHookIxRef = useRef(0);
+  const latestCtaIxRef = useRef(0);
 
-  const isIdle = busy === "idle";
+  const blocksEditing = busy === "load" || busy === "edit";
 
   const load = useCallback(async () => {
     setBusy("load");
@@ -309,6 +319,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       setContent(d.currentContent);
       setHookIx(d.selectedHook);
       setCtaIx(d.selectedCta);
+      setSaveState("saved");
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Load error");
     } finally {
@@ -320,48 +331,83 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    latestDraftRef.current = draft;
+    latestContentRef.current = content;
+    latestHookIxRef.current = hookIx;
+    latestCtaIxRef.current = ctaIx;
+  }, [draft, content, hookIx, ctaIx]);
+
   const saveBody = useCallback(
     async (silent = false): Promise<void> => {
-      if (!draft || saveInFlight.current) return;
-      if (!hasUnsavedChanges(draft, content, hookIx, ctaIx)) return;
+      const currentDraft = latestDraftRef.current;
+      const body = latestContentRef.current;
+      const hook = latestHookIxRef.current;
+      const cta = latestCtaIxRef.current;
+
+      if (!currentDraft || saveInFlight.current) return;
+      if (!hasUnsavedChanges(currentDraft, body, hook, cta)) return;
 
       saveInFlight.current = true;
-      setBusy("save");
+      setSaveState("saving");
       if (!silent) setToast(null);
       try {
         const res = await fetch(`/api/draft/${draftId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            currentContent: content,
-            selectedHook: hookIx,
-            selectedCta: ctaIx,
+            currentContent: body,
+            selectedHook: hook,
+            selectedCta: cta,
           }),
         });
         if (!res.ok) throw new Error("Save failed");
         const updated = (await res.json()) as DraftPayload;
         setDraft(updated);
+        setSaveState("saved");
         if (!silent) setToast("Saved.");
       } catch {
+        setSaveState("error");
         if (!silent) setToast("Could not save.");
       } finally {
         saveInFlight.current = false;
-        setBusy("idle");
       }
     },
-    [draft, content, hookIx, ctaIx, draftId],
+    [draftId],
   );
 
   useEffect(() => {
-    if (!draft || busy === "load") return;
+    if (!draft || busy !== "idle") return;
     if (!hasUnsavedChanges(draft, content, hookIx, ctaIx)) return;
 
     const timer = window.setTimeout(() => {
       void saveBody(true);
-    }, 2500);
+    }, AUTOSAVE_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
   }, [draft, content, hookIx, ctaIx, busy, saveBody]);
+
+  useEffect(() => {
+    function flushOnHide() {
+      if (document.visibilityState !== "hidden") return;
+      const currentDraft = latestDraftRef.current;
+      if (!currentDraft || saveInFlight.current) return;
+      if (
+        !hasUnsavedChanges(
+          currentDraft,
+          latestContentRef.current,
+          latestHookIxRef.current,
+          latestCtaIxRef.current,
+        )
+      ) {
+        return;
+      }
+      void saveBody(true);
+    }
+
+    document.addEventListener("visibilitychange", flushOnHide);
+    return () => document.removeEventListener("visibilitychange", flushOnHide);
+  }, [saveBody]);
 
   async function runEdit(command: string): Promise<void> {
     if (!draft) return;
@@ -451,6 +497,16 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
     ? hasUnsavedChanges(draft, content, hookIx, ctaIx)
     : false;
 
+  const saveStatusLabel = isDirty
+    ? saveState === "saving"
+      ? "Saving in background…"
+      : "Unsaved changes"
+    : saveState === "saving"
+      ? "Saving…"
+      : saveState === "error"
+        ? "Save failed — use Save draft"
+        : "Saved";
+
   if (loadError) {
     return (
       <Card className="max-w-lg border-destructive/40">
@@ -481,7 +537,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       <Button
         type="button"
         variant="secondary"
-        disabled={!isIdle}
+        disabled={busy !== "idle" || saveState === "saving"}
         onClick={() => void saveBody()}
       >
         Save draft
@@ -489,7 +545,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       <Button
         type="button"
         variant="outline"
-        disabled={!isIdle}
+        disabled={busy !== "idle"}
         onClick={() => void copyAssembled()}
         className="gap-1"
       >
@@ -498,7 +554,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
       </Button>
       <Button
         type="button"
-        disabled={!isIdle || draft.status === "published"}
+        disabled={busy !== "idle" || draft.status === "published"}
         onClick={() => void publish()}
       >
         Mark as published
@@ -516,12 +572,19 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
           </Button>
         </Link>
         <DraftStatusBadge status={draft.status} />
-        {isDirty ? (
-          <span className="text-xs text-muted-foreground">Unsaved changes</span>
-        ) : busy === "save" ? (
-          <span className="text-xs text-muted-foreground">Saving…</span>
+        {isDirty || saveState !== "saved" ? (
+          <span
+            className={cn(
+              "text-xs",
+              saveState === "error"
+                ? "text-red-600"
+                : "text-muted-foreground",
+            )}
+          >
+            {saveStatusLabel}
+          </span>
         ) : (
-          <span className="text-xs text-brand">Saved</span>
+          <span className="text-xs text-brand">{saveStatusLabel}</span>
         )}
       </div>
 
@@ -556,8 +619,11 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             <Textarea
               id="body"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              disabled={!isIdle}
+              onChange={(e) => {
+                setContent(e.target.value);
+                if (saveState === "saved") setSaveState("idle");
+              }}
+              disabled={blocksEditing}
               className="min-h-[min(50vh,420px)] resize-y text-[15px] leading-relaxed sm:min-h-[360px] sm:text-base lg:min-h-[400px]"
             />
           </div>
@@ -572,7 +638,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
           ) : null}
 
           <AiEditsPanel
-            idle={isIdle}
+            idle={busy === "idle" && saveState !== "saving"}
             customEdit={customEdit}
             onCustomChange={setCustomEdit}
             onRun={(cmd) => void runEdit(cmd)}
@@ -667,7 +733,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             variant="secondary"
             size="sm"
             className="flex-1"
-            disabled={!isIdle}
+            disabled={busy !== "idle" || saveState === "saving"}
             onClick={() => void saveBody()}
           >
             Save
@@ -677,7 +743,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             variant="outline"
             size="sm"
             className="flex-1 gap-1"
-            disabled={!isIdle}
+            disabled={busy !== "idle"}
             onClick={() => void copyAssembled()}
           >
             <Copy className="size-3.5" />
@@ -687,7 +753,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             type="button"
             size="sm"
             className="flex-1"
-            disabled={!isIdle || draft.status === "published"}
+            disabled={busy !== "idle" || draft.status === "published"}
             onClick={() => void publish()}
           >
             Publish
