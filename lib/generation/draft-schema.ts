@@ -7,6 +7,12 @@ export const draftGenerationSchema = z.object({
   imageIdea: z.string().min(3),
 });
 
+export const draftGenerationMetaSchema = z.object({
+  hooks: z.array(z.string()).length(3),
+  ctas: z.array(z.string()).min(2).max(4),
+  imageIdea: z.string().min(3),
+});
+
 export type DraftGenerationPayload = z.infer<typeof draftGenerationSchema>;
 
 export function extractJsonObject(raw: string): unknown {

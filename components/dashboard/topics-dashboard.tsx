@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronUp, Link2, Loader2 } from "lucide-react";
-import { formatDraftApiError } from "@/lib/client/draft-api-error";
+import { generateDraftStream } from "@/lib/client/generate-draft-stream";
 import {
   DISCOVERY_NEW_PER_RUN,
   DISCOVERY_VISIBLE_POOL_MAX,
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
+import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { KnowledgeEmptyBanner } from "@/components/dashboard/knowledge-empty-banner";
 import { TopicCard } from "@/components/dashboard/topic-card";
 import { TopicPickPlaceholder } from "@/components/dashboard/topic-pick-placeholder";
@@ -219,6 +220,8 @@ function CustomTopicComposer({
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState<"idle" | "scrape" | "gen">("idle");
   const [msg, setMsg] = useState<string | null>(null);
+  const [streamText, setStreamText] = useState("");
+  const [streamStatus, setStreamStatus] = useState<string | null>(null);
 
   async function scrapeUrl(): Promise<void> {
     setBusy("scrape");
@@ -262,39 +265,31 @@ function CustomTopicComposer({
     }
     setBusy("gen");
     setMsg(null);
+    setStreamText("");
+    setStreamStatus(null);
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await generateDraftStream({
+        body: {
           customTopic: {
             title: title.trim(),
             summary: summary.trim() || undefined,
             url: url.trim() ? url.trim() : undefined,
           },
-        }),
+        },
+        onDelta: setStreamText,
+        onStatus: setStreamStatus,
       });
-      const json: unknown = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(formatDraftApiError(json, "Generate failed"));
-      }
-      const id =
-        typeof json === "object" &&
-        json &&
-        "draftId" in json &&
-        typeof (json as { draftId?: string }).draftId === "string"
-          ? (json as { draftId: string }).draftId
-          : null;
-      if (!id) throw new Error("Missing draft id");
-      onDraftCreated(id);
+      onDraftCreated(result.draftId);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Generate failed");
     } finally {
       setBusy("idle");
+      setStreamStatus(null);
     }
   }
 
   return (
+    <>
     <Card className="border-border/80 shadow-pill">
       <CardHeader>
         <CardTitle className="text-lg">Custom topic</CardTitle>
@@ -371,5 +366,14 @@ function CustomTopicComposer({
         ) : null}
       </CardContent>
     </Card>
+
+    {busy === "gen" ? (
+      <DraftGenerationOverlay
+        title="Generating draft"
+        text={streamText}
+        statusMessage={streamStatus}
+      />
+    ) : null}
+    </>
   );
 }

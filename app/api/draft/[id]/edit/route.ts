@@ -1,11 +1,9 @@
 import type { Prisma } from "@prisma/client";
-import { NextResponse } from "next/server";
-
 import { ApiError, errorResponse } from "@/lib/api-error";
 import { appendDraftRevision } from "@/lib/drafts/revision";
 import { buildEditMessages } from "@/lib/generation/prompts";
-import { draftChatComplete } from "@/lib/llm/chat";
 import { requireDraftProviderAuth } from "@/lib/llm/draft-provider";
+import { sseResponse, streamChatCompletionToSse } from "@/lib/llm/sse-stream";
 import { prisma } from "@/lib/db";
 import { consumeGenerateRateLimit } from "@/lib/rate-limit";
 import { fetchWritingStyleText } from "@/lib/retrieval";
@@ -66,26 +64,27 @@ export async function POST(request: Request, context: RouteParams) {
       personaCustom: user.personaCustom,
     });
 
-    const newContent = await draftChatComplete({
+    const stream = streamChatCompletionToSse({
       provider,
       apiKey,
       messages,
-      jsonObject: false,
       temperature: 0.55,
-    });
-
-    const updated = await prisma.draft.update({
-      where: { id: draftId },
-      data: {
-        currentContent: newContent,
-        revisionHistory: appendDraftRevision(draft.revisionHistory, {
-          command: parsed.data.command,
-          at: new Date().toISOString(),
-        }) as Prisma.InputJsonValue,
+      onComplete: async (newContent) => {
+        const updated = await prisma.draft.update({
+          where: { id: draftId },
+          data: {
+            currentContent: newContent,
+            revisionHistory: appendDraftRevision(draft.revisionHistory, {
+              command: parsed.data.command,
+              at: new Date().toISOString(),
+            }) as Prisma.InputJsonValue,
+          },
+        });
+        return { type: "done", draft: updated };
       },
     });
 
-    return NextResponse.json({ draft: updated });
+    return sseResponse(stream);
   } catch (error) {
     return errorResponse(error);
   }

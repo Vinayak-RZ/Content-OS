@@ -18,9 +18,7 @@ Topics can be anything substantive where this person has a credible take.
 Never use generic AI hype phrases. Never use listicle formats.
 Write in first person. Be specific. Add a real opinion or lesson.
 
-${contentAngle}
-
-Return ONLY valid JSON with keys: post, hooks (array of exactly 3 strings), ctas (array of 2-3 strings), imageIdea (string).`;
+${contentAngle}`;
 }
 
 export function buildGenerationMessages(params: {
@@ -53,6 +51,8 @@ export function buildGenerationMessages(params: {
 
   const systemContent = `${buildGenerationSystemBase(params.personaType, params.personaCustom)}
 
+Return ONLY valid JSON with keys: post, hooks (array of exactly 3 strings), ctas (array of 2-3 strings), imageIdea (string).
+
 WRITING STYLE:
 ${writing}`;
 
@@ -77,6 +77,91 @@ Return JSON: { "post", "hooks", "ctas", "imageIdea" }`;
   return [
     { role: "system", content: systemContent.slice(0, 32000) },
     { role: "user", content: userContent.slice(0, 32000) },
+  ];
+}
+
+/** Stream-friendly: post body only (plain text). */
+export function buildGenerationBodyMessages(params: {
+  retrieved: RetrievedKnowledgeContext;
+  topicTitle: string;
+  topicSummary: string;
+  sources: string[];
+  personaType?: string | null;
+  personaCustom?: string | null;
+}): ChatMessage[] {
+  const writing =
+    params.retrieved.writingStyleBlock.trim().length > 0
+      ? params.retrieved.writingStyleBlock
+      : "(No writing-style.md chunks yet - use a concise, credible voice.)";
+
+  const narrative =
+    params.retrieved.founderContextBlock.trim().length > 0
+      ? params.retrieved.founderContextBlock
+      : "(No background/narrative chunks passed the similarity threshold.)";
+
+  const domain =
+    params.retrieved.technicalContextBlock.trim().length > 0
+      ? params.retrieved.technicalContextBlock
+      : "(No interests/expertise chunks passed the similarity threshold.)";
+
+  const sourcesLine =
+    params.sources.length > 0
+      ? params.sources.slice(0, 6).join("\n")
+      : "(none)";
+
+  const systemContent = `${buildGenerationSystemBase(params.personaType, params.personaCustom)}
+
+Return ONLY the post body text. No JSON. No hooks. No explanation.
+
+WRITING STYLE:
+${writing}`;
+
+  const userContent = `BACKGROUND / NARRATIVE:
+${narrative}
+
+INTERESTS & EXPERTISE (use when relevant, do not force):
+${domain}
+
+TREND CONTEXT:
+Topic: ${params.topicTitle}
+Summary: ${params.topicSummary}
+Sources:
+${sourcesLine}
+
+TASK:
+Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
+Target length: 900-1500 characters for the post body.`;
+
+  return [
+    { role: "system", content: systemContent.slice(0, 32000) },
+    { role: "user", content: userContent.slice(0, 32000) },
+  ];
+}
+
+/** After the post body is written, generate hooks/CTAs as JSON. */
+export function buildGenerationMetaMessages(params: {
+  topicTitle: string;
+  post: string;
+  personaType?: string | null;
+  personaCustom?: string | null;
+}): ChatMessage[] {
+  const audience = resolvePersonaLabel(params.personaType, params.personaCustom);
+
+  return [
+    {
+      role: "system",
+      content: `You generate hook and CTA variants for ${audience}'s social posts.
+Return ONLY valid JSON with keys: hooks (array of exactly 3 strings), ctas (array of 2-3 strings), imageIdea (string).`,
+    },
+    {
+      role: "user",
+      content: `Topic: ${params.topicTitle}
+
+POST:
+${params.post.slice(0, 12000)}
+
+Generate exactly 3 hook variants, 2-3 CTA variants, and one imageIdea string.`,
+    },
   ];
 }
 

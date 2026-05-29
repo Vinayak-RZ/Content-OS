@@ -15,6 +15,7 @@ import {
 
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
+import { consumeAppSseStream } from "@/lib/client/app-sse";
 import {
   Card,
   CardContent,
@@ -413,6 +414,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
     if (!draft) return;
     setBusy("edit");
     setToast(null);
+    let receivedDelta = false;
     try {
       const res = await fetch(`/api/draft/${draftId}/edit`, {
         method: "POST",
@@ -423,23 +425,26 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             command === "custom" ? customEdit.trim() : undefined,
         }),
       });
-      const json: unknown = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : "Edit failed";
-        throw new Error(msg);
+
+      const done = await consumeAppSseStream(res, {
+        onDelta: (_chunk, accumulated) => {
+          receivedDelta = true;
+          setContent(accumulated);
+        },
+      });
+
+      if (done.type !== "done" || !("draft" in done)) {
+        throw new Error("Edit finished without a saved draft");
       }
-      const body = json as { draft: DraftPayload };
-      setDraft(body.draft);
-      setContent(body.draft.currentContent);
+
+      const body = done.draft as DraftPayload;
+      setDraft(body);
+      setContent(body.currentContent);
+      setSaveState("saved");
       setToast("Edit applied.");
     } catch (e) {
       setToast(e instanceof Error ? e.message : "Edit failed");
+      if (!receivedDelta && draft) setContent(draft.currentContent);
     } finally {
       setBusy("idle");
     }
@@ -633,7 +638,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
           {busy === "edit" ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
-              Applying AI edit…
+              Streaming AI edit into your draft…
             </div>
           ) : null}
 

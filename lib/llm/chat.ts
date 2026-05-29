@@ -15,7 +15,28 @@ type ChatResponse = {
   error?: { message?: string };
 };
 
-function chatCompletionsUrl(kind: ResolvedDraftProvider["kind"]): string {
+function buildChatHeaders(
+  kind: ResolvedDraftProvider["kind"],
+  apiKey: string,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+  if (kind === "openrouter") {
+    const appUrl =
+      typeof process.env["NEXT_PUBLIC_APP_URL"] === "string"
+        ? process.env["NEXT_PUBLIC_APP_URL"].trim()
+        : "";
+    if (appUrl) {
+      headers["HTTP-Referer"] = appUrl;
+      headers["X-Title"] = "Content OS";
+    }
+  }
+  return headers;
+}
+
+export function chatCompletionsUrl(kind: ResolvedDraftProvider["kind"]): string {
   switch (kind) {
     case "nvidia":
       return `${NVIDIA_API_BASE}/chat/completions`;
@@ -26,6 +47,54 @@ function chatCompletionsUrl(kind: ResolvedDraftProvider["kind"]): string {
     default:
       return `${OPENROUTER_API_BASE}/chat/completions`;
   }
+}
+
+/**
+ * OpenAI-compatible streaming chat completion (OpenRouter, OpenAI, or NVIDIA).
+ */
+export async function draftChatStreamRequest(params: {
+  provider: ResolvedDraftProvider;
+  apiKey: string;
+  messages: ChatMessage[];
+  temperature?: number;
+  maxTokens?: number;
+}): Promise<Response> {
+  const {
+    provider,
+    apiKey,
+    messages,
+    temperature = 0.65,
+    maxTokens = 4096,
+  } = params;
+
+  const url = chatCompletionsUrl(provider.kind);
+  const headers = buildChatHeaders(provider.kind, apiKey);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model: provider.modelId,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      stream: true,
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+
+  if (!res.ok) {
+    let message = `LLM request failed (${res.status})`;
+    try {
+      const data = (await res.json()) as ChatResponse;
+      if (data.error?.message) message = data.error.message;
+    } catch {
+      // ignore parse errors
+    }
+    throw new Error(message);
+  }
+
+  return res;
 }
 
 /**
@@ -49,21 +118,7 @@ export async function draftChatComplete(params: {
   } = params;
 
   const url = chatCompletionsUrl(provider.kind);
-
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  };
-  if (provider.kind === "openrouter") {
-    const appUrl =
-      typeof process.env["NEXT_PUBLIC_APP_URL"] === "string"
-        ? process.env["NEXT_PUBLIC_APP_URL"].trim()
-        : "";
-    if (appUrl) {
-      headers["HTTP-Referer"] = appUrl;
-      headers["X-Title"] = "Content OS";
-    }
-  }
+  const headers = buildChatHeaders(provider.kind, apiKey);
 
   const body: Record<string, unknown> = {
     model: provider.modelId,

@@ -10,6 +10,7 @@ export const generateDraftBodySchema = z
         url: z.string().url().optional(),
       })
       .optional(),
+    stream: z.boolean().optional(),
   })
   .refine(
     (b) =>
