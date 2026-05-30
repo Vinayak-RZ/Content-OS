@@ -38,3 +38,7 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+user-api-keys.csv
+user-api-keys.json
+**/user-api-keys.*

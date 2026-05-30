@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { SidebarNav } from "@/components/app-sidebar";
 import { Logo } from "@/components/brand/logo";
+import { RouteProgress } from "@/components/navigation/route-progress";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -60,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <SidebarNav showLogo={false} onNavigate={() => setMobileOpen(false)} />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-subtle bg-background/95 px-4 backdrop-blur-sm lg:hidden">
           <button
             type="button"
@@ -75,6 +76,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         {children}
       </div>
+
+      <RouteProgress />
     </div>
   );
 }

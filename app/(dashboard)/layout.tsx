@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
-import { prisma } from "@/lib/db";
 import { privatePageMetadata } from "@/lib/seo/metadata";
 import { getSession } from "@/lib/session";
-import { userNeedsOnboarding } from "@/lib/user-settings";
 
 export const metadata: Metadata = privatePageMetadata;
 
@@ -19,11 +17,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const user = await prisma.user.findUniqueOrThrow({
-    where: { id: session.user.id },
-  });
-
-  if (userNeedsOnboarding(user)) {
+  if (!session.user.onboardingCompleted) {
     redirect("/onboarding");
   }
 

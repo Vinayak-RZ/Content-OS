@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { DraftPreviewOverlay } from "@/components/draft/draft-preview-overlay";
+import type { ClientDraftPayload } from "@/lib/drafts/serialize-for-client";
 
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
@@ -29,18 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-type DraftPayload = {
-  id: string;
-  topicTitle: string;
-  currentContent: string;
-  hookVariants: string[];
-  ctaVariants: string[];
-  selectedHook: number;
-  selectedCta: number;
-  status: string;
-  sources: string[];
-  trend: { url: string; title: string } | null;
-};
+type DraftPayload = ClientDraftPayload;
 
 type EditGroup = {
   title: string;
@@ -283,19 +273,25 @@ function HookCtaPanel({
   );
 }
 
-export function DraftWorkspace({ draftId }: { draftId: string }) {
+export function DraftWorkspace({
+  draftId,
+  initialDraft = null,
+}: {
+  draftId: string;
+  initialDraft?: ClientDraftPayload | null;
+}) {
   const router = useRouter();
-  const [draft, setDraft] = useState<DraftPayload | null>(null);
+  const [draft, setDraft] = useState<DraftPayload | null>(initialDraft);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [content, setContent] = useState("");
-  const [hookIx, setHookIx] = useState(0);
-  const [ctaIx, setCtaIx] = useState(0);
+  const [content, setContent] = useState(initialDraft?.currentContent ?? "");
+  const [hookIx, setHookIx] = useState(initialDraft?.selectedHook ?? 0);
+  const [ctaIx, setCtaIx] = useState(initialDraft?.selectedCta ?? 0);
   const [busy, setBusy] = useState<"idle" | "load" | "edit" | "publish">(
-    "load",
+    initialDraft ? "idle" : "load",
   );
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved" | "error"
-  >("idle");
+  >(initialDraft ? "saved" : "idle");
   const [customEdit, setCustomEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [assembleOpen, setAssembleOpen] = useState(false);
@@ -338,8 +334,9 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   }, [draftId]);
 
   useEffect(() => {
+    if (initialDraft) return;
     void load();
-  }, [load]);
+  }, [load, initialDraft]);
 
   useEffect(() => {
     latestDraftRef.current = draft;

@@ -129,6 +129,19 @@
   .surface-forest blockquote {
     color: inherit;
   }
+
+  .route-progress-bar {
+    animation: route-progress-slide 1.1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+}
+
+@keyframes route-progress-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

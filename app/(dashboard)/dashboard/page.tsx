@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const session = await getSession();
   const userId = session!.user!.id;
 
-  const [trends, visiblePoolCount, latestBatchRow, knowledgeFilled, userKeys] =
+  const [trends, visiblePoolCount, latestBatchRow, knowledgeFilled, userKeys, lastLog] =
     await Promise.all([
     fetchTrendsForDashboard(userId, DASHBOARD_POOL_FETCH_LIMIT),
     countVisibleTrendsForDashboard(userId),
@@ -29,19 +29,18 @@ export default async function DashboardPage() {
       where: { id: userId },
       select: { tavilyApiKey: true },
     }),
+    prisma.cronLog.findFirst({
+      where: { userId },
+      orderBy: { runAt: "desc" },
+      select: {
+        runAt: true,
+        success: true,
+        totalDiscovered: true,
+      },
+    }),
   ]);
   const serialized = trends.map(serializeDashboardTrend);
   const latestBatchId = latestBatchRow?.discoveryBatchId ?? null;
-
-  const lastLog = await prisma.cronLog.findFirst({
-    where: { userId },
-    orderBy: { runAt: "desc" },
-    select: {
-      runAt: true,
-      success: true,
-      totalDiscovered: true,
-    },
-  });
 
   const lastDiscovery = lastLog
     ? {
