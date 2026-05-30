@@ -94,10 +94,10 @@ export function NavigationProgressProvider({
   );
 }
 
-const noopNavigation = {
+const noopNavigation: NavigationProgressContextValue = {
   pendingPath: null,
   isNavigating: false,
-  startNavigation: (_href: string) => {},
+  startNavigation: () => {},
 };
 
 export function useNavigationProgress(): NavigationProgressContextValue {
