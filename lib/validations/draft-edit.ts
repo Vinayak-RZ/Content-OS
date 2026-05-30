@@ -14,6 +14,7 @@ export const draftEditBodySchema = z.object({
     "clearerExplanation",
     "addAnalogy",
     "improveEnding",
+    "addHashtags",
     "custom",
   ]),
   customInstruction: z.string().max(2000).optional(),

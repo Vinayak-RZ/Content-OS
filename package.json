@@ -11,7 +11,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "admin:export-keys": "node scripts/export-user-keys.mjs",
+    "admin:export-keys:csv": "node scripts/export-user-keys.mjs --csv"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

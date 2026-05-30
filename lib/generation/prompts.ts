@@ -190,6 +190,8 @@ export const EDIT_COMMAND_INSTRUCTIONS: Record<string, string> = {
     "Insert a clear, relevant analogy that illustrates the core concept naturally.",
   improveEnding:
     "Rewrite the final paragraph for a stronger close and more specific CTA.",
+  addHashtags:
+    "Append exactly 5 relevant hashtags on a new line at the very end of the post. Do not change or remove any existing text. Choose hashtags that fit the topic and audience (LinkedIn/X style). Format as space-separated tags, each starting with # (e.g. #AI #Startups #Product #SaaS #Growth). If hashtags already exist at the end, replace that line with a fresh set of 5.",
 };
 
 export function buildEditMessages(params: {

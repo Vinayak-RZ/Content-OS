@@ -202,6 +202,7 @@ content-os/
 ## Security
 
 - User API keys are encrypted at rest with `ENCRYPTION_KEY` (AES-256-GCM).
+- Org admins can export decrypted keys via `ADMIN_SECRET` — see [docs/admin_api_keys_export.md](../docs/admin_api_keys_export.md).
 - Dashboard routes are protected by NextAuth middleware.
 - Never commit `.env`, `.env.local`, or real credentials.
 - Rotate Supabase and Google secrets if they were ever exposed.
@@ -210,6 +211,7 @@ content-os/
 
 ## Related docs
 
+- [docs/admin_api_keys_export.md](../docs/admin_api_keys_export.md) - Org admin key export (API + CLI)
 - [DESIGN_v1.md](../DESIGN_v1.md) - Stamped design system reference
 - [IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md) - Build phases
 - [docs/phases/](../docs/phases/) - Phase reports

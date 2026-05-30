@@ -76,6 +76,12 @@ const AI_EDIT_GROUPS: EditGroup[] = [
       { id: "improveEnding", label: "Better ending" },
     ],
   },
+  {
+    title: "Publish",
+    commands: [
+      { id: "addHashtags", label: "Add more hashtags", hint: "5 hashtags" },
+    ],
+  },
 ];
 
 function assemblePost(d: DraftPayload): string {
