@@ -26,22 +26,43 @@ const features = [
   {
     icon: Radar,
     title: "Signal discovery",
-    body: "Pulls from Hacker News, Instagram, Reddit, RSS, and GitHub. Ranks topics against your knowledge base so you see what matters, not what is loudest.",
+    body: "HN, Reddit, RSS, GitHub, and more. Topics rank against your knowledge so you see what fits, not what's loudest.",
   },
   {
     icon: BookOpen,
     title: "Grounded in you",
-    body: "Your knowledge base defines your angle. Topics rank against your profile - so posts sound like you, not a generic AI feed. Built for personal branding that compounds.",
+    body: "Your knowledge base sets the angle. Posts sound like you, not a generic feed.",
   },
   {
     icon: PenLine,
     title: "Drafts in your voice",
-    body: "Generate long-form drafts from any topic. Edit inline, revise with AI, and keep a library of work in progress.",
+    body: "Long-form drafts from any topic. Edit inline, revise with AI, keep a library of work in progress.",
   },
   {
     icon: Sparkles,
     title: "Publish on your terms",
-    body: "No auto-posting. You approve every word before it leaves. Content OS amplifies thinking; you keep the pen.",
+    body: "No auto-posting. You approve every word. Content OS amplifies thinking; you keep the pen.",
+  },
+];
+
+const previewTopics = [
+  {
+    score: "8.6",
+    title: "One great post beats five rushed ones",
+    titleShort: "One post beats five rushed",
+    tag: "Saved",
+  },
+  {
+    score: "7.4",
+    title: "Free tools replacing paid apps this year",
+    titleShort: "Free tools replacing paid apps",
+    tag: "HN",
+  },
+  {
+    score: "6.9",
+    title: "What creators wish they knew before posting daily",
+    titleShort: "Before posting daily",
+    tag: "Insta",
   },
 ];
 
@@ -127,7 +148,7 @@ export function LandingPage({
               data-hero-reveal
               className="mb-6 font-heading text-xs font-semibold uppercase tracking-[0.12em] text-brand"
             >
-              For founders, creators & personal brands
+              Founders & creators
             </p>
             <h1
               data-hero-reveal
@@ -140,20 +161,12 @@ export function LandingPage({
               data-hero-reveal
               className="mx-auto mt-6 max-w-2xl text-balance text-body-lg text-muted-foreground"
             >
-              Content OS discovers high-signal topics, drafts in your voice, and
-              helps you build a personal brand - without the grind of starting
-              from a blank page every time.
-            </p>
-            <p
-              data-hero-reveal
-              className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground/90"
-            >
-              Free forever - use your own API keys and stay within provider free
-              tiers for reasonable everyday usage.
+              Content OS finds high-signal topics and drafts in your voice. Free
+              with your API keys, no auto-posting.
             </p>
             <div
               data-hero-reveal
-              className="mt-10 flex flex-wrap items-center justify-center gap-3"
+              className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center"
             >
               <LandingAuthButtons
                 isAuthenticated={isAuthenticated}
@@ -161,9 +174,13 @@ export function LandingPage({
                 size="lg"
                 layout="hero"
               />
-              <Link href="#how-it-works">
-                <Button variant="ghost" size="lg" className="gap-2">
-                  See how it works
+              <Link href="#how-it-works" className="w-full sm:w-auto">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full gap-2 sm:w-auto"
+                >
+                  How it works
                   <ArrowRight className="size-4" />
                 </Button>
               </Link>
@@ -180,32 +197,16 @@ export function LandingPage({
               <span className="size-2.5 rounded-full bg-muted-foreground/30" />
               <span className="size-2.5 rounded-full bg-muted-foreground/30" />
               <span className="ml-3 font-heading text-xs font-medium text-muted-foreground">
-                Dashboard · Topic board
+                Topic board
               </span>
             </div>
             <div className="grid gap-4 p-6 sm:grid-cols-3 sm:p-8">
-              {[
-                {
-                  score: "8.6",
-                  title: "Why one good post beats five rushed ones",
-                  tag: "Saved",
-                },
-                {
-                  score: "7.4",
-                  title: "Free tools replacing paid apps this year",
-                  tag: "HN",
-                },
-                {
-                  score: "6.9",
-                  title: "What creators wish they knew before posting daily",
-                  tag: "Insta",
-                },
-              ].map((item) => (
+              {previewTopics.map((item) => (
                 <div
                   key={item.title}
                   className="rounded-lg border border-subtle bg-background p-4"
                 >
-                  <div className="mb-3 flex items-center justify-between">
+                  <div className="mb-2.5 flex items-center justify-between sm:mb-3">
                     <span className="rounded-full bg-brand-muted px-2 py-0.5 font-heading text-[10px] font-semibold uppercase tracking-wide text-brand">
                       {item.tag}
                     </span>
@@ -214,7 +215,8 @@ export function LandingPage({
                     </span>
                   </div>
                   <p className="text-sm font-medium leading-snug text-foreground">
-                    {item.title}
+                    <span className="sm:hidden">{item.titleShort}</span>
+                    <span className="hidden sm:inline">{item.title}</span>
                   </p>
                 </div>
               ))}
@@ -233,23 +235,19 @@ export function LandingPage({
               <h2 className="font-heading text-headline-md font-semibold sm:text-headline-lg">
                 Built for depth, not volume
               </h2>
-              <p className="mt-4 text-muted-foreground">
-                A focused workflow from discovery to draft. No feed addiction,
-                no auto-publishing, no subscription.
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground/90">
-                The app is free forever. Optional AI and discovery keys are yours
-                - most providers&apos; free tiers are enough for regular use.
+              <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base">
+                Discovery to draft in one workflow. No feed addiction, no
+                auto-publishing, free with your keys.
               </p>
             </div>
-            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:gap-8">
+            <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-6 lg:gap-8">
               {features.map((f) => {
                 const Icon = f.icon;
                 return (
                   <article
                     key={f.title}
                     data-feature-card
-                    className="rounded-xl border border-subtle bg-card p-8 shadow-ambient"
+                    className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8"
                   >
                     <div className="mb-5 flex size-10 items-center justify-center rounded-md bg-accent text-accent-foreground">
                       <Icon className="size-5" strokeWidth={1.75} />
@@ -281,9 +279,8 @@ export function LandingPage({
               >
                 Frequently asked questions
               </h2>
-              <p className="mt-4 text-muted-foreground">
-                Quick answers about Content OS - what it is, how pricing works,
-                and how your data stays under your control.
+              <p className="mt-3 text-sm text-muted-foreground sm:mt-4">
+                Pricing, keys, and how your data stays yours.
               </p>
             </div>
             <LandingFaq />
@@ -295,13 +292,12 @@ export function LandingPage({
         {/* CTA */}
         <section className="surface-forest border-t border-forest-foreground/10 py-section">
           <div className="container-stamped text-center">
-            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-4xl">
               Ready to write with signal?
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-forest-foreground/80">
-              Free forever. Sign in with Google, set up in minutes, and add API
-              keys only when you want drafts or discovery - your keys stay
-              encrypted.
+            <p className="mx-auto mt-3 max-w-md text-sm text-forest-foreground/80 sm:mt-4 sm:max-w-lg sm:text-base">
+              Free forever. Sign in with Google, add keys when you want drafts
+              or discovery.
             </p>
             <div className="mt-8">
               <LandingAuthButtons

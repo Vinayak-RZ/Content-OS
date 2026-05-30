@@ -12,8 +12,7 @@ export const LANDING_STEPS = [
   {
     num: "01",
     label: "Connect",
-    detail:
-      "Sign in free. Add optional API keys when you're ready - free tiers cover reasonable usage.",
+    detail: "Sign in free. Add API keys when you're ready.",
   },
   {
     num: "02",
@@ -53,14 +52,17 @@ function StaticStepsList({ className }: { className?: string }) {
   return (
     <ol className={cn("mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2", className)}>
       {LANDING_STEPS.map((step) => (
-        <li key={step.num}>
-          <span className="font-display text-3xl font-bold text-brand/30">
+        <li key={step.num} className="flex gap-4">
+          <div
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-subtle bg-card font-heading text-xs font-semibold text-muted-foreground shadow-[0_0_0_4px_hsl(var(--card))]"
+            aria-hidden
+          >
             {step.num}
-          </span>
-          <h3 className="mt-2 font-heading text-base font-semibold">
-            {step.label}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">{step.detail}</p>
+          </div>
+          <div className="min-w-0 pt-1">
+            <h3 className="font-heading text-base font-semibold">{step.label}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{step.detail}</p>
+          </div>
         </li>
       ))}
     </ol>
@@ -143,11 +145,10 @@ function StepsGraph({ motionEnabled }: StepsGraphProps) {
                 data-active={index === 0 ? "true" : "false"}
                 className={cn(
                   "relative z-10 flex size-10 items-center justify-center rounded-full border font-heading text-xs font-semibold",
-                  "border-subtle bg-background text-muted-foreground",
-                  "shadow-[0_0_0_4px_hsl(var(--background))]",
+                  "border-subtle bg-card text-muted-foreground",
+                  "shadow-[0_0_0_5px_hsl(var(--card))]",
                   "transition-[background-color,border-color,color,box-shadow,transform] duration-700 ease-out",
-                  "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-[0_0_0_4px_hsl(var(--background)),0_1px_2px_rgba(0,0,0,0.06)]",
-                  !motionEnabled && "data-[active=false]:opacity-80",
+                  "data-[active=true]:scale-105 data-[active=true]:border-brand data-[active=true]:bg-brand data-[active=true]:text-brand-foreground data-[active=true]:shadow-[0_0_0_5px_hsl(var(--background)),0_1px_2px_rgba(0,0,0,0.06)]",
                 )}
               >
                 {step.num}

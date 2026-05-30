@@ -34,8 +34,8 @@ export function LandingAuthButtons({
     }
 
     return (
-      <Link href={dashboardHref}>
-        <Button size={size}>
+      <Link href={dashboardHref} className="w-full sm:w-auto">
+        <Button size={size} className="w-full sm:w-auto">
           {layout === "hero" ? "Go to dashboard" : "Open dashboard"}
         </Button>
       </Link>
@@ -73,10 +73,15 @@ export function LandingAuthButtons({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3">
-      <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
-      <Link href="/login">
-        <Button variant="ghost" size={size}>
+    <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
+      <SignInButton
+        size={size}
+        callbackUrl="/dashboard"
+        label="Get started"
+        className="w-full sm:w-auto"
+      />
+      <Link href="/login" className="w-full sm:w-auto">
+        <Button variant="ghost" size={size} className="w-full sm:w-auto">
           Sign in
         </Button>
       </Link>
