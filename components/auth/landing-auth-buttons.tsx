@@ -9,6 +9,7 @@ interface LandingAuthButtonsProps {
   dashboardHref: string;
   size?: "sm" | "lg";
   layout?: "header" | "hero" | "cta";
+  buttonClassName?: string;
 }
 
 export function LandingAuthButtons({
@@ -16,6 +17,7 @@ export function LandingAuthButtons({
   dashboardHref,
   size = "sm",
   layout = "header",
+  buttonClassName,
 }: LandingAuthButtonsProps) {
   if (isAuthenticated) {
     if (layout === "header") {
@@ -34,8 +36,8 @@ export function LandingAuthButtons({
     }
 
     return (
-      <Link href={dashboardHref} className="w-full sm:w-auto">
-        <Button size={size} className="w-full sm:w-auto">
+      <Link href={dashboardHref}>
+        <Button size={size} className={buttonClassName}>
           {layout === "hero" ? "Go to dashboard" : "Open dashboard"}
         </Button>
       </Link>
@@ -73,15 +75,15 @@ export function LandingAuthButtons({
   }
 
   return (
-    <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
+    <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
       <SignInButton
         size={size}
         callbackUrl="/dashboard"
         label="Get started"
-        className="w-full sm:w-auto"
+        className={buttonClassName}
       />
-      <Link href="/login" className="w-full sm:w-auto">
-        <Button variant="ghost" size={size} className="w-full sm:w-auto">
+      <Link href="/login">
+        <Button variant="ghost" size={size} className={buttonClassName}>
           Sign in
         </Button>
       </Link>

@@ -56,6 +56,75 @@ export function ProfilePromptPanel({
     [personaType, personaCustom],
   );
 
+  function toggleBuilder(): void {
+    setBuilderOpen((v) => {
+      if (!v) setHowExpanded(false);
+      return !v;
+    });
+  }
+
+  function renderBuildButton(extraClassName?: string) {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant={builderOpen ? "secondary" : "default"}
+        className={cn("shrink-0 whitespace-nowrap", extraClassName)}
+        onClick={toggleBuilder}
+      >
+        {builderOpen ? "Close builder" : "Build here"}
+      </Button>
+    );
+  }
+
+  function renderCopyButton(extraClassName?: string) {
+    return (
+      <CopyButton
+        text={prompt}
+        label="Copy prompt"
+        copiedLabel="Copied!"
+        size="sm"
+        variant="outline"
+        className={cn("shrink-0 whitespace-nowrap", extraClassName)}
+      />
+    );
+  }
+
+  function renderHowItWorksButton(extraClassName?: string) {
+    return (
+      <button
+        type="button"
+        onClick={() => setHowExpanded((v) => !v)}
+        className={cn(
+          "inline-flex shrink-0 items-center gap-0.5 text-xs font-medium text-brand hover:underline",
+          extraClassName,
+        )}
+        aria-expanded={howExpanded}
+      >
+        {howExpanded ? "Show less" : "How it works"}
+        {howExpanded ? (
+          <ChevronUp className="size-3.5" />
+        ) : (
+          <ChevronDown className="size-3.5" />
+        )}
+      </button>
+    );
+  }
+
+  function renderActionButtonPair(orientation: "vertical" | "horizontal") {
+    const pairClassName =
+      orientation === "vertical"
+        ? "col-start-2 row-start-1 row-span-2 grid w-max grid-rows-2 items-center gap-y-2.5"
+        : "inline-grid w-max grid-cols-2 items-center gap-2";
+
+    return (
+      <div className={pairClassName}>
+        {renderBuildButton("w-full")}
+        {renderCopyButton("w-full")}
+      </div>
+    );
+  }
+
   return (
     <section className={cn("space-y-4", className)}>
       <div
@@ -63,43 +132,24 @@ export function ProfilePromptPanel({
           "rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 sm:px-4 sm:py-3",
         )}
       >
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        {/* Mobile: title + How it works on the left; buttons on the right */}
+        <div className="grid grid-cols-[1fr_auto] grid-rows-2 items-center gap-x-3 gap-y-2.5 sm:hidden">
+          <p className="col-start-1 row-start-1 min-w-0 text-sm font-medium leading-snug text-foreground">
+            Build knowledge files
+          </p>
+          <div className="col-start-1 row-start-2 justify-self-start">
+            {renderHowItWorksButton()}
+          </div>
+          {renderActionButtonPair("vertical")}
+        </div>
+
+        {/* Desktop: original single-row layout */}
+        <div className="hidden flex-wrap items-center gap-2 sm:flex sm:gap-3">
           <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground">
             Build knowledge files
           </p>
-          <Button
-            type="button"
-            size="sm"
-            variant={builderOpen ? "secondary" : "default"}
-            className="shrink-0"
-            onClick={() => {
-              setBuilderOpen((v) => !v);
-              if (!builderOpen) setHowExpanded(false);
-            }}
-          >
-            {builderOpen ? "Close builder" : "Build here"}
-          </Button>
-          <CopyButton
-            text={prompt}
-            label="Copy prompt"
-            copiedLabel="Copied!"
-            size="sm"
-            variant="outline"
-            className="shrink-0"
-          />
-          <button
-            type="button"
-            onClick={() => setHowExpanded((v) => !v)}
-            className="inline-flex shrink-0 items-center gap-0.5 text-xs font-medium text-brand hover:underline"
-            aria-expanded={howExpanded}
-          >
-            {howExpanded ? "Show less" : "How it works"}
-            {howExpanded ? (
-              <ChevronUp className="size-3.5" />
-            ) : (
-              <ChevronDown className="size-3.5" />
-            )}
-          </button>
+          {renderActionButtonPair("horizontal")}
+          {renderHowItWorksButton()}
         </div>
 
         {howExpanded ? (

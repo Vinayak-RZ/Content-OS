@@ -45,6 +45,9 @@ const features = [
   },
 ];
 
+const HERO_CTA_BUTTON_CLASS =
+  "w-[13.25rem] justify-center px-8";
+
 const previewTopics = [
   {
     score: "8.6",
@@ -166,19 +169,20 @@ export function LandingPage({
             </p>
             <div
               data-hero-reveal
-              className="mx-auto mt-10 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center"
+              className="mx-auto mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap"
             >
               <LandingAuthButtons
                 isAuthenticated={isAuthenticated}
                 dashboardHref={dashboardHref}
                 size="lg"
                 layout="hero"
+                buttonClassName={HERO_CTA_BUTTON_CLASS}
               />
-              <Link href="#how-it-works" className="w-full sm:w-auto">
+              <Link href="#how-it-works">
                 <Button
                   variant="ghost"
                   size="lg"
-                  className="w-full gap-2 sm:w-auto"
+                  className={`gap-2 ${HERO_CTA_BUTTON_CLASS}`}
                 >
                   How it works
                   <ArrowRight className="size-4" />
