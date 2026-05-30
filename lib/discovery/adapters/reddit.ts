@@ -21,9 +21,12 @@ export async function fetchRedditHot(
 
   const candidates: TrendCandidate[] = [];
   const ua = "ContentOS/1.0 (discovery bot; +https://localhost)";
+  const subs = [...REDDIT_SUBREDDITS].sort(() => Math.random() - 0.5);
+  const maxPerSub = Math.max(2, Math.ceil(budget / Math.max(subs.length, 1)));
 
-  for (const sub of REDDIT_SUBREDDITS) {
+  for (const sub of subs) {
     if (candidates.length >= budget) break;
+    let takenFromSub = 0;
     try {
       const res = await fetch(
         `https://www.reddit.com/r/${sub}/hot.json?limit=15&raw_json=1`,
@@ -37,7 +40,7 @@ export async function fetchRedditHot(
       const json = (await res.json()) as { data?: { children?: RedditChild[] } };
       const children = json.data?.children ?? [];
       for (const c of children) {
-        if (candidates.length >= budget) break;
+        if (candidates.length >= budget || takenFromSub >= maxPerSub) break;
         const d = c.data;
         if (!d?.title) continue;
         const rawUrl = d.url && /^https?:\/\//i.test(d.url) ? d.url : "";
@@ -60,6 +63,7 @@ export async function fetchRedditHot(
           discoveredAt: new Date(),
           metadata: { subreddit: sub },
         });
+        takenFromSub += 1;
       }
     } catch {
       /* skip sub */

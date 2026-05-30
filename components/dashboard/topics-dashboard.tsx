@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronDown, ChevronUp, Link2, Loader2 } from "lucide-react";
 import { generateDraftStream } from "@/lib/client/generate-draft-stream";
 import {
@@ -13,6 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
 import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { KnowledgeEmptyBanner } from "@/components/dashboard/knowledge-empty-banner";
+import { TavilySetupBanner } from "@/components/dashboard/tavily-setup-banner";
 import { TopicCard } from "@/components/dashboard/topic-card";
 import { TopicPickPlaceholder } from "@/components/dashboard/topic-pick-placeholder";
 import { TopicPoolTable } from "@/components/dashboard/topic-pool-table";
@@ -35,6 +37,7 @@ export function TopicsDashboard({
   visiblePoolCount,
   latestBatchId,
   showKnowledgeBanner = false,
+  showTavilyBanner = false,
 }: {
   initialTrends: SerializedDashboardTrend[];
   lastDiscovery: {
@@ -45,6 +48,7 @@ export function TopicsDashboard({
   visiblePoolCount: number;
   latestBatchId: string | null;
   showKnowledgeBanner?: boolean;
+  showTavilyBanner?: boolean;
 }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -99,6 +103,8 @@ const TOP_PICKS_COUNT = 3;
           <DiscoveryRunButton onCompleted={refresh} compact />
         </div>
       </section>
+
+      {showTavilyBanner ? <TavilySetupBanner /> : null}
 
       {initialTrends.length === 0 ? (
         <>
@@ -294,7 +300,16 @@ function CustomTopicComposer({
       <CardHeader>
         <CardTitle className="text-lg">Custom topic</CardTitle>
         <CardDescription>
-          Paste a URL (Firecrawl key required) or write your own angle - generates a draft with your Knowledge context.
+          Paste a URL (
+          <Link
+            href="/settings"
+            className="text-brand underline-offset-4 hover:underline"
+          >
+            Firecrawl key in Settings
+          </Link>
+          {" "}
+          required) or write your own angle — generates a draft with your Knowledge
+          context.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

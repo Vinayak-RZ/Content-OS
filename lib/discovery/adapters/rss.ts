@@ -24,14 +24,17 @@ export async function fetchRssFeeds(
   }
 
   const candidates: TrendCandidate[] = [];
+  const feeds = [...DEFAULT_RSS_FEEDS].sort(() => Math.random() - 0.5);
+  const maxPerFeed = Math.max(2, Math.ceil(budget / Math.max(feeds.length, 1)));
 
-  for (const feedUrl of DEFAULT_RSS_FEEDS) {
+  for (const feedUrl of feeds) {
     if (candidates.length >= budget) break;
+    let takenFromFeed = 0;
     try {
       const feed = await parser.parseURL(feedUrl);
       const titleBase = feed.title ?? "RSS";
       for (const item of feed.items ?? []) {
-        if (candidates.length >= budget) break;
+        if (candidates.length >= budget || takenFromFeed >= maxPerFeed) break;
         const link = item.link;
         if (!link || !/^https?:\/\//i.test(link)) continue;
         const title = (item.title ?? "Untitled").slice(0, 200);
@@ -51,6 +54,7 @@ export async function fetchRssFeeds(
           discoveredAt: new Date(),
           metadata: { feedUrl },
         });
+        takenFromFeed += 1;
       }
     } catch {
       /* feed failed */

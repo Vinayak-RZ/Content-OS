@@ -53,7 +53,7 @@ export function DraftOpenBadge({ className }: { className?: string }) {
     <Badge
       variant="default"
       className={cn(
-        "rounded-md border-subtle bg-card px-2.5 py-0.5 font-heading text-[11px] font-semibold normal-case tracking-wide text-foreground shadow-pill",
+        "rounded-md border-brand-border bg-brand px-2.5 py-0.5 font-heading text-[11px] font-semibold normal-case tracking-wide text-brand-foreground shadow-pill transition-colors hover:bg-brand/90",
         className,
       )}
     >

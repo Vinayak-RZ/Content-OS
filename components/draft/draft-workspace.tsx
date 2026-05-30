@@ -7,11 +7,13 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
-  Copy,
+  Eye,
   Loader2,
   Send,
   Sparkles,
 } from "lucide-react";
+
+import { DraftPreviewOverlay } from "@/components/draft/draft-preview-overlay";
 
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
@@ -291,6 +293,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
   const [customEdit, setCustomEdit] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [assembleOpen, setAssembleOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const saveInFlight = useRef(false);
   const latestDraftRef = useRef<DraftPayload | null>(null);
   const latestContentRef = useRef("");
@@ -551,11 +554,11 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
         type="button"
         variant="outline"
         disabled={busy !== "idle"}
-        onClick={() => void copyAssembled()}
+        onClick={() => setPreviewOpen(true)}
         className="gap-1"
       >
-        <Copy className="size-4" />
-        Copy full post
+        <Eye className="size-4" />
+        Preview
       </Button>
       <Button
         type="button"
@@ -609,9 +612,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
         ) : null}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px] xl:gap-8">
-        {/* Primary column - body, actions, AI edits */}
-        <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
+      <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
           <div className="grid gap-2">
             <div className="flex items-baseline justify-between gap-2">
               <Label htmlFor="body" className="text-base font-semibold">
@@ -649,8 +650,7 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             onRun={(cmd) => void runEdit(cmd)}
           />
 
-          {/* Mobile: hook/CTA collapsed below the fold */}
-          <div className="xl:hidden">
+          <div>
             <button
               type="button"
               onClick={() => setAssembleOpen((v) => !v)}
@@ -676,38 +676,10 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
                   onCtaChange={setCtaIx}
                   compact
                 />
-                <details className="mt-3">
-                  <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-                    Preview full post
-                  </summary>
-                  <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-3 text-xs leading-relaxed">
-                    {assembledPreview}
-                  </pre>
-                </details>
               </div>
             ) : null}
           </div>
-        </div>
 
-        {/* Sidebar - hook, CTA, preview (desktop only) */}
-        <aside className="hidden flex-col gap-4 xl:flex">
-          <HookCtaPanel
-            draft={draft}
-            hookIx={hookIx}
-            ctaIx={ctaIx}
-            onHookChange={setHookIx}
-            onCtaChange={setCtaIx}
-          />
-          <Card className="border-dashed border-border/80 bg-muted/10 shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Full post preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground">
-                {assembledPreview}
-              </pre>
-            </CardContent>
-          </Card>
           {draft.sources.length > 0 ? (
             <Card className="shadow-pill">
               <CardHeader className="pb-2">
@@ -728,10 +700,9 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
               </CardContent>
             </Card>
           ) : null}
-        </aside>
-      </div>
+        </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-subtle bg-background/95 px-4 py-2.5 backdrop-blur-sm xl:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-subtle bg-background/95 px-4 py-2.5 backdrop-blur-sm lg:hidden">
         <div className="flex gap-2">
           <Button
             type="button"
@@ -749,10 +720,10 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
             size="sm"
             className="flex-1 gap-1"
             disabled={busy !== "idle"}
-            onClick={() => void copyAssembled()}
+            onClick={() => setPreviewOpen(true)}
           >
-            <Copy className="size-3.5" />
-            Copy
+            <Eye className="size-3.5" />
+            Preview
           </Button>
           <Button
             type="button"
@@ -766,9 +737,17 @@ export function DraftWorkspace({ draftId }: { draftId: string }) {
         </div>
       </div>
 
+      {previewOpen ? (
+        <DraftPreviewOverlay
+          text={assembledPreview}
+          onClose={() => setPreviewOpen(false)}
+          onCopy={() => void copyAssembled()}
+        />
+      ) : null}
+
       {toast ? (
         <p
-          className="fixed bottom-16 left-4 right-4 z-30 rounded-lg border border-subtle bg-card px-3 py-2 text-center text-sm shadow-pill xl:static xl:mt-4 xl:border-0 xl:bg-transparent xl:p-0 xl:text-left xl:shadow-none"
+          className="fixed bottom-16 left-4 right-4 z-30 rounded-lg border border-subtle bg-card px-3 py-2 text-center text-sm shadow-pill lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0 lg:text-left lg:shadow-none"
           role="status"
         >
           {toast}

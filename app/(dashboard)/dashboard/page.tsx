@@ -1,5 +1,6 @@
 import { TopicsDashboard } from "@/components/dashboard/topics-dashboard";
 import { AppHeader } from "@/components/app-header";
+import { hasEncryptedSecret } from "@/lib/crypto";
 import { prisma } from "@/lib/db";
 import { userHasFilledKnowledge } from "@/lib/knowledge/is-filled";
 import { getSession } from "@/lib/session";
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
   const session = await getSession();
   const userId = session!.user!.id;
 
-  const [trends, visiblePoolCount, latestBatchRow, knowledgeFilled] =
+  const [trends, visiblePoolCount, latestBatchRow, knowledgeFilled, userKeys] =
     await Promise.all([
     fetchTrendsForDashboard(userId, DASHBOARD_POOL_FETCH_LIMIT),
     countVisibleTrendsForDashboard(userId),
@@ -24,6 +25,10 @@ export default async function DashboardPage() {
       select: { discoveryBatchId: true },
     }),
     userHasFilledKnowledge(userId),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { tavilyApiKey: true },
+    }),
   ]);
   const serialized = trends.map(serializeDashboardTrend);
   const latestBatchId = latestBatchRow?.discoveryBatchId ?? null;
@@ -60,6 +65,7 @@ export default async function DashboardPage() {
           visiblePoolCount={visiblePoolCount}
           latestBatchId={latestBatchId}
           showKnowledgeBanner={!knowledgeFilled}
+          showTavilyBanner={!hasEncryptedSecret(userKeys?.tavilyApiKey)}
         />
       </div>
     </>

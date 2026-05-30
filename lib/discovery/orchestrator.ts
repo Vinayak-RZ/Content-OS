@@ -83,10 +83,17 @@ export async function runDiscoveryForUser(
   };
 
   const b = Math.max(newFetchBudget, 0);
-  const hnTake = Math.min(10, Math.max(4, b + 4));
-  const rssTake = Math.min(10, Math.max(4, b + 3));
-  const rdTake = Math.min(12, Math.max(5, b + 4));
-  const ghTake = Math.min(6, Math.max(2, b + 1));
+  const noTavily = !tavilyKey;
+  const hnTake = Math.min(noTavily ? 6 : 8, Math.max(3, b + (noTavily ? 2 : 3)));
+  const rssTake = Math.min(
+    noTavily ? 20 : 14,
+    Math.max(noTavily ? 12 : 6, b + (noTavily ? 10 : 5)),
+  );
+  const rdTake = Math.min(
+    noTavily ? 20 : 14,
+    Math.max(noTavily ? 12 : 6, b + (noTavily ? 10 : 5)),
+  );
+  const ghTake = Math.min(noTavily ? 3 : 5, Math.max(1, b + (noTavily ? 0 : 1)));
   const tvTake = tavilyKey ? Math.min(16, Math.max(8, b * 3)) : 0;
   const fcTake =
     firecrawlKey && b > 0 && discoveryQueries.firecrawl[0] ? 2 : 0;
