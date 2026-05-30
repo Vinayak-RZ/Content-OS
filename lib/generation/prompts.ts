@@ -3,6 +3,15 @@ import { getContentAngle } from "@/lib/personas/content-angles";
 import { resolvePersonaLabel } from "@/lib/personas/types";
 import type { RetrievedKnowledgeContext } from "@/lib/retrieval";
 
+/** Hashtags appended when a draft is first generated. */
+export const DEFAULT_POST_HASHTAG_COUNT = 5;
+/** Hashtags when the user runs "Add more hashtags" in AI edits. */
+export const ADD_MORE_HASHTAG_COUNT = 8;
+
+function defaultHashtagInstruction(count: number): string {
+  return `End the post with a new line containing exactly ${count} relevant hashtags (space-separated, each starting with #). Choose tags that fit the topic and audience (LinkedIn/X style).`;
+}
+
 function buildGenerationSystemBase(
   personaType: string | null | undefined,
   personaCustom: string | null | undefined,
@@ -71,6 +80,7 @@ ${sourcesLine}
 TASK:
 Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
 Target length: 900-1500 characters for the post body.
+${defaultHashtagInstruction(DEFAULT_POST_HASHTAG_COUNT)}
 Also generate exactly 3 hook variants and 2-3 CTA variants.
 Return JSON: { "post", "hooks", "ctas", "imageIdea" }`;
 
@@ -130,7 +140,8 @@ ${sourcesLine}
 
 TASK:
 Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
-Target length: 900-1500 characters for the post body.`;
+Target length: 900-1500 characters for the post body.
+${defaultHashtagInstruction(DEFAULT_POST_HASHTAG_COUNT)}`;
 
   return [
     { role: "system", content: systemContent.slice(0, 32000) },
@@ -190,8 +201,7 @@ export const EDIT_COMMAND_INSTRUCTIONS: Record<string, string> = {
     "Insert a clear, relevant analogy that illustrates the core concept naturally.",
   improveEnding:
     "Rewrite the final paragraph for a stronger close and more specific CTA.",
-  addHashtags:
-    "Append exactly 5 relevant hashtags on a new line at the very end of the post. Do not change or remove any existing text. Choose hashtags that fit the topic and audience (LinkedIn/X style). Format as space-separated tags, each starting with # (e.g. #AI #Startups #Product #SaaS #Growth). If hashtags already exist at the end, replace that line with a fresh set of 5.",
+  addHashtags: `Append exactly ${ADD_MORE_HASHTAG_COUNT} relevant hashtags on a new line at the very end of the post. Do not change or remove any existing text except the hashtag line if one already exists. Choose hashtags that fit the topic and audience (LinkedIn/X style). Format as space-separated tags, each starting with #. If hashtags already exist at the end, replace that line with a fresh set of ${ADD_MORE_HASHTAG_COUNT}.`,
 };
 
 export function buildEditMessages(params: {

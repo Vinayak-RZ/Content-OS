@@ -79,7 +79,7 @@ const AI_EDIT_GROUPS: EditGroup[] = [
   {
     title: "Publish",
     commands: [
-      { id: "addHashtags", label: "Add more hashtags", hint: "5 hashtags" },
+      { id: "addHashtags", label: "Add more hashtags", hint: "8 hashtags" },
     ],
   },
 ];

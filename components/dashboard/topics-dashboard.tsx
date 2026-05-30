@@ -104,8 +104,6 @@ const TOP_PICKS_COUNT = 3;
         </div>
       </section>
 
-      {showTavilyBanner ? <TavilySetupBanner /> : null}
-
       {initialTrends.length === 0 ? (
         <>
           <Card className="border-dashed border-border/80 bg-muted/20 shadow-none">
@@ -210,6 +208,8 @@ const TOP_PICKS_COUNT = 3;
           ) : null}
         </div>
       )}
+
+      {showTavilyBanner ? <TavilySetupBanner /> : null}
 
       <CustomTopicComposer onDraftCreated={(id) => router.push(`/draft/${id}`)} />
     </div>
