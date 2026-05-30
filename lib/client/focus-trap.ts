@@ -5,6 +5,15 @@ import { useEffect, type RefObject } from "react";
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+function resolveFocusRestoreTarget(
+  returnFocusRef: RefObject<HTMLElement | null> | undefined,
+  previouslyFocused: HTMLElement | null,
+): HTMLElement | null {
+  if (!returnFocusRef) return previouslyFocused;
+  const explicitTarget = returnFocusRef.current;
+  return explicitTarget ?? previouslyFocused;
+}
+
 export function useFocusTrap(
   active: boolean,
   containerRef: RefObject<HTMLElement | null>,
@@ -15,6 +24,10 @@ export function useFocusTrap(
 
     const container = containerRef.current;
     const previouslyFocused = document.activeElement as HTMLElement | null;
+    const focusRestoreTarget = resolveFocusRestoreTarget(
+      returnFocusRef,
+      previouslyFocused,
+    );
 
     function getFocusables(): HTMLElement[] {
       return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
@@ -49,8 +62,8 @@ export function useFocusTrap(
 
     return () => {
       container.removeEventListener("keydown", onKeyDown);
-      const returnEl = returnFocusRef?.current ?? previouslyFocused;
-      returnEl?.focus?.();
+      focusRestoreTarget?.focus?.();
     };
+    // Ref objects are stable; capture return-focus target when the trap opens.
   }, [active, containerRef, returnFocusRef]);
 }
