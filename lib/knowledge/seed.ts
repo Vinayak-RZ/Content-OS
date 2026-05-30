@@ -4,22 +4,16 @@ import { join } from "path";
 import { ApiError } from "@/lib/api-error";
 import { prisma } from "@/lib/db";
 import {
-  KNOWLEDGE_SEED_DIR,
   SYSTEM_KNOWLEDGE_FILES,
 } from "@/lib/knowledge/constants";
 import { createKnowledgeDocument } from "@/lib/knowledge/create";
 import { syncKnowledgeFile } from "@/lib/knowledge/sync";
-
-function seedRoot(): string {
-  return join(process.cwd(), ...KNOWLEDGE_SEED_DIR);
-}
 
 /** Insert missing system files from `seeds/starter/` and chunk + embed each. */
 export async function seedKnowledgeFromRepo(userId: string): Promise<{
   created: string[];
   skipped: string[];
 }> {
-  const root = seedRoot();
   const created: string[] = [];
   const skipped: string[] = [];
 
@@ -34,7 +28,10 @@ export async function seedKnowledgeFromRepo(userId: string): Promise<{
 
     let buf: string;
     try {
-      buf = await readFile(join(root, meta.fileName), "utf8");
+      buf = await readFile(
+        join(process.cwd(), "seeds", "starter", meta.fileName),
+        "utf8",
+      );
     } catch (e: unknown) {
       const code =
         typeof e === "object" &&
@@ -76,6 +73,9 @@ export async function resetSystemKnowledgeFromRepo(
   if (!meta) {
     throw new ApiError("NOT_FOUND", "Not a system document", 404);
   }
-  const buf = await readFile(join(seedRoot(), meta.fileName), "utf8");
+  const buf = await readFile(
+    join(process.cwd(), "seeds", "starter", meta.fileName),
+    "utf8",
+  );
   await syncKnowledgeFile(userId, slug, buf);
 }

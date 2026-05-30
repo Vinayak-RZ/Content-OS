@@ -1,8 +1,7 @@
 {
   "functions": {
     "app/api/**/route.js": {
-      "maxDuration": 300,
-      "excludeFiles": "{.agents/**,node_modules/@prisma/engines/**,node_modules/@swc/**,node_modules/@esbuild/**,node_modules/webpack/**,node_modules/.prisma/client/*.tmp*,node_modules/.prisma/client/schema-engine-*}"
+      "maxDuration": 300
     }
   }
 }
