@@ -100,6 +100,12 @@ export default async function AnalyticsPage() {
                 No published posts yet. Mark a draft as published when it goes
                 live.
               </p>
+              <Link
+                href="/drafts"
+                className="mt-4 inline-flex h-9 items-center justify-center rounded-xl border border-input bg-background px-4 text-sm font-medium shadow-pill hover:bg-muted/60"
+              >
+                Open drafts
+              </Link>
             </div>
           ) : (
             <ul className="divide-y divide-subtle">

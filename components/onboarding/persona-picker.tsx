@@ -15,12 +15,15 @@ type PersonaPickerProps = {
   value: PersonaType | null;
   customValue: string;
   onChange: (persona: PersonaType | null, custom: string) => void;
+  /** Persona option grid columns at sm+ breakpoints */
+  gridCols?: "2" | "3";
 };
 
 export function PersonaPicker({
   value,
   customValue,
   onChange,
+  gridCols = "2",
 }: PersonaPickerProps) {
   const [otherText, setOtherText] = useState(customValue);
 
@@ -38,7 +41,14 @@ export function PersonaPicker({
         <legend className="text-sm font-medium text-foreground">
           What best describes you?
         </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div
+          className={cn(
+            "grid gap-2",
+            gridCols === "3"
+              ? "sm:grid-cols-2 lg:grid-cols-3"
+              : "sm:grid-cols-2",
+          )}
+        >
           {PERSONA_TYPES.map((persona) => {
             const selected = value === persona;
             const description =

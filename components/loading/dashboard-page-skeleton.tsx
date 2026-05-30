@@ -3,13 +3,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 function TopicCardSkeleton() {
   return (
     <div className="flex h-full flex-col rounded-xl border border-subtle bg-card p-5 shadow-ambient">
-      <div className="mb-4 flex items-start justify-between gap-2">
+      <div className="mb-3 flex items-start justify-between gap-2">
         <Skeleton className="h-5 w-16 rounded-full" />
         <Skeleton className="h-5 w-12" />
       </div>
       <Skeleton className="mb-2 h-5 w-full" />
-      <Skeleton className="mb-4 h-5 w-4/5" />
-      <Skeleton className="mt-auto h-4 w-24" />
+      <Skeleton className="mb-3 h-4 w-full" />
+      <Skeleton className="h-4 w-24" />
       <div className="mt-4 flex gap-2">
         <Skeleton className="h-9 flex-1" />
         <Skeleton className="h-9 w-9" />

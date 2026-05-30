@@ -1,10 +1,7 @@
 import Link from "next/link";
 
 import { AppHeader } from "@/components/app-header";
-import {
-  DraftOpenBadge,
-  DraftStatusBadge,
-} from "@/components/ui/draft-status-badge";
+import { DraftsTable } from "@/components/drafts/drafts-table";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
@@ -24,6 +21,11 @@ export default async function DraftsLibraryPage() {
     },
   });
 
+  const initialDrafts = drafts.map((d) => ({
+    ...d,
+    updatedAt: d.updatedAt.toISOString(),
+  }));
+
   return (
     <>
       <AppHeader
@@ -38,50 +40,17 @@ export default async function DraftsLibraryPage() {
               No drafts yet
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Pick a topic on the dashboard and hit Generate draft to start
-              your first piece.
+              Pick a topic on the dashboard and generate your first draft.
             </p>
+            <Link
+              href="/dashboard"
+              className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-medium text-white shadow-pill"
+            >
+              Go to Dashboard
+            </Link>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-subtle bg-card shadow-ambient">
-            <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-left text-sm">
-              <thead className="border-b border-subtle bg-muted/40 font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Topic</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Updated</th>
-                  <th className="px-4 py-3 font-medium">Length</th>
-                  <th className="px-4 py-3 font-medium"> </th>
-                </tr>
-              </thead>
-              <tbody>
-                {drafts.map((d) => (
-                  <tr
-                    key={d.id}
-                    className="border-b border-border/50 last:border-0 hover:bg-muted/20"
-                  >
-                    <td className="px-4 py-3 font-medium">{d.topicTitle}</td>
-                    <td className="px-4 py-3">
-                      <DraftStatusBadge status={d.status} />
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {d.updatedAt.toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {d.currentContent.length} chars
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Link href={`/draft/${d.id}`}>
-                        <DraftOpenBadge />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          </div>
+          <DraftsTable drafts={initialDrafts} />
         )}
       </div>
     </>

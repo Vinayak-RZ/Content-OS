@@ -1,9 +1,10 @@
 "use client";
 
 import { Copy, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useFocusTrap } from "@/lib/client/focus-trap";
 import { cn } from "@/lib/utils";
 
 type DraftPreviewOverlayProps = {
@@ -19,6 +20,11 @@ export function DraftPreviewOverlay({
   onCopy,
   className,
 }: DraftPreviewOverlayProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useFocusTrap(true, panelRef, closeRef);
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -39,6 +45,7 @@ export function DraftPreviewOverlay({
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         className="flex max-h-[min(90vh,720px)] w-full max-w-2xl flex-col rounded-xl border border-subtle bg-card shadow-ambient"
         onClick={(e) => e.stopPropagation()}
       >
@@ -55,6 +62,7 @@ export function DraftPreviewOverlay({
             </p>
           </div>
           <Button
+            ref={closeRef}
             type="button"
             variant="ghost"
             size="sm"

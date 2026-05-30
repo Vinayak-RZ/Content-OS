@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
 import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
 import { Badge } from "@/components/ui/badge";
-import type { SerializedDashboardTrend } from "@/lib/trends/list";
+import { Button } from "@/components/ui/button";
+import { DASHBOARD_TOP_TOPICS_LIMIT } from "@/lib/discovery/founder-profile";
 import { formatSourceType } from "@/lib/discovery/source-labels";
+import type { SerializedDashboardTrend } from "@/lib/trends/types";
 
 type TopicPoolTableProps = {
   trends: SerializedDashboardTrend[];
@@ -16,17 +21,26 @@ function score10(finalScore: number): string {
 }
 
 export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
+  const [expanded, setExpanded] = useState(false);
+
   if (trends.length === 0) return null;
+
+  const visibleTrends = expanded
+    ? trends
+    : trends.slice(0, DASHBOARD_TOP_TOPICS_LIMIT);
+  const hasMore = trends.length > DASHBOARD_TOP_TOPICS_LIMIT;
 
   return (
     <section className="rounded-xl border border-subtle bg-card shadow-ambient">
       <div className="border-b border-subtle px-6 py-4">
         <h3 className="font-heading text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Full topic pool ({trends.length})
+          Topic pool ({trends.length})
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          All active topics without a recent draft. Generate from any row or
-          remove topics you will not use.
+          Ranked topics without a recent draft. Showing top{" "}
+          {expanded ? trends.length : Math.min(DASHBOARD_TOP_TOPICS_LIMIT, trends.length)}
+          {hasMore && !expanded ? ` of ${trends.length}` : ""}. Generate from any
+          row or remove topics you will not use.
         </p>
       </div>
       <div className="overflow-x-auto">
@@ -42,7 +56,7 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
             </tr>
           </thead>
           <tbody>
-            {trends.map((t, i) => {
+            {visibleTrends.map((t, i) => {
               const isNew =
                 latestBatchId != null && t.discoveryBatchId === latestBatchId;
               return (
@@ -96,6 +110,29 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
           </tbody>
         </table>
       </div>
+      {hasMore ? (
+        <div className="flex justify-center border-t border-subtle px-6 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="size-4" />
+                Show top {DASHBOARD_TOP_TOPICS_LIMIT}
+              </>
+            ) : (
+              <>
+                <ChevronDown className="size-4" />
+                Show all {trends.length} topics
+              </>
+            )}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }

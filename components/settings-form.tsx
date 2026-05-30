@@ -10,12 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ApiKeyField } from "@/components/ui/api-key-field";
 import { PersonaPicker } from "@/components/onboarding/persona-picker";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { KeysSummary } from "@/components/settings/keys-summary";
 import { DraftProviderSettings } from "@/components/draft-provider-fields";
+import { fetchJson } from "@/lib/client/fetch-json";
+import { toast } from "@/lib/client/toast";
 import type { SettingsResponse } from "@/lib/user-settings";
 import type { PersonaType } from "@/lib/personas/types";
-import { PROVIDER_LINKS } from "@/lib/provider-links";
 import {
   discoveryKeysPatchFromForm,
   draftSettingsPatchFromForm,
@@ -53,21 +55,20 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     setMessage(null);
     setError(null);
     try {
-      const res = await fetch("/api/settings", {
+      const result = await fetchJson<SettingsResponse>("/api/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
-      const data: unknown = await res.json();
-      if (!res.ok) {
-        const err = data as { error?: string };
-        throw new Error(err.error ?? "Failed to save settings");
-      }
-      setSettings(data as SettingsResponse);
+      if (!result.ok) throw new Error(result.error);
+      setSettings(result.data);
       setMessage("Settings saved.");
+      toast("Settings saved.", "success");
       await update();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Save failed");
+      const msg = e instanceof Error ? e.message : "Save failed";
+      setError(msg);
+      toast(msg, "error");
     } finally {
       setIsSaving(false);
     }
@@ -78,6 +79,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     const form = new FormData(e.currentTarget);
     const patch: Record<string, unknown> = {
       timezone: String(form.get("timezone") ?? settings.timezone),
+      emailDigest: form.get("emailDigest") === "on",
       personaType: personaType ?? undefined,
       personaCustom:
         personaType === "other" ? personaCustom.trim() || undefined : undefined,
@@ -95,97 +97,116 @@ export function SettingsForm({ initial }: SettingsFormProps) {
     : "none (add a key for your selected provider)";
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>{settings.email}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="timezone" className="text-sm font-medium">
-              Timezone
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <KeysSummary keys={settings.keys} />
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(16rem,22rem)_1fr] lg:items-stretch">
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle>Account</CardTitle>
+            <CardDescription>{settings.email}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col gap-4">
+            <div className="space-y-2">
+              <label htmlFor="timezone" className="text-sm font-medium">
+                Timezone
+              </label>
+              <select
+                id="timezone"
+                name="timezone"
+                defaultValue={settings.timezone}
+                className="flex h-10 w-full rounded-xl border border-input bg-card px-3 text-sm shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {TIMEZONES.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Used for discovery schedules and timestamps in your workspace.
+              </p>
+            </div>
+
+            <label className="flex cursor-pointer gap-3 rounded-xl border border-subtle bg-muted/10 p-3">
+              <input
+                type="checkbox"
+                name="emailDigest"
+                defaultChecked={settings.emailDigest}
+                className="mt-0.5 size-4 accent-brand"
+              />
+              <span className="space-y-0.5">
+                <span className="block text-sm font-medium">Weekly email digest</span>
+                <span className="block text-xs leading-relaxed text-muted-foreground">
+                  A short summary of new topics and draft activity.
+                </span>
+              </span>
             </label>
-            <select
-              id="timezone"
-              name="timezone"
-              defaultValue={settings.timezone}
-              className="flex h-10 w-full rounded-xl border border-input bg-card px-3 text-sm shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {TIMEZONES.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz}
-                </option>
-              ))}
-            </select>
-          </div>
-        </CardContent>
-      </Card>
+
+            <SignOutButton
+              variant="outline"
+              size="sm"
+              className="mt-auto w-full"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle>Profile</CardTitle>
+            <CardDescription>
+              Shapes topic discovery and how drafts are framed for you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PersonaPicker
+              value={personaType}
+              customValue={personaCustom}
+              gridCols="2"
+              onChange={(p, custom) => {
+                setPersonaType(p);
+                setPersonaCustom(custom);
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle>API keys &amp; models</CardTitle>
           <CardDescription>
-            Shapes topic discovery and how drafts are framed for you.
+            Active for drafts:{" "}
+            <span className="font-medium text-foreground">{activeLabel}</span>.
+            Keys are encrypted and never shown again after save.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <PersonaPicker
-            value={personaType}
-            customValue={personaCustom}
-            onChange={(p, custom) => {
-              setPersonaType(p);
-              setPersonaCustom(custom);
-            }}
+        <CardContent className="pt-0">
+          <DraftProviderSettings
+            settings={settings}
+            showAllProviderKeys
+            embedded
+            includeDiscoveryKeys
           />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Draft generation</CardTitle>
-          <CardDescription>
-            Active when generating or editing drafts:{" "}
-            <span className="font-medium text-foreground">{activeLabel}</span>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DraftProviderSettings settings={settings} showAllProviderKeys />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Discovery</CardTitle>
-          <CardDescription>
-            Optional keys for topic discovery and URL scraping. Values are
-            encrypted and never shown again after save.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ApiKeyField
-            id="tavilyApiKey"
-            label="Tavily"
-            configured={settings.keys.tavily}
-            provider={PROVIDER_LINKS.tavily}
-          />
-          <ApiKeyField
-            id="firecrawlApiKey"
-            label="Firecrawl"
-            configured={settings.keys.firecrawl}
-            provider={PROVIDER_LINKS.firecrawl}
-          />
-        </CardContent>
-      </Card>
-
-      {message ? (
-        <p className="text-sm text-brand">{message}</p>
-      ) : null}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-      <Button type="submit" size="lg" disabled={isSaving}>
-        {isSaving ? "Saving…" : "Save settings"}
-      </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-subtle bg-card px-4 py-3 shadow-ambient">
+        <div className="min-w-0 text-sm">
+          {message ? (
+            <p className="text-brand">{message}</p>
+          ) : error ? (
+            <p className="text-red-600">{error}</p>
+          ) : (
+            <p className="text-muted-foreground">
+              Changes apply after you save.
+            </p>
+          )}
+        </div>
+        <Button type="submit" size="lg" disabled={isSaving} className="shrink-0">
+          {isSaving ? "Saving…" : "Save settings"}
+        </Button>
+      </div>
     </form>
   );
 }

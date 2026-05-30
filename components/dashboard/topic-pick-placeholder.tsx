@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export function TopicPickPlaceholder({ slot }: { slot: number }) {
   return (
-    <Card className="flex h-full min-h-[320px] flex-col border-dashed border-subtle bg-muted/20 shadow-none">
+    <Card className="flex h-full min-h-[220px] flex-col border-dashed border-subtle bg-muted/20 shadow-none">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <span className="font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">

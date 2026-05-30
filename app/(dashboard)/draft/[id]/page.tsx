@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { AppHeader } from "@/components/app-header";
@@ -29,10 +30,12 @@ export default async function DraftPage({ params }: { params: { id: string } }) 
     <>
       <AppHeader title="Draft editor" breadcrumb="Compose" />
       <div className="page-x flex flex-1 flex-col pb-16 pt-2">
-        <DraftWorkspace
-          draftId={params.id}
-          initialDraft={serializeDraftForClient(draft)}
-        />
+        <Suspense fallback={null}>
+          <DraftWorkspace
+            draftId={params.id}
+            initialDraft={serializeDraftForClient(draft)}
+          />
+        </Suspense>
       </div>
     </>
   );

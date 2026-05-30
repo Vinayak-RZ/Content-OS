@@ -15,6 +15,9 @@ export const DISCOVERY_MAX_SAVED_CARRY = 3;
 /** Dashboard shows this many ranked topics (within visible pool cap). */
 export const DASHBOARD_POOL_FETCH_LIMIT = 15;
 
+/** Dashboard topic list displays only the top N ranked items. */
+export const DASHBOARD_TOP_TOPICS_LIMIT = 10;
+
 /** Trim undrafted backlog above this count after each discovery run. */
 export const DISCOVERY_VISIBLE_POOL_MAX = 15;
 

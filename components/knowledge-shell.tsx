@@ -309,6 +309,24 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-6">
+      {files.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-subtle bg-muted/20 px-6 py-16 text-center">
+          <p className="font-heading text-base font-semibold">No knowledge files yet</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            Start with the profile builder above, or import starter templates
+            to ground discovery and drafts in your voice.
+          </p>
+          <button
+            type="button"
+            onClick={() => void importSeeds()}
+            disabled={seeding}
+            className="mt-6 rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-white shadow-pill disabled:opacity-50"
+          >
+            {seeding ? "Importing…" : "Import starter templates"}
+          </button>
+        </div>
+      ) : (
+        <>
       <div
         className={cn(
           "flex w-full shrink-0 flex-col border-b border-border/60 bg-sidebar/50 p-4 lg:w-64 lg:border-b-0 lg:border-r",
@@ -555,6 +573,8 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
         {msg ? <p className="mt-3 text-sm text-brand">{msg}</p> : null}
         {err ? <p className="mt-3 text-sm text-red-600">{err}</p> : null}
       </div>
+        </>
+      )}
     </div>
   );
 }

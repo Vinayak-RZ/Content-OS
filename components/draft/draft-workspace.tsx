@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ChevronDown,
@@ -19,6 +19,8 @@ import type { ClientDraftPayload } from "@/lib/drafts/serialize-for-client";
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { Button } from "@/components/ui/button";
 import { consumeAppSseStream } from "@/lib/client/app-sse";
+import { fetchJson } from "@/lib/client/fetch-json";
+import { toast } from "@/lib/client/toast";
 import {
   Card,
   CardContent,
@@ -281,6 +283,8 @@ export function DraftWorkspace({
   initialDraft?: ClientDraftPayload | null;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const showNewDraftBanner = searchParams.get("new") === "1";
   const [draft, setDraft] = useState<DraftPayload | null>(initialDraft);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [content, setContent] = useState(initialDraft?.currentContent ?? "");
@@ -293,7 +297,6 @@ export function DraftWorkspace({
     "idle" | "saving" | "saved" | "error"
   >(initialDraft ? "saved" : "idle");
   const [customEdit, setCustomEdit] = useState("");
-  const [toast, setToast] = useState<string | null>(null);
   const [assembleOpen, setAssembleOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const saveInFlight = useRef(false);
@@ -308,19 +311,9 @@ export function DraftWorkspace({
     setBusy("load");
     setLoadError(null);
     try {
-      const res = await fetch(`/api/draft/${draftId}`);
-      const json: unknown = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const msg =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : "Failed to load draft";
-        throw new Error(msg);
-      }
-      const d = json as DraftPayload;
+      const result = await fetchJson<DraftPayload>(`/api/draft/${draftId}`);
+      if (!result.ok) throw new Error(result.error);
+      const d = result.data;
       setDraft(d);
       setContent(d.currentContent);
       setHookIx(d.selectedHook);
@@ -357,9 +350,8 @@ export function DraftWorkspace({
 
       saveInFlight.current = true;
       setSaveState("saving");
-      if (!silent) setToast(null);
       try {
-        const res = await fetch(`/api/draft/${draftId}`, {
+        const result = await fetchJson<DraftPayload>(`/api/draft/${draftId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -368,14 +360,13 @@ export function DraftWorkspace({
             selectedCta: cta,
           }),
         });
-        if (!res.ok) throw new Error("Save failed");
-        const updated = (await res.json()) as DraftPayload;
-        setDraft(updated);
+        if (!result.ok) throw new Error(result.error);
+        setDraft(result.data);
         setSaveState("saved");
-        if (!silent) setToast("Saved.");
+        if (!silent) toast("Saved.", "success");
       } catch {
         setSaveState("error");
-        if (!silent) setToast("Could not save.");
+        if (!silent) toast("Could not save. Check your connection.", "error");
       } finally {
         saveInFlight.current = false;
       }
@@ -416,10 +407,29 @@ export function DraftWorkspace({
     return () => document.removeEventListener("visibilitychange", flushOnHide);
   }, [saveBody]);
 
+  useEffect(() => {
+    function onBeforeUnload(event: BeforeUnloadEvent) {
+      const currentDraft = latestDraftRef.current;
+      if (!currentDraft) return;
+      const dirty = hasUnsavedChanges(
+        currentDraft,
+        latestContentRef.current,
+        latestHookIxRef.current,
+        latestCtaIxRef.current,
+      );
+      if (dirty || saveState === "error") {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    }
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [saveState]);
+
   async function runEdit(command: string): Promise<void> {
     if (!draft) return;
     setBusy("edit");
-    setToast(null);
     let receivedDelta = false;
     try {
       const res = await fetch(`/api/draft/${draftId}/edit`, {
@@ -447,9 +457,9 @@ export function DraftWorkspace({
       setDraft(body);
       setContent(body.currentContent);
       setSaveState("saved");
-      setToast("Edit applied.");
+      toast("Edit applied.", "success");
     } catch (e) {
-      setToast(e instanceof Error ? e.message : "Edit failed");
+      toast(e instanceof Error ? e.message : "Edit failed", "error");
       if (!receivedDelta && draft) setContent(draft.currentContent);
     } finally {
       setBusy("idle");
@@ -458,23 +468,21 @@ export function DraftWorkspace({
 
   async function publish(): Promise<void> {
     setBusy("publish");
-    setToast(null);
     try {
       if (draft && hasUnsavedChanges(draft, content, hookIx, ctaIx)) {
         await saveBody(true);
       }
-      const res = await fetch(`/api/draft/${draftId}`, {
+      const result = await fetchJson<DraftPayload>(`/api/draft/${draftId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "published" }),
       });
-      if (!res.ok) throw new Error("Publish failed");
-      const updated = (await res.json()) as DraftPayload;
-      setDraft(updated);
-      setToast("Marked as published.");
+      if (!result.ok) throw new Error(result.error);
+      setDraft(result.data);
+      toast("Marked as published.", "success");
       router.refresh();
     } catch {
-      setToast("Could not publish.");
+      toast("Could not publish. Try again.", "error");
     } finally {
       setBusy("idle");
     }
@@ -489,7 +497,7 @@ export function DraftWorkspace({
       selectedCta: ctaIx,
     });
     await navigator.clipboard.writeText(text);
-    setToast("Copied - hook + body + closing line.");
+    toast("Copied — hook + body + closing line.", "success");
   }
 
   const assembledPreview = useMemo(() => {
@@ -575,6 +583,15 @@ export function DraftWorkspace({
 
   return (
     <div className="pb-24 lg:pb-4">
+      {showNewDraftBanner ? (
+        <div className="mb-4 rounded-xl border border-brand/30 bg-brand/5 px-4 py-3 text-sm">
+          <p className="font-medium text-foreground">Draft ready</p>
+          <p className="mt-0.5 text-muted-foreground">
+            Keep editing here, or copy the full post when you&apos;re happy with
+            it.
+          </p>
+        </div>
+      ) : null}
       <div className="mb-3 flex flex-wrap items-center gap-2 sm:mb-4 sm:gap-3">
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="gap-1">
@@ -735,7 +752,7 @@ export function DraftWorkspace({
             disabled={busy !== "idle" || draft.status === "published"}
             onClick={() => void publish()}
           >
-            Publish
+            Mark as published
           </Button>
         </div>
       </div>
@@ -746,15 +763,6 @@ export function DraftWorkspace({
           onClose={() => setPreviewOpen(false)}
           onCopy={() => void copyAssembled()}
         />
-      ) : null}
-
-      {toast ? (
-        <p
-          className="fixed bottom-16 left-4 right-4 z-30 rounded-lg border border-subtle bg-card px-3 py-2 text-center text-sm shadow-pill lg:static lg:mt-4 lg:border-0 lg:bg-transparent lg:p-0 lg:text-left lg:shadow-none"
-          role="status"
-        >
-          {toast}
-        </p>
       ) : null}
     </div>
   );

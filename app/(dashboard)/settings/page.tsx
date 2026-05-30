@@ -23,7 +23,7 @@ export default async function SettingsPage() {
         breadcrumb="Workspace"
         description="API keys, draft provider, and discovery preferences."
       />
-      <div className="page-x pb-16 space-y-6">
+      <div className="page-x space-y-6 pb-16 pt-4 sm:pt-6">
         <SettingsForm initial={toSettingsResponse(user)} />
         <FeatureRequestPanel variant="settings" />
       </div>

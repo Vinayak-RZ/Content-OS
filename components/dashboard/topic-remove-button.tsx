@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ButtonProps } from "@/components/ui/button";
+import { fetchJson } from "@/lib/client/fetch-json";
+import { toast } from "@/lib/client/toast";
+import { useRouter } from "next/navigation";
 
 interface TopicRemoveButtonProps extends Omit<ButtonProps, "onClick"> {
   trendId: string;
@@ -25,21 +27,17 @@ export function TopicRemoveButton({
     if (!window.confirm(confirmMessage)) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/trends/${trendId}`, { method: "DELETE" });
-      if (!res.ok) {
-        const json: unknown = await res.json().catch(() => ({}));
-        const message =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : "Failed to remove topic";
-        throw new Error(message);
-      }
+      const result = await fetchJson(`/api/trends/${trendId}`, {
+        method: "DELETE",
+      });
+      if (!result.ok) throw new Error(result.error);
+      toast("Topic removed.", "info");
       router.refresh();
     } catch (e) {
-      window.alert(e instanceof Error ? e.message : "Failed to remove topic");
+      toast(
+        e instanceof Error ? e.message : "Failed to remove topic",
+        "error",
+      );
     } finally {
       setBusy(false);
     }
@@ -52,6 +50,7 @@ export function TopicRemoveButton({
       onClick={() => void remove()}
       disabled={busy}
       aria-label="Remove topic"
+      aria-busy={busy}
       {...props}
     >
       {busy ? (

@@ -3,15 +3,13 @@
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Link2, Loader2 } from "lucide-react";
 import { generateDraftStream } from "@/lib/client/generate-draft-stream";
-import {
-  DISCOVERY_NEW_PER_RUN,
-  DISCOVERY_VISIBLE_POOL_MAX,
-  DISCOVERY_VISIBLE_POOL_MIN,
-} from "@/lib/discovery/founder-profile";
-import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { fetchJson } from "@/lib/client/fetch-json";
+import { toast } from "@/lib/client/toast";
+import { useAppRouter } from "@/lib/client/use-app-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
+import { FirstRunChecklist } from "@/components/dashboard/first-run-checklist";
 import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { KnowledgeEmptyBanner } from "@/components/dashboard/knowledge-empty-banner";
 import { TavilySetupBanner } from "@/components/dashboard/tavily-setup-banner";
@@ -29,7 +27,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { SerializedDashboardTrend } from "@/lib/trends/list";
+import { cn } from "@/lib/utils";
+import {
+  DISCOVERY_NEW_PER_RUN,
+  DISCOVERY_VISIBLE_POOL_MAX,
+  DISCOVERY_VISIBLE_POOL_MIN,
+} from "@/lib/discovery/founder-profile";
+import type { SerializedDashboardTrend } from "@/lib/trends/types";
 
 export function TopicsDashboard({
   initialTrends,
@@ -38,6 +42,11 @@ export function TopicsDashboard({
   latestBatchId,
   showKnowledgeBanner = false,
   showTavilyBanner = false,
+  showFirstRunChecklist = false,
+  knowledgeFilled = true,
+  draftCount = 0,
+  hasDiscoveryKey = false,
+  hasAnyDraftKey = false,
 }: {
   initialTrends: SerializedDashboardTrend[];
   lastDiscovery: {
@@ -49,15 +58,33 @@ export function TopicsDashboard({
   latestBatchId: string | null;
   showKnowledgeBanner?: boolean;
   showTavilyBanner?: boolean;
+  showFirstRunChecklist?: boolean;
+  knowledgeFilled?: boolean;
+  draftCount?: number;
+  hasDiscoveryKey?: boolean;
+  hasAnyDraftKey?: boolean;
 }) {
-  const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
+  const router = useAppRouter();
+  const [moreExpanded, setMoreExpanded] = useState(false);
+  const signalsRef = useRef<HTMLElement>(null);
+  const [signalsVisible, setSignalsVisible] = useState(true);
+
+  useEffect(() => {
+    const el = signalsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSignalsVisible(entry?.isIntersecting ?? true),
+      { threshold: 0.15 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const refresh = useCallback(() => {
     router.refresh();
   }, [router]);
 
-const TOP_PICKS_COUNT = 3;
+  const TOP_PICKS_COUNT = 3;
 
   const { rest, newCount, backlogCount, topSlots } = useMemo(() => {
     const topSlice = initialTrends.slice(0, TOP_PICKS_COUNT);
@@ -86,7 +113,21 @@ const TOP_PICKS_COUNT = 3;
 
   return (
     <div className="flex flex-col gap-10 pb-20">
-      <section className="flex flex-col gap-4 rounded-xl border border-subtle bg-card px-4 py-5 shadow-ambient sm:px-6 sm:py-6">
+      {showFirstRunChecklist ? (
+        <FirstRunChecklist
+          knowledgeFilled={knowledgeFilled}
+          draftCount={draftCount}
+          hasDiscoveryKey={hasDiscoveryKey}
+          hasAnyDraftKey={hasAnyDraftKey}
+          trendCount={initialTrends.length}
+        />
+      ) : null}
+
+      <section
+        id="signals"
+        ref={signalsRef}
+        className="flex flex-col gap-4 rounded-xl border border-subtle bg-card px-4 py-5 shadow-ambient sm:px-6 sm:py-6"
+      >
         <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
           <div>
             <h2 className="font-heading text-xl font-semibold tracking-tight">
@@ -97,7 +138,7 @@ const TOP_PICKS_COUNT = 3;
               Each run researches ~{DISCOVERY_NEW_PER_RUN} new topics. Your pool
               holds {DISCOVERY_VISIBLE_POOL_MIN}–{DISCOVERY_VISIBLE_POOL_MAX}{" "}
               ranked items (new + undrafted backlog). Generate drafts from any
-              topic - top cards, expanded grid, or the full table.
+              topic — top cards, expanded grid, or the topic list.
             </p>
           </div>
           <DiscoveryRunButton onCompleted={refresh} compact />
@@ -177,16 +218,16 @@ const TOP_PICKS_COUNT = 3;
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  More topics ({rest.length}) - all can be drafted
+                  More topics ({rest.length}) — all can be drafted
                 </h3>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => setMoreExpanded(!moreExpanded)}
                   className="gap-1"
                 >
-                  {expanded ? (
+                  {moreExpanded ? (
                     <>
                       <ChevronUp className="size-4" /> Collapse
                     </>
@@ -197,7 +238,7 @@ const TOP_PICKS_COUNT = 3;
                   )}
                 </Button>
               </div>
-              {expanded ? (
+              {moreExpanded ? (
                 <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {rest.map((t) => (
                     <TopicCard key={t.id} trend={t} />
@@ -211,7 +252,18 @@ const TOP_PICKS_COUNT = 3;
 
       {showTavilyBanner ? <TavilySetupBanner /> : null}
 
-      <CustomTopicComposer onDraftCreated={(id) => router.push(`/draft/${id}`)} />
+      <CustomTopicComposer
+        onDraftCreated={(id) => router.push(`/draft/${id}?new=1`)}
+      />
+
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-20 border-t border-subtle bg-background/95 px-4 py-2.5 backdrop-blur-sm transition-transform duration-200 lg:hidden",
+          signalsVisible ? "translate-y-full" : "translate-y-0",
+        )}
+      >
+        <DiscoveryRunButton onCompleted={refresh} className="w-full" />
+      </div>
     </div>
   );
 }
@@ -233,32 +285,26 @@ function CustomTopicComposer({
     setBusy("scrape");
     setMsg(null);
     try {
-      const res = await fetch("/api/scrape-url", {
+      const result = await fetchJson<{
+        titleGuess?: string | null;
+        markdownPreview?: string;
+      }>("/api/scrape-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      const json: unknown = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err =
-          typeof json === "object" &&
-          json &&
-          "error" in json &&
-          typeof (json as { error?: string }).error === "string"
-            ? (json as { error: string }).error
-            : "Fetch failed";
-        throw new Error(err);
+      if (!result.ok) throw new Error(result.error);
+      if (result.data.titleGuess && !title.trim()) {
+        setTitle(result.data.titleGuess);
       }
-      const body = json as {
-        titleGuess?: string | null;
-        markdownPreview?: string;
-      };
-      if (body.titleGuess && !title.trim()) setTitle(body.titleGuess);
-      if (body.markdownPreview)
-        setSummary(body.markdownPreview.slice(0, 4000));
-      setMsg("Pulled page content.");
+      if (result.data.markdownPreview) {
+        setSummary(result.data.markdownPreview.slice(0, 4000));
+      }
+      toast("Pulled page content.", "success");
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Scrape failed");
+      const message = e instanceof Error ? e.message : "Scrape failed";
+      setMsg(message);
+      toast(message, "error");
     } finally {
       setBusy("idle");
     }
@@ -286,8 +332,11 @@ function CustomTopicComposer({
         onStatus: setStreamStatus,
       });
       onDraftCreated(result.draftId);
+      toast("Draft ready — keep editing or copy to LinkedIn.", "success");
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Generate failed");
+      const message = e instanceof Error ? e.message : "Generate failed";
+      setMsg(message);
+      toast(message, "error");
     } finally {
       setBusy("idle");
       setStreamStatus(null);

@@ -12,6 +12,8 @@ type ApiKeyFieldProps = {
   provider?: ProviderLink;
   /** Override input name when id differs from form field name */
   name?: string;
+  /** Padded cell for dense settings grids */
+  variant?: "default" | "panel";
 };
 
 export function ApiKeyField({
@@ -20,13 +22,16 @@ export function ApiKeyField({
   configured,
   provider,
   name,
+  variant = "default",
 }: ApiKeyFieldProps) {
-  return (
-    <div className="space-y-2">
+  const inner = (
+    <>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Label htmlFor={id}>{label}</Label>
         {configured ? (
-          <span className="text-xs text-brand">Configured</span>
+          <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-medium text-brand">
+            Connected
+          </span>
         ) : (
           <span className="text-xs text-muted-foreground">Not set</span>
         )}
@@ -50,8 +55,20 @@ export function ApiKeyField({
         name={name ?? id}
         type="password"
         autoComplete="off"
-        placeholder={configured ? "Leave blank to keep current key" : "Paste API key"}
+        placeholder={
+          configured ? "Leave blank to keep current key" : "Paste API key"
+        }
       />
-    </div>
+    </>
   );
+
+  if (variant === "panel") {
+    return (
+      <div className="flex h-full flex-col gap-3 rounded-xl border border-subtle bg-muted/15 p-4">
+        {inner}
+      </div>
+    );
+  }
+
+  return <div className="space-y-2">{inner}</div>;
 }

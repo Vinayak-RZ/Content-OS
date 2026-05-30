@@ -53,32 +53,52 @@ function activeTrendWhere(
   };
 }
 
+async function dashboardTrendContext(userId: string) {
+  const now = new Date();
+  const excludeHashes = await getExcludedUrlHashesForDashboard(userId);
+  const excludeArr = Array.from(excludeHashes);
+  return {
+    now,
+    where: activeTrendWhere(userId, now, excludeArr),
+  };
+}
+
 export async function countVisibleTrendsForDashboard(
   userId: string,
 ): Promise<number> {
-  const now = new Date();
-  const excludeHashes = await getExcludedUrlHashesForDashboard(userId);
-  return prisma.trend.count({
-    where: activeTrendWhere(userId, now, Array.from(excludeHashes)),
-  });
+  const { where } = await dashboardTrendContext(userId);
+  return prisma.trend.count({ where });
 }
 
 export async function fetchTrendsForDashboard(
   userId: string,
   limit: number,
 ): Promise<DashboardTrendRow[]> {
-  const now = new Date();
-  const excludeHashes = await getExcludedUrlHashesForDashboard(userId);
-  const excludeArr = Array.from(excludeHashes);
+  const { trends } = await fetchDashboardTrendsBundle(userId, limit);
+  return trends;
+}
 
-  const rows = await prisma.trend.findMany({
-    where: activeTrendWhere(userId, now, excludeArr),
-    orderBy: [{ finalScore: "desc" }, { discoveredAt: "desc" }],
-    take: limit,
-    select: trendDashboardSelect,
-  });
+/** One exclude-hash fetch per request for count + list. */
+export async function fetchDashboardTrendsBundle(
+  userId: string,
+  limit: number,
+): Promise<{ visiblePoolCount: number; trends: DashboardTrendRow[] }> {
+  const { now, where } = await dashboardTrendContext(userId);
 
-  return rows.filter((t) => isTrendActiveForDashboard(t, now));
+  const [visiblePoolCount, rows] = await Promise.all([
+    prisma.trend.count({ where }),
+    prisma.trend.findMany({
+      where,
+      orderBy: [{ finalScore: "desc" }, { discoveredAt: "desc" }],
+      take: limit,
+      select: trendDashboardSelect,
+    }),
+  ]);
+
+  return {
+    visiblePoolCount,
+    trends: rows.filter((t) => isTrendActiveForDashboard(t, now)),
+  };
 }
 
 export type SerializedDashboardTrend = Omit<

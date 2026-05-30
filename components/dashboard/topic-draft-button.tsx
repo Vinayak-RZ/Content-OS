@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 
 import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { generateDraftStream } from "@/lib/client/generate-draft-stream";
 import { formatDraftApiError } from "@/lib/client/draft-api-error";
+import { toast } from "@/lib/client/toast";
+import { useAppRouter } from "@/lib/client/use-app-router";
 import { Button } from "@/components/ui/button";
 
 export function TopicDraftButton({
@@ -18,7 +19,7 @@ export function TopicDraftButton({
   size?: "default" | "sm";
   className?: string;
 }) {
-  const router = useRouter();
+  const router = useAppRouter();
   const [busy, setBusy] = useState(false);
   const [streamText, setStreamText] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -35,13 +36,15 @@ export function TopicDraftButton({
         onDelta: setStreamText,
         onStatus: setStatusMessage,
       });
-      router.push(`/draft/${result.draftId}`);
+      toast("Draft ready — keep editing or copy to LinkedIn.", "success");
+      router.push(`/draft/${result.draftId}?new=1`);
     } catch (e) {
-      setError(
+      const message =
         e instanceof Error
           ? e.message
-          : formatDraftApiError(null, "Generate failed"),
-      );
+          : formatDraftApiError(null, "Generate failed");
+      setError(message);
+      toast(message, "error");
     } finally {
       setBusy(false);
       setStatusMessage(null);
@@ -59,13 +62,19 @@ export function TopicDraftButton({
         onClick={() => void generateDraft()}
         className={className}
         aria-label="Generate draft"
+        aria-busy={busy}
       >
         {busy ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden />
+          <>
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            {isSm ? "Drafting…" : "Generating…"}
+          </>
         ) : (
-          <Sparkles className="size-4" aria-hidden />
+          <>
+            <Sparkles className="size-4" aria-hidden />
+            {isSm ? <span className="ml-1.5">Draft</span> : <span>Generate draft</span>}
+          </>
         )}
-        {isSm ? <span className="ml-1.5">Draft</span> : <span>Generate draft</span>}
       </Button>
 
       {busy ? (

@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Logo } from "@/components/brand/logo";
-import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Loader2 } from "lucide-react";
 import {
   BarChart3,
   BookOpen,
@@ -12,6 +10,11 @@ import {
   LayoutDashboard,
   Settings,
 } from "lucide-react";
+
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Logo } from "@/components/brand/logo";
+import { useNavigationProgress } from "@/lib/client/navigation-progress";
+import { cn } from "@/lib/utils";
 
 const navItems: {
   label: string;
@@ -34,6 +37,7 @@ export function SidebarNav({
   showLogo?: boolean;
 }) {
   const pathname = usePathname();
+  const { pendingPath, startNavigation } = useNavigationProgress();
 
   return (
     <>
@@ -49,22 +53,39 @@ export function SidebarNav({
           const isActive =
             !item.disabled &&
             (pathname === item.href || pathname.startsWith(`${item.href}/`));
+          const isPending = pendingPath === item.href;
+
           return (
             <Link
               key={item.label}
               href={item.disabled ? "#" : item.href}
-              onClick={onNavigate}
+              prefetch
+              onClick={() => {
+                if (!item.disabled) {
+                  startNavigation(item.href);
+                  onNavigate?.();
+                }
+              }}
               aria-disabled={item.disabled}
               aria-current={isActive ? "page" : undefined}
+              aria-busy={isPending || undefined}
               className={cn(
                 "flex items-center gap-3 rounded-md px-3 py-2.5 font-heading text-sm font-semibold transition-colors duration-150 ease-out",
                 isActive
                   ? "bg-card text-foreground shadow-pill"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                isPending && "bg-muted/50 text-foreground",
                 item.disabled && "pointer-events-none opacity-40",
               )}
             >
-              <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+              {isPending ? (
+                <Loader2
+                  className="size-4 shrink-0 animate-spin"
+                  aria-hidden
+                />
+              ) : (
+                <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+              )}
               {item.label}
             </Link>
           );

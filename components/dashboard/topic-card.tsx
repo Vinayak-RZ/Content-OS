@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
+
 import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { fetchJson } from "@/lib/client/fetch-json";
+import { toast } from "@/lib/client/toast";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { SerializedDashboardTrend } from "@/lib/trends/list";
+import type { SerializedDashboardTrend } from "@/lib/trends/types";
 import { formatSourceType } from "@/lib/discovery/source-labels";
 
 function domainLabel(url: string): string {
@@ -47,43 +50,60 @@ function scoreBadgeClass(score10: number): string {
 export function TopicCard({
   trend,
   className,
+  onDismiss,
 }: {
   trend: SerializedDashboardTrend;
   className?: string;
+  onDismiss?: (id: string) => void;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const score10 = Math.min(10, Math.max(0, trend.finalScore * 10));
 
   async function patchFeedback(
     feedback: "saved" | "dismissed" | null,
   ): Promise<void> {
+    if (feedback === "dismissed") {
+      setHidden(true);
+      onDismiss?.(trend.id);
+    }
     setBusy(true);
     try {
-      const res = await fetch(`/api/trends/${trend.id}/feedback`, {
+      const result = await fetchJson(`/api/trends/${trend.id}/feedback`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ feedback }),
       });
-      if (!res.ok) throw new Error("Feedback failed");
+      if (!result.ok) throw new Error(result.error);
+      if (feedback === "saved") {
+        toast("Topic saved to your queue.", "success");
+      } else if (feedback === "dismissed") {
+        toast("Topic dismissed.", "info");
+      }
       router.refresh();
+    } catch (e) {
+      if (feedback === "dismissed") {
+        setHidden(false);
+      }
+      toast(
+        e instanceof Error ? e.message : "Could not update topic.",
+        "error",
+      );
     } finally {
       setBusy(false);
     }
   }
 
-  const tagHint =
-    trend.tags.length > 0
-      ? trend.tags.slice(0, 3).join(", ")
-      : "your knowledge base";
+  if (hidden) return null;
 
   return (
     <Card
       className={`flex h-full flex-col border-border/70 shadow-pill ${className ?? ""}`}
     >
-      <CardHeader className="shrink-0 gap-2 pb-2">
+      <CardHeader className="shrink-0 gap-2 pb-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <CardTitle className="max-w-[85%] text-lg font-semibold leading-snug">
+          <CardTitle className="max-w-[85%] text-base font-semibold leading-snug">
             {trend.title.slice(0, 80)}
             {trend.title.length > 80 ? "…" : ""}
           </CardTitle>
@@ -104,22 +124,12 @@ export function TopicCard({
             {formatSourceType(trend.sourceType)}
           </Badge>
         </div>
-        <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+        <CardDescription className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
           <span className="font-medium text-foreground">Why it matters: </span>
-          {clipSentences(trend.summary, 280)}
-        </CardDescription>
-        <CardDescription className="text-sm leading-relaxed text-muted-foreground">
-          <span className="font-medium text-foreground">Why it fits you: </span>
-          Aligns with themes you track ({tagHint}) - grounded in your Knowledge
-          files.
+          {clipSentences(trend.summary, 200)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col gap-2 pb-0 pt-0">
-        <p className="text-sm text-foreground/90">
-          <span className="font-medium">Suggested angle: </span>
-          Lead with how this connects to your audience and what you&apos;d add from experience in{" "}
-          {trend.tags[0] ?? "this space"}.
-        </p>
+      <CardContent className="flex min-h-0 flex-1 flex-col pb-0 pt-0">
         <a
           href={trend.url}
           target="_blank"
@@ -129,7 +139,7 @@ export function TopicCard({
           {domainLabel(trend.url)} · {trend.source}
         </a>
       </CardContent>
-      <div className="shrink-0 border-t border-subtle px-6 pb-6 pt-3 sm:px-8 sm:pb-8">
+      <div className="shrink-0 border-t border-subtle px-6 pb-5 pt-3 sm:px-8 sm:pb-6">
         <div className="flex flex-wrap gap-2">
           <TopicDraftButton trendId={trend.id} className="gap-1.5" />
           <Button
