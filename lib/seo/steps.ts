@@ -1,4 +1,4 @@
-/** Onboarding steps — shared by landing UI and HowTo JSON-LD. */
+/** Onboarding steps - shared by landing UI and HowTo JSON-LD. */
 export const ONBOARDING_STEPS = [
   {
     num: "01",

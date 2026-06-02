@@ -27,7 +27,7 @@ export const LANDING_FAQ: FaqItem[] = [
   {
     question: "Can Content OS help me build a personal brand?",
     answer:
-      "Yes. Content OS is built for people who want a consistent public voice — founders, engineers, creators, and operators. It ranks topics against what you actually know, drafts in your writing style, and keeps you in the loop so every post still sounds like you. Over time, that makes publishing regularly much easier without diluting your brand.",
+      "Yes. Content OS is built for people who want a consistent public voice - founders, engineers, creators, and operators. It ranks topics against what you actually know, drafts in your writing style, and keeps you in the loop so every post still sounds like you. Over time, that makes publishing regularly much easier without diluting your brand.",
   },
   {
     question: "Who is Content OS for?",

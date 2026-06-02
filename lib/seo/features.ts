@@ -1,4 +1,4 @@
-/** Product feature copy — shared by landing page and llms-full.txt. */
+/** Product feature copy - shared by landing page and llms-full.txt. */
 export const PRODUCT_FEATURES = [
   {
     title: "Signal discovery",

@@ -2,7 +2,10 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { readGuestSessionFromRequest } from "@/lib/guest/request";
+import {
+  clearGuestCookiesOnResponse,
+  readGuestSessionFromRequest,
+} from "@/lib/guest/request";
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
@@ -31,7 +34,9 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
   if (token?.sub) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    clearGuestCookiesOnResponse(res);
+    return res;
   }
 
   if (await readGuestSessionFromRequest(req)) {

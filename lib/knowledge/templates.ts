@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 
-/** Literal segments only — avoids Next.js tracing the whole repo on deploy. */
+/** Literal segments only - avoids Next.js tracing the whole repo on deploy. */
 const LINKEDIN_PROFILE_TEMPLATE_PATH = join(
   process.cwd(),
   "seeds",

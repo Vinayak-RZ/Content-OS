@@ -66,7 +66,7 @@ export function FirstRunChecklist({
       <CardHeader className="pb-3">
         <CardTitle className="text-lg">Getting started</CardTitle>
         <CardDescription>
-          {completed} of {steps.length} complete — follow these steps to go
+          {completed} of {steps.length} complete - follow these steps to go
           from empty board to a draft in your voice.
         </CardDescription>
       </CardHeader>

@@ -12,6 +12,12 @@ import {
 } from "@/lib/guest/constants";
 import { utcDayWindowKey } from "@/lib/rate-limit";
 
+/** Safe in middleware and route handlers only (not RSC render). */
+export function clearGuestCookiesOnResponse(res: NextResponse): void {
+  res.cookies.delete(GUEST_SESSION_COOKIE);
+  res.cookies.delete(GUEST_DISCOVER_COOKIE);
+}
+
 /** Edge-safe: no Node `crypto`, no `next/headers`. */
 export async function readGuestSessionFromRequest(
   req: NextRequest,

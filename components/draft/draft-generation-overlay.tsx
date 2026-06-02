@@ -42,7 +42,7 @@ export function DraftGenerationOverlay({
           <p className="mb-3 text-sm text-muted-foreground">{statusMessage}</p>
         ) : (
           <p className="mb-3 text-sm text-muted-foreground">
-            Writing in your voice — you can read along as it streams.
+            Writing in your voice - you can read along as it streams.
           </p>
         )}
         <Textarea

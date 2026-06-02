@@ -49,7 +49,7 @@ export function FeatureRequestPanel({
               </h2>
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Want a new source, workflow tweak, or integration? Content OS is
-                open on GitHub — open an issue and describe what you need.
+                open on GitHub - open an issue and describe what you need.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -99,7 +99,7 @@ export function FeatureRequestPanel({
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
             Content OS is open source. Request a feature, suggest a discovery
-            source, or report a bug on GitHub — we track everything there.
+            source, or report a bug on GitHub - we track everything there.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a

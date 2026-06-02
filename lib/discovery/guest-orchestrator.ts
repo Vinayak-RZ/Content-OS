@@ -22,7 +22,7 @@ export type GuestDiscoveryRunResult = {
 };
 
 /**
- * Ephemeral discovery for guests — no Prisma writes; ranks by adapter momentum only.
+ * Ephemeral discovery for guests - no Prisma writes; ranks by adapter momentum only.
  */
 export async function runDiscoveryForGuest(): Promise<GuestDiscoveryRunResult> {
   const batchId = randomUUID();

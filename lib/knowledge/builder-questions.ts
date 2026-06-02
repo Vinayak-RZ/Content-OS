@@ -11,7 +11,7 @@ export type BuilderQuestion = {
   personaOnly?: boolean;
 };
 
-/** Shared across all personas (6 questions). Plain language — easy to read, still room for depth in answers. */
+/** Shared across all personas (6 questions). Plain language - easy to read, still room for depth in answers. */
 export const KNOWLEDGE_BUILDER_BASE_QUESTIONS: BuilderQuestion[] = [
   {
     id: "nameRole",
@@ -31,7 +31,7 @@ export const KNOWLEDGE_BUILDER_BASE_QUESTIONS: BuilderQuestion[] = [
     type: "long",
     label: "What topics do you know well?",
     placeholder:
-      "e.g. Startups, coding, AI tools, side projects — anything you could talk about for an hour.",
+      "e.g. Startups, coding, AI tools, side projects - anything you could talk about for an hour.",
   },
   {
     id: "opinions",
@@ -157,7 +157,7 @@ const PERSONA_QUESTION_PAIRS: Record<
       id: "personaAngle",
       type: "long",
       label: "What topics are worth posting about for you?",
-      placeholder: "e.g. Things you'd actually say yes to — not just scroll past.",
+      placeholder: "e.g. Things you'd actually say yes to - not just scroll past.",
       personaOnly: true,
     },
   ],
@@ -289,7 +289,7 @@ export function composeKnowledgeFilesFromAnswers(
     ),
     section(
       "Personality Notes",
-      line(voice, "[How you show up — humor, directness, warmth.]"),
+      line(voice, "[How you show up - humor, directness, warmth.]"),
     ),
   ].join("\n");
 

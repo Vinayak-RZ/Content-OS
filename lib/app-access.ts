@@ -9,7 +9,7 @@ export type AppAccess =
     }
   | { mode: "guest" };
 
-/** Signed-in user or guest cookie — null if neither. */
+/** Signed-in user or guest cookie - null if neither. */
 export async function getAppAccess(): Promise<AppAccess | null> {
   const session = await getSession();
   if (session?.user?.id) {

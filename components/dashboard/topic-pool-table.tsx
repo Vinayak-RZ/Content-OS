@@ -48,7 +48,7 @@ export function TopicPoolTable({
         <p className="mt-1 text-sm text-muted-foreground">
           {guestMode
             ? "Preview pool for this browser session. Sign in to save topics permanently."
-            : `Ranked topics without a recent draft. Unsaved backlog items expire after ${TOPIC_POOL_TTL_DAYS} days — use Save to keep a topic in your pool.`}{" "}
+            : `Ranked topics without a recent draft. Unsaved backlog items expire after ${TOPIC_POOL_TTL_DAYS} days - use Save to keep a topic in your pool.`}{" "}
           Showing top{" "}
           {expanded ? trends.length : Math.min(DASHBOARD_TOP_TOPICS_LIMIT, trends.length)}
           {hasMore && !expanded ? ` of ${trends.length}` : ""}.
@@ -112,7 +112,7 @@ export function TopicPoolTable({
                   </td>
                   <td className="px-4 py-3">
                     {guestMode ? (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className="text-xs text-muted-foreground">-</span>
                     ) : (
                       <TopicSaveToggle
                         trendId={t.id}

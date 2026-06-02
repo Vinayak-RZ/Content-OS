@@ -5,7 +5,7 @@
 <h1 align="center">Content OS</h1>
 
 <p align="center">
-  <strong>From discovery to draft — on your terms.</strong><br />
+  <strong>From discovery to draft - on your terms.</strong><br />
   Free, open-source content workflow for founders and creators.
 </p>
 
@@ -26,13 +26,13 @@
 
 ## Why Content OS exists
 
-Building a personal brand should not start with endless scrolling. Content OS pulls **high-signal topics** from the sources you already read, **ranks them against your knowledge base**, and **drafts in your voice** — without auto-posting, without a subscription, and with your API keys under your control.
+Building a personal brand should not start with endless scrolling. Content OS pulls **high-signal topics** from the sources you already read, **ranks them against your knowledge base**, and **drafts in your voice** - without auto-posting, without a subscription, and with your API keys under your control.
 
 | Principle | What it means |
 |-----------|----------------|
 | **Signal over noise** | Topics scored against *your* expertise, not generic trending lists |
 | **Your voice** | Knowledge files (style, narrative, technical) ground every draft |
-| **Your control** | You approve every word — no auto-posting to LinkedIn, X, or anywhere else |
+| **Your control** | You approve every word - no auto-posting to LinkedIn, X, or anywhere else |
 | **Free & BYOK** | App is free; bring your own keys for discovery and generation when you need them |
 
 ---
@@ -41,28 +41,28 @@ Building a personal brand should not start with endless scrolling. Content OS pu
 
 <p align="center">
   <img src="docs/images/landing.png" alt="Content OS landing page" width="900" />
-  <br /><em>Landing — discovery to draft on your terms</em>
+  <br /><em>Landing - discovery to draft on your terms</em>
 </p>
 
 <table>
   <tr>
     <td width="50%">
       <img src="docs/images/dashboard.png" alt="Topic board dashboard with ranked topics and save controls" />
-      <br /><sub><b>Dashboard</b> — ranked topic pool, top picks, save topics, run discovery</sub>
+      <br /><sub><b>Dashboard</b> - ranked topic pool, top picks, save topics, run discovery</sub>
     </td>
     <td width="50%">
       <img src="docs/images/knowledge.png" alt="Knowledge workspace with writing style and context files" />
-      <br /><sub><b>Knowledge</b> — context files that ground ranking and drafts in your voice</sub>
+      <br /><sub><b>Knowledge</b> - context files that ground ranking and drafts in your voice</sub>
     </td>
   </tr>
   <tr>
     <td width="50%">
       <img src="docs/images/drafts.png" alt="Drafts library with published and draft posts" />
-      <br /><sub><b>Drafts</b> — generated posts, edit inline, track published output</sub>
+      <br /><sub><b>Drafts</b> - generated posts, edit inline, track published output</sub>
     </td>
     <td width="50%">
       <img src="docs/images/analytics.png" alt="Analytics dashboard with discovery runs and publish chart" />
-      <br /><sub><b>Analytics</b> — published posts and manual discovery activity</sub>
+      <br /><sub><b>Analytics</b> - published posts and manual discovery activity</sub>
     </td>
   </tr>
 </table>
@@ -73,15 +73,15 @@ Building a personal brand should not start with endless scrolling. Content OS pu
 
 ### Discovery & topic board
 
-- **Manual discovery runs** — Hacker News, Reddit, RSS, GitHub, Instagram, plus Tavily/Firecrawl when keys are set
-- **Knowledge-aware ranking** — each topic scored against your uploaded context (embeddings + pgvector)
-- **Topic pool** — top picks, expandable table, **save** topics to keep them past the 10-day backlog expiry
-- **Carry-over** — saved topics re-enter the next discovery run without re-fetching from APIs
+- **Manual discovery runs** - Hacker News, Reddit, RSS, GitHub, Instagram, plus Tavily/Firecrawl when keys are set
+- **Knowledge-aware ranking** - each topic scored against your uploaded context (embeddings + pgvector)
+- **Topic pool** - top picks, expandable table, **save** topics to keep them past the 10-day backlog expiry
+- **Carry-over** - saved topics re-enter the next discovery run without re-fetching from APIs
 
 ### Knowledge workspace
 
 - Upload and edit **markdown context files** (writing style, soul, interests, platform notes, etc.)
-- **Chunk + embed** on save — used for discovery ranking and draft generation
+- **Chunk + embed** on save - used for discovery ranking and draft generation
 - Starter templates and LinkedIn profile import helpers
 
 ### Drafts
@@ -92,10 +92,10 @@ Building a personal brand should not start with endless scrolling. Content OS pu
 
 ### Privacy & ownership
 
-- **Google sign-in** — no password store
+- **Google sign-in** - no password store
 - User API keys **encrypted at rest** (AES-256-GCM)
 - Dashboard routes **noindex** for SEO; public marketing pages only are indexed
-- **No auto-posting** — ever
+- **No auto-posting** - ever
 
 ---
 
@@ -110,10 +110,10 @@ flowchart LR
   E --> F[Edit & publish manually]
 ```
 
-1. **Connect** — Sign in with Google; add API keys in Settings when ready.
-2. **Seed knowledge** — Upload context files that define your angle and voice.
-3. **Discover** — Run discovery to populate your topic board (~4 new topics per run).
-4. **Draft** — Generate from any topic; edit, revise, ship on your own channels.
+1. **Connect** - Sign in with Google; add API keys in Settings when ready.
+2. **Seed knowledge** - Upload context files that define your angle and voice.
+3. **Discover** - Run discovery to populate your topic board (~4 new topics per run).
+4. **Draft** - Generate from any topic; edit, revise, ship on your own channels.
 
 ---
 
@@ -126,7 +126,7 @@ flowchart LR
 | Auth | [NextAuth.js](https://next-auth.js.org/) (Google OAuth) |
 | Database | PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) via Prisma |
 | Embeddings | OpenAI (server-side, for ranking & knowledge) |
-| Drafts | User-chosen provider — OpenRouter, NVIDIA, or OpenAI (BYOK) |
+| Drafts | User-chosen provider - OpenRouter, NVIDIA, or OpenAI (BYOK) |
 
 ---
 
@@ -154,7 +154,7 @@ openssl rand -base64 32   # NEXTAUTH_SECRET
 openssl rand -hex 32    # ENCRYPTION_KEY (exactly 64 hex chars)
 ```
 
-Fill `.env.local` — see [Environment variables](#environment-variables). Keep `DATABASE_URL` / `DIRECT_URL` in sync in `.env` if you use the Prisma CLI.
+Fill `.env.local` - see [Environment variables](#environment-variables). Keep `DATABASE_URL` / `DIRECT_URL` in sync in `.env` if you use the Prisma CLI.
 
 ```bash
 npm run db:migrate
@@ -175,7 +175,7 @@ Open [http://localhost:3000](http://localhost:3000).
 3. Direct URL (`5432`) → `DIRECT_URL`
 4. Run `npm run db:migrate` (includes RLS hardening for Security Advisor)
 
-> **Never rotate `ENCRYPTION_KEY` after users save API keys** — existing keys cannot be decrypted.
+> **Never rotate `ENCRYPTION_KEY` after users save API keys** - existing keys cannot be decrypted.
 
 ---
 
@@ -218,7 +218,7 @@ Users add **Tavily**, **Firecrawl**, and draft provider keys in **Settings** (st
 
 5. Add production OAuth redirect: `https://your-domain.com/api/auth/callback/google`
 
-**Note:** Discovery and draft generation can run 30–120+ seconds. Use Vercel **Pro** (or higher) so `/api/discover` and `/api/generate` can use `maxDuration = 300`. Discovery is **manual only** — no cron.
+**Note:** Discovery and draft generation can run 30–120+ seconds. Use Vercel **Pro** (or higher) so `/api/discover` and `/api/generate` can use `maxDuration = 300`. Discovery is **manual only** - no cron.
 
 ---
 
@@ -278,7 +278,7 @@ Authenticated unless noted.
 
 ## Contributing
 
-Contributions are welcome — especially discovery sources, ranking improvements, and docs.
+Contributions are welcome - especially discovery sources, ranking improvements, and docs.
 
 1. Fork the repo and create a branch from `main`.
 2. Make focused changes; run `npm run lint` and `npm run build`.
@@ -293,7 +293,7 @@ Use [GitHub Issues](https://github.com/Vinayak-RZ/Content-OS/issues) for bugs an
 - API keys encrypted at rest with `ENCRYPTION_KEY` (AES-256-GCM).
 - Dashboard and API routes protected by NextAuth middleware.
 - Do not commit `.env` or `.env.local`.
-- Org admin key export requires `ADMIN_SECRET` — see [docs/admin_api_keys_export.md](../docs/admin_api_keys_export.md).
+- Org admin key export requires `ADMIN_SECRET` - see [docs/admin_api_keys_export.md](../docs/admin_api_keys_export.md).
 
 Report security issues privately via GitHub Issues (mark as sensitive) or contact the maintainer.
 
@@ -312,7 +312,7 @@ Report security issues privately via GitHub Issues (mark as sensitive) or contac
 
 ## License
 
-[MIT](LICENSE) — free to use, modify, and distribute. See [LICENSE](LICENSE) for full text.
+[MIT](LICENSE) - free to use, modify, and distribute. See [LICENSE](LICENSE) for full text.
 
 ---
 

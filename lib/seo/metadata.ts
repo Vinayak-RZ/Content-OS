@@ -20,7 +20,7 @@ export function buildRootMetadata(): Metadata {
     metadataBase: new URL(siteUrl),
     applicationName: SITE_NAME,
     title: {
-      default: `${SITE_NAME} — From discovery to draft on your terms`,
+      default: `${SITE_NAME} - From discovery to draft on your terms`,
       template: `%s · ${SITE_NAME}`,
     },
     description: SITE_DESCRIPTION,
@@ -56,12 +56,12 @@ export function buildRootMetadata(): Metadata {
       locale: "en_US",
       url: siteUrl,
       siteName: SITE_NAME,
-      title: `${SITE_NAME} — From discovery to draft on your terms`,
+      title: `${SITE_NAME} - From discovery to draft on your terms`,
       description: SITE_DESCRIPTION,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${SITE_NAME} — From discovery to draft on your terms`,
+      title: `${SITE_NAME} - From discovery to draft on your terms`,
       description: SITE_DESCRIPTION,
     },
     verification: siteVerification(),
@@ -79,7 +79,7 @@ export const homePageMetadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: `${SITE_NAME} — From discovery to draft on your terms`,
+    title: `${SITE_NAME} - From discovery to draft on your terms`,
     description: SITE_DESCRIPTION,
     url: "/",
   },

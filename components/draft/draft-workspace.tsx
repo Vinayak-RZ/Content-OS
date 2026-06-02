@@ -497,7 +497,7 @@ export function DraftWorkspace({
       selectedCta: ctaIx,
     });
     await navigator.clipboard.writeText(text);
-    toast("Copied — hook + body + closing line.", "success");
+    toast("Copied - hook + body + closing line.", "success");
   }
 
   const assembledPreview = useMemo(() => {
@@ -523,7 +523,7 @@ export function DraftWorkspace({
     : saveState === "saving"
       ? "Saving…"
       : saveState === "error"
-        ? "Save failed — use Save draft"
+        ? "Save failed - use Save draft"
         : "Saved";
 
   if (loadError) {

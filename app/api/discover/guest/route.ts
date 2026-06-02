@@ -12,7 +12,7 @@ import { GUEST_DISCOVER_DAILY_LIMIT } from "@/lib/guest/constants";
 
 export const maxDuration = 300;
 
-/** Manual discovery for guests — results are returned to the client only (not saved). */
+/** Manual discovery for guests - results are returned to the client only (not saved). */
 export async function POST(req: NextRequest) {
   try {
     if (!(await readGuestSessionFromRequest(req))) {

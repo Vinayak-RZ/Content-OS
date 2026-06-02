@@ -31,7 +31,7 @@ export default async function LoginPage() {
       <CardHeader className="text-center">
         <CardTitle className="font-heading text-2xl">Get started</CardTitle>
         <CardDescription className="text-base">
-          Sign in with Google to save your work, or try the app as a guest — no
+          Sign in with Google to save your work, or try the app as a guest - no
           account required.
         </CardDescription>
       </CardHeader>

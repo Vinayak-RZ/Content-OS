@@ -13,7 +13,7 @@ type TopicSaveToggleProps = {
   trendId: string;
   saved: boolean;
   size?: "sm" | "default";
-  /** Icon only — for narrow topic cards */
+  /** Icon only - for narrow topic cards */
   compact?: boolean;
   className?: string;
 };
@@ -46,8 +46,8 @@ export function TopicSaveToggle({
       if (!result.ok) throw new Error(result.error);
       toast(
         next
-          ? "Topic saved — it will not expire from your pool."
-          : "Topic unsaved — it will expire with the rest of your backlog.",
+          ? "Topic saved - it will not expire from your pool."
+          : "Topic unsaved - it will expire with the rest of your backlog.",
         next ? "success" : "info",
       );
       router.refresh();
@@ -78,8 +78,8 @@ export function TopicSaveToggle({
       aria-pressed={saved}
       title={
         saved
-          ? "Saved — stays in pool after expiry. Click to unsave."
-          : "Save — keep in pool after the 10-day expiry"
+          ? "Saved - stays in pool after expiry. Click to unsave."
+          : "Save - keep in pool after the 10-day expiry"
       }
     >
       <Bookmark

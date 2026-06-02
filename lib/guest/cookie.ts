@@ -1,15 +1,11 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
+import { GUEST_SESSION_COOKIE, GUEST_SESSION_MAX_AGE_SEC } from "@/lib/guest/constants";
 import {
   buildGuestSessionCookieValue,
   isValidGuestSessionValue,
 } from "@/lib/guest/cookie-value";
-import {
-  GUEST_DISCOVER_COOKIE,
-  GUEST_SESSION_COOKIE,
-  GUEST_SESSION_MAX_AGE_SEC,
-} from "@/lib/guest/constants";
 
 export {
   assertGuestDiscoverAllowed,
@@ -47,7 +43,3 @@ export async function isGuestSession(): Promise<boolean> {
   return isValidGuestSessionValue(raw);
 }
 
-export async function clearGuestSessionCookie(): Promise<void> {
-  cookies().delete(GUEST_SESSION_COOKIE);
-  cookies().delete(GUEST_DISCOVER_COOKIE);
-}

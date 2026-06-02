@@ -219,7 +219,7 @@ export function TopicsDashboard({
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                  More topics ({rest.length}) — all can be drafted
+                  More topics ({rest.length}) - all can be drafted
                 </h3>
                 <Button
                   type="button"
@@ -333,7 +333,7 @@ function CustomTopicComposer({
         onStatus: setStreamStatus,
       });
       onDraftCreated(result.draftId);
-      toast("Draft ready — keep editing or copy to LinkedIn.", "success");
+      toast("Draft ready - keep editing or copy to LinkedIn.", "success");
     } catch (e) {
       const message = e instanceof Error ? e.message : "Generate failed";
       setMsg(message);
@@ -358,7 +358,7 @@ function CustomTopicComposer({
             Firecrawl key in Settings
           </Link>
           {" "}
-          required) or write your own angle — generates a draft with your Knowledge
+          required) or write your own angle - generates a draft with your Knowledge
           context.
         </CardDescription>
       </CardHeader>

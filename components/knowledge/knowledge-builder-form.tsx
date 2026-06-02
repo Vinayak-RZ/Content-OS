@@ -94,7 +94,7 @@ export function KnowledgeBuilderForm({
           Build your knowledge here
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Skip anything you’re not sure about — fill in what you can. At least
+          Skip anything you’re not sure about - fill in what you can. At least
           one answer is needed to save. The last two questions fit your profile
           as a{" "}
           <span className="font-medium text-foreground">{personaLabel}</span>.
@@ -163,7 +163,7 @@ export function KnowledgeBuilderForm({
           )}
         </Button>
         <p className="text-xs text-muted-foreground">
-          Maps to Writing style, Soul, Interests, and Thoughts — edit anytime
+          Maps to Writing style, Soul, Interests, and Thoughts - edit anytime
           below.
         </p>
       </div>

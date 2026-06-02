@@ -4,7 +4,7 @@ import { SITE_NAME } from "@/lib/seo/site-config";
 
 export const runtime = "edge";
 
-export const alt = `${SITE_NAME} — From discovery to draft on your terms`;
+export const alt = `${SITE_NAME} - From discovery to draft on your terms`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -82,7 +82,7 @@ export default function OpenGraphImage() {
           }}
         >
           High-signal topics ranked against your knowledge. Drafts in your voice.
-          Free with your API keys — no auto-posting.
+          Free with your API keys - no auto-posting.
         </div>
       </div>
     ),

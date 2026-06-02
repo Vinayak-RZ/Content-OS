@@ -8,7 +8,7 @@ export {
   DEFAULT_TAVILY_QUERIES,
 } from "@/lib/personas/discovery-queries";
 
-/** Reddit communities — shuffled per run; not all are developer-focused. */
+/** Reddit communities - shuffled per run; not all are developer-focused. */
 export const REDDIT_SUBREDDITS: string[] = [
   // Business & product
   "startups",
@@ -35,7 +35,7 @@ export const REDDIT_SUBREDDITS: string[] = [
   "MachineLearning",
 ];
 
-/** RSS feeds — tech, big tech, product, design, finance, web3. */
+/** RSS feeds - tech, big tech, product, design, finance, web3. */
 export const DEFAULT_RSS_FEEDS: string[] = [
   // News & general tech
   "https://news.ycombinator.com/rss",

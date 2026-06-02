@@ -19,14 +19,14 @@ export function buildLlmsFullTxt(): string {
   ).join("\n\n");
 
   const stepsBlock = ONBOARDING_STEPS.map(
-    (s) => `${s.num}. **${s.label}** — ${s.detail}`,
+    (s) => `${s.num}. **${s.label}** - ${s.detail}`,
   ).join("\n");
 
   const faqBlock = LANDING_FAQ.map(
     (item) => `### ${item.question}\n${item.answer}`,
   ).join("\n\n");
 
-  return `# ${SITE_NAME} — full site summary
+  return `# ${SITE_NAME} - full site summary
 
 > ${SITE_TAGLINE}
 > Last updated: ${modified}
@@ -40,10 +40,10 @@ Content OS is a free web application for founders, engineers, and creators who w
 
 ## Primary value proposition
 
-- **From discovery to draft on your terms** — one workflow from topic board to finished draft
-- **Grounded in you** — not generic AI; your writing style, interests, and perspective drive ranking and drafts
-- **Completely free** — no subscription; optional bring-your-own-keys (BYOK) for AI and discovery APIs
-- **Your control** — humans approve every word; Content OS never posts to social media on your behalf
+- **From discovery to draft on your terms** - one workflow from topic board to finished draft
+- **Grounded in you** - not generic AI; your writing style, interests, and perspective drive ranking and drafts
+- **Completely free** - no subscription; optional bring-your-own-keys (BYOK) for AI and discovery APIs
+- **Your control** - humans approve every word; Content OS never posts to social media on your behalf
 
 ## Who it is for
 

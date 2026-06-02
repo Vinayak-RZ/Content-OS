@@ -36,7 +36,7 @@ export function TopicDraftButton({
         onDelta: setStreamText,
         onStatus: setStatusMessage,
       });
-      toast("Draft ready — keep editing or copy to LinkedIn.", "success");
+      toast("Draft ready - keep editing or copy to LinkedIn.", "success");
       router.push(`/draft/${result.draftId}?new=1`);
     } catch (e) {
       const message =

@@ -47,7 +47,7 @@ export function DiscoveryRunButton({
       if (guest) {
         await onGuestCompleted?.(result.data);
         toast(
-          `Found ${newStored} new topic${newStored === 1 ? "" : "s"} (guest preview — sign in to save).`,
+          `Found ${newStored} new topic${newStored === 1 ? "" : "s"} (guest preview - sign in to save).`,
           "success",
         );
       } else {

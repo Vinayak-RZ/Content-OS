@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 import { getAppAccess } from "@/lib/app-access";
-import { clearGuestSessionCookie } from "@/lib/guest/cookie";
 import { privatePageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = privatePageMetadata;
@@ -19,7 +18,6 @@ export default async function DashboardLayout({
   }
 
   if (access.mode === "user") {
-    await clearGuestSessionCookie();
     if (!access.onboardingCompleted) {
       redirect("/onboarding");
     }

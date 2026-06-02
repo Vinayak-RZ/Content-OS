@@ -3,7 +3,7 @@ import { GITHUB_REPO_URL } from "@/lib/github-links";
 /** Production canonical origin (non-www). Used when env URLs are missing or misconfigured. */
 export const CANONICAL_SITE_ORIGIN = "https://content-os.stamped.work";
 
-/** Normalize to HTTPS apex host — prevents duplicate www / non-www in sitemap & JSON-LD. */
+/** Normalize to HTTPS apex host - prevents duplicate www / non-www in sitemap & JSON-LD. */
 export function normalizeSiteOrigin(raw: string): string {
   const withProtocol = raw.startsWith("http") ? raw : `https://${raw}`;
   const url = new URL(withProtocol);
@@ -38,7 +38,7 @@ export const SITE_TAGLINE =
   "Thinking amplification for founders, creators, and builders";
 
 export const SITE_DESCRIPTION =
-  "Content OS discovers high-signal topics from Hacker News, Instagram, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Free app — bring your own API keys. No auto-posting.";
+  "Content OS discovers high-signal topics from Hacker News, Instagram, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Free app - bring your own API keys. No auto-posting.";
 
 export const SITE_KEYWORDS = [
   "content creation",

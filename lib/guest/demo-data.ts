@@ -27,7 +27,7 @@ export const GUEST_DEMO_DRAFTS: GuestDemoDraftRow[] = [
   },
   {
     id: GUEST_DEMO_DRAFT_IDS.second,
-    topicTitle: "Open-source LLM tooling is commoditizing — what still matters",
+    topicTitle: "Open-source LLM tooling is commoditizing - what still matters",
     status: "ready",
     updatedAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
     currentContent:
@@ -56,7 +56,7 @@ Here's what we changed:
 → Discovery tied to knowledge, not vibes
 → Drafts reviewed before anything goes live
 
-If you're pre-PMF, bias toward channels you can repeat — not viral one-offs.`,
+If you're pre-PMF, bias toward channels you can repeat - not viral one-offs.`,
     hookVariants: [
       "Distribution is a product surface. Treat it like one.",
       "Your roadmap is not your GTM.",
@@ -198,7 +198,7 @@ Builder-founder writing in public about distribution, AI workflows, and calm exe
 Ship useful tools, explain trade-offs honestly, help peers avoid performative hustle.
 
 ## Personality
-Curious, slightly contrarian, generous with specifics — not motivational poster energy.`,
+Curious, slightly contrarian, generous with specifics - not motivational poster energy.`,
   "technical-interests": `# Interests & expertise
 
 - LLM apps, RAG, and evaluation
@@ -216,7 +216,7 @@ Scratchpad for half-formed ideas, reactions to news, and quotes worth revisiting
 Keeps ranking fresh without polluting polished narrative docs.`,
   "linkedin-positioning": `# LinkedIn positioning
 
-Headline: Building Content OS — discovery → drafts in your voice.
+Headline: Building Content OS - discovery → drafts in your voice.
 
 About: I write about founder distribution, thoughtful AI workflows, and shipping without auto-posting.
 

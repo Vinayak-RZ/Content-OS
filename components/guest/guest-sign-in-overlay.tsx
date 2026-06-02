@@ -84,7 +84,7 @@ export function GuestSignInOverlay({
               </Button>
             </Link>
             <p className="text-center text-xs text-muted-foreground">
-              Guest mode still includes dashboard discovery — nothing here is
+              Guest mode still includes dashboard discovery - nothing here is
               saved until you sign in.
             </p>
           </CardContent>

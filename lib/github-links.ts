@@ -1,4 +1,4 @@
-/** Public GitHub repo — source of truth for feature requests and contributions. */
+/** Public GitHub repo - source of truth for feature requests and contributions. */
 export const GITHUB_REPO_URL = "https://github.com/Vinayak-RZ/Content-OS";
 
 export const GITHUB_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;

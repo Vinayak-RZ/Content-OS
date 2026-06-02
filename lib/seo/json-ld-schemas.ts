@@ -57,7 +57,7 @@ export function buildHomeJsonLd() {
           price: "0",
           priceCurrency: "USD",
           description:
-            "Free forever — optional BYOK API keys for discovery and drafts",
+            "Free forever - optional BYOK API keys for discovery and drafts",
           availability: "https://schema.org/InStock",
         },
         featureList: [
