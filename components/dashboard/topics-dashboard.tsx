@@ -33,6 +33,7 @@ import {
   DISCOVERY_VISIBLE_POOL_MAX,
   DISCOVERY_VISIBLE_POOL_MIN,
 } from "@/lib/discovery/founder-profile";
+import { TOPIC_POOL_TTL_DAYS } from "@/lib/discovery/topic-pool-ttl";
 import type { SerializedDashboardTrend } from "@/lib/trends/types";
 
 export function TopicsDashboard({
@@ -137,8 +138,8 @@ export function TopicsDashboard({
             <p className="max-w-xl text-xs text-muted-foreground">
               Each run researches ~{DISCOVERY_NEW_PER_RUN} new topics. Your pool
               holds {DISCOVERY_VISIBLE_POOL_MIN}–{DISCOVERY_VISIBLE_POOL_MAX}{" "}
-              ranked items (new + undrafted backlog). Generate drafts from any
-              topic — top cards, expanded grid, or the topic list.
+              ranked items; unsaved backlog expires after {TOPIC_POOL_TTL_DAYS}{" "}
+              days. Save topics in the pool table to keep them longer.
             </p>
           </div>
           <DiscoveryRunButton onCompleted={refresh} compact />

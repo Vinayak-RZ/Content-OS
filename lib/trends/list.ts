@@ -36,15 +36,7 @@ function activeTrendWhere(
     OR: [{ feedbackStatus: null }, { feedbackStatus: "saved" }],
     AND: [
       {
-        OR: [
-          { expiresAt: { gt: now } },
-          {
-            AND: [
-              { feedbackStatus: "saved" },
-              { savedUntil: { gt: now } },
-            ],
-          },
-        ],
+        OR: [{ expiresAt: { gt: now } }, { feedbackStatus: "saved" }],
       },
       ...(excludeHashes.length > 0
         ? [{ urlHash: { notIn: excludeHashes } }]

@@ -5,11 +5,14 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
+import { TopicSaveToggle } from "@/components/dashboard/topic-save-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DASHBOARD_TOP_TOPICS_LIMIT } from "@/lib/discovery/founder-profile";
+import { TOPIC_POOL_TTL_DAYS } from "@/lib/discovery/topic-pool-ttl";
 import { formatSourceType } from "@/lib/discovery/source-labels";
 import type { SerializedDashboardTrend } from "@/lib/trends/types";
+import { cn } from "@/lib/utils";
 
 type TopicPoolTableProps = {
   trends: SerializedDashboardTrend[];
@@ -37,14 +40,15 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
           Topic pool ({trends.length})
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ranked topics without a recent draft. Showing top{" "}
+          Ranked topics without a recent draft. Unsaved backlog items expire after{" "}
+          {TOPIC_POOL_TTL_DAYS} days — use Save to keep a topic in your pool.
+          Showing top{" "}
           {expanded ? trends.length : Math.min(DASHBOARD_TOP_TOPICS_LIMIT, trends.length)}
-          {hasMore && !expanded ? ` of ${trends.length}` : ""}. Generate from any
-          row or remove topics you will not use.
+          {hasMore && !expanded ? ` of ${trends.length}` : ""}.
         </p>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px] text-left text-sm">
+        <table className="w-full min-w-[920px] text-left text-sm">
           <thead>
             <tr className="border-b border-subtle font-heading text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               <th className="px-4 py-3 font-medium">#</th>
@@ -52,6 +56,7 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
               <th className="px-4 py-3 font-medium">Title</th>
               <th className="px-4 py-3 font-medium">Source</th>
               <th className="px-4 py-3 font-medium">Pool</th>
+              <th className="px-4 py-3 font-medium">Save</th>
               <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
@@ -59,10 +64,14 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
             {visibleTrends.map((t, i) => {
               const isNew =
                 latestBatchId != null && t.discoveryBatchId === latestBatchId;
+              const isSaved = t.feedbackStatus === "saved";
               return (
                 <tr
                   key={t.id}
-                  className="border-b border-subtle/60 last:border-0 hover:bg-muted/20"
+                  className={cn(
+                    "border-b border-subtle/60 last:border-0 hover:bg-muted/20",
+                    isSaved && "bg-brand-muted/30",
+                  )}
                 >
                   <td className="px-4 py-3 font-mono text-muted-foreground">
                     {i + 1}
@@ -88,15 +97,18 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
                       <Badge variant="brand" className="rounded-full text-[10px]">
                         New
                       </Badge>
-                    ) : t.feedbackStatus === "saved" ? (
-                      <Badge variant="muted" className="rounded-full text-[10px]">
-                        Saved
-                      </Badge>
                     ) : (
                       <Badge variant="muted" className="rounded-full text-[10px]">
                         Backlog
                       </Badge>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <TopicSaveToggle
+                      trendId={t.id}
+                      saved={isSaved}
+                      size="sm"
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">

@@ -26,10 +26,10 @@ import { urlSha256 } from "@/lib/discovery/urls";
 import { rankDiscoveryPool } from "@/lib/ranking";
 import { getDecryptedKey } from "@/lib/user-settings";
 
+import { TOPIC_POOL_EXPIRES_MS } from "@/lib/discovery/topic-pool-ttl";
+
 const ENRICH_MIN_SUMMARY_LEN = 100;
 const MAX_ENRICH_PER_RUN = 3;
-/** Undrafted topics stay in backlog until trimmed or expired (~14 days). */
-const DEFAULT_EXPIRES_MS = 14 * 24 * 60 * 60 * 1000;
 
 function platformGithubToken(): string | undefined {
   const raw = process.env["GITHUB_TOKEN"];
@@ -166,7 +166,7 @@ export async function runDiscoveryForUser(
     enriched = next;
   }
 
-  const expiresAt = new Date(Date.now() + DEFAULT_EXPIRES_MS);
+  const expiresAt = new Date(Date.now() + TOPIC_POOL_EXPIRES_MS);
 
   const finalScores = await rankDiscoveryPool(userId, saved, enriched);
 

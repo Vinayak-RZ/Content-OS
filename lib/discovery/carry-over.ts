@@ -16,8 +16,6 @@ import {
 
 export const POOL_TARGET = DISCOVERY_NEW_PER_RUN;
 export const MAX_SAVED_CARRY = DISCOVERY_MAX_SAVED_CARRY;
-/** Days a saved topic stays valid when refreshed via thumbs up */
-export const SAVED_TOPIC_TTL_DAYS = 5;
 
 export type DiscoveryFetchBudget = {
   poolTarget: number;
@@ -35,12 +33,6 @@ export function computeFetchBudget(savedCount: number): DiscoveryFetchBudget {
   };
 }
 
-export function savedUntilFromNow(now = new Date()): Date {
-  const d = new Date(now);
-  d.setDate(d.getDate() + SAVED_TOPIC_TTL_DAYS);
-  return d;
-}
-
 export type FeedbackPatch = TrendFeedbackStatus | null;
 
 export function feedbackPatchToFields(
@@ -51,7 +43,8 @@ export function feedbackPatchToFields(
     return {
       feedbackStatus: "saved",
       feedbackAt: now,
-      savedUntil: savedUntilFromNow(now),
+      /** null = no expiry while saved (exempt from pool TTL). */
+      savedUntil: null,
     };
   }
   if (feedback === "dismissed") {
@@ -75,7 +68,7 @@ export function isTrendActiveForDashboard(
   if (trend.feedbackStatus === "dismissed") {
     return false;
   }
-  if (trend.feedbackStatus === "saved" && trend.savedUntil && trend.savedUntil > now) {
+  if (trend.feedbackStatus === "saved") {
     return true;
   }
   return trend.expiresAt > now;
