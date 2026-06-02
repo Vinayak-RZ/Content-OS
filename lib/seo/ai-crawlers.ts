@@ -24,6 +24,7 @@ export const PUBLIC_CRAWL_PATHS = [
   "/",
   "/login",
   "/llms.txt",
+  "/llms-full.txt",
   "/sitemap.xml",
   "/robots.txt",
   "/brand/",

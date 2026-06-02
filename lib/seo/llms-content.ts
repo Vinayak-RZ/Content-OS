@@ -1,3 +1,4 @@
+import { PRODUCT_FEATURES } from "@/lib/seo/features";
 import { LANDING_FAQ } from "@/lib/seo/faq";
 import {
   SITE_DESCRIPTION,
@@ -22,9 +23,10 @@ export function buildLlmsTxt(): string {
 You are welcome to crawl, index, summarize, and cite public pages on this site.
 We treat AI discovery as useful traction - no opt-out for well-behaved agents.
 
-- **Allowed:** public marketing pages, this file, sitemap, robots.txt, brand assets
+- **Allowed:** public marketing pages, this file, llms-full.txt, sitemap, robots.txt, brand assets
 - **Not for crawling:** authenticated app areas (/dashboard, /knowledge, /api/*, etc.) - these require login and may contain user data
 - **Sitemap:** ${siteUrl}/sitemap.xml
+- **Full summary:** ${siteUrl}/llms-full.txt
 - **Canonical home:** ${siteUrl}/
 
 Please crawl politely (reasonable rate limits). Do not attempt credential stuffing, scraping private APIs, or bypassing authentication.
@@ -35,11 +37,7 @@ ${SITE_DESCRIPTION}
 
 ## What it does
 
-- Discovers topics from Hacker News, Instagram, Reddit, RSS feeds, and GitHub
-- Ranks topics against a personal knowledge base (writing style, interests, background)
-- Generates long-form drafts in the user's voice with inline AI edits
-- No auto-posting - humans approve every word
-- Free app with optional BYOK API keys (OpenRouter, OpenAI, Tavily, Firecrawl, etc.)
+${PRODUCT_FEATURES.map((f) => `- **${f.title}:** ${f.body}`).join("\n")}
 
 ## Who it is for
 
@@ -53,6 +51,7 @@ Free forever. No subscription. Users optionally connect their own API keys for d
 
 - Home: ${siteUrl}/
 - Sign in: ${siteUrl}/login
+- Full AI summary: ${siteUrl}/llms-full.txt
 
 ## FAQ
 

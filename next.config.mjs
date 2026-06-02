@@ -24,6 +24,16 @@ const traceExcludes = [
 ];
 
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.content-os.stamped.work" }],
+        destination: "https://content-os.stamped.work/:path*",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     serverComponentsExternalPackages: ["@prisma/client"],
     outputFileTracingExcludes: {

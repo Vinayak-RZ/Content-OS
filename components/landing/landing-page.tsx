@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { PRODUCT_FEATURES } from "@/lib/seo/features";
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
 import { LandingFaq } from "@/components/landing/landing-faq";
@@ -22,28 +23,17 @@ import { Button } from "@/components/ui/button";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const features = [
-  {
-    icon: Radar,
-    title: "Signal discovery",
-    body: "HN, Reddit, RSS, GitHub, and more. Topics rank against your knowledge so you see what fits, not what's loudest.",
-  },
-  {
-    icon: BookOpen,
-    title: "Grounded in you",
-    body: "Your knowledge base sets the angle. Posts sound like you, not a generic feed.",
-  },
-  {
-    icon: PenLine,
-    title: "Drafts in your voice",
-    body: "Long-form drafts from any topic. Edit inline, revise with AI, keep a library of work in progress.",
-  },
-  {
-    icon: Sparkles,
-    title: "Publish on your terms",
-    body: "No auto-posting. You approve every word. Content OS amplifies thinking; you keep the pen.",
-  },
-];
+const features = PRODUCT_FEATURES.map((f) => ({
+  ...f,
+  icon:
+    f.title === "Signal discovery"
+      ? Radar
+      : f.title === "Grounded in you"
+        ? BookOpen
+        : f.title === "Drafts in your voice"
+          ? PenLine
+          : Sparkles,
+}));
 
 const HERO_CTA_BUTTON_CLASS =
   "w-[13.25rem] justify-center px-8";
@@ -329,6 +319,15 @@ export function LandingPage({
               className="underline-offset-2 hover:text-foreground hover:underline"
             >
               AI & crawlers welcome
+            </a>
+            <span className="mx-2 text-muted-foreground/40" aria-hidden>
+              ·
+            </span>
+            <a
+              href="/llms-full.txt"
+              className="underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Full summary
             </a>
           </p>
         </div>

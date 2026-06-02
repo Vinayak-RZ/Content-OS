@@ -18,9 +18,9 @@ export function LandingFaq() {
               "[&::-webkit-details-marker]:hidden",
             )}
           >
-            <span className="font-heading text-base font-semibold text-foreground">
+            <h3 className="font-heading text-base font-semibold text-foreground">
               {item.question}
-            </span>
+            </h3>
             <ChevronDown
               className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
               aria-hidden

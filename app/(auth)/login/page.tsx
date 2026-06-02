@@ -8,14 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SignInButton } from "@/components/auth/sign-in-button";
+import { JsonLd } from "@/components/seo/json-ld";
+import { buildLoginJsonLd } from "@/lib/seo/json-ld-schemas";
+import { loginPageMetadata } from "@/lib/seo/metadata";
 import { getSession } from "@/lib/session";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description:
-    "Sign in to Content OS with Google to access your topic board, knowledge base, and drafts.",
-  robots: { index: true, follow: true },
-};
+export const metadata: Metadata = loginPageMetadata;
 
 export default async function LoginPage() {
   const session = await getSession();
@@ -26,7 +24,9 @@ export default async function LoginPage() {
   }
 
   return (
-    <Card className="shadow-ambient">
+    <>
+      <JsonLd data={buildLoginJsonLd()} />
+      <Card className="shadow-ambient">
       <CardHeader className="text-center">
         <CardTitle className="font-heading text-2xl">Welcome back</CardTitle>
         <CardDescription className="text-base">
@@ -42,5 +42,6 @@ export default async function LoginPage() {
         </p>
       </CardContent>
     </Card>
+    </>
   );
 }

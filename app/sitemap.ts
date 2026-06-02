@@ -22,8 +22,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${siteUrl}/llms.txt`,
       lastModified,
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.5,
+    },
+    {
+      url: `${siteUrl}/llms-full.txt`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.6,
     },
   ];
 }

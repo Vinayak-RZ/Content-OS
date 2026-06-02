@@ -4,34 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 
+import { ONBOARDING_STEPS } from "@/lib/seo/steps";
 import { cn } from "@/lib/utils";
+
+export { ONBOARDING_STEPS as LANDING_STEPS };
 
 gsap.registerPlugin(useGSAP);
 
-export const LANDING_STEPS = [
-  {
-    num: "01",
-    label: "Connect",
-    detail: "Sign in free. Add API keys when you're ready.",
-  },
-  {
-    num: "02",
-    label: "Seed knowledge",
-    detail: "Upload context files that define your angle.",
-  },
-  {
-    num: "03",
-    label: "Discover",
-    detail: "Run discovery to populate your topic board.",
-  },
-  {
-    num: "04",
-    label: "Draft",
-    detail: "Generate, edit, and ship when ready.",
-  },
-] as const;
-
-const STEP_COUNT = LANDING_STEPS.length;
+const STEP_COUNT = ONBOARDING_STEPS.length;
 const HOLD_S = 2.35;
 const TRANSITION_S = 0.65;
 
@@ -51,7 +31,7 @@ function setActiveStep(
 function StaticStepsList({ className }: { className?: string }) {
   return (
     <ol className={cn("mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-2", className)}>
-      {LANDING_STEPS.map((step) => (
+      {ONBOARDING_STEPS.map((step) => (
         <li key={step.num} className="flex gap-4">
           <div
             className="flex size-10 shrink-0 items-center justify-center rounded-full border border-subtle bg-card font-heading text-xs font-semibold text-muted-foreground shadow-[0_0_0_4px_hsl(var(--card))]"
@@ -133,7 +113,7 @@ function StepsGraph({ motionEnabled }: StepsGraphProps) {
         />
 
         <ol className="relative grid grid-cols-4 gap-3 lg:gap-4">
-          {LANDING_STEPS.map((step, index) => (
+          {ONBOARDING_STEPS.map((step, index) => (
             <li
               key={step.num}
               className="flex flex-col items-center text-center"
