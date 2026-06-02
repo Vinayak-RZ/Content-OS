@@ -1,3 +1,4 @@
+import { GUEST_MODE_LOGIN_DESCRIPTION } from "@/lib/seo/guest-mode";
 import { LANDING_FAQ } from "@/lib/seo/faq";
 import { ONBOARDING_STEPS } from "@/lib/seo/steps";
 import {
@@ -66,6 +67,7 @@ export function buildHomeJsonLd() {
           "AI drafts in your voice",
           "Manual publish workflow with no auto-posting",
           "Encrypted BYOK API key storage",
+          "Guest preview without an account (session-only)",
         ],
         audience: {
           "@type": "Audience",
@@ -79,7 +81,7 @@ export function buildHomeJsonLd() {
         "@id": `${siteUrl}/#howto`,
         name: "How to create your first draft with Content OS",
         description:
-          "Sign in, seed your knowledge base, run discovery, and generate a draft in your voice.",
+          "Try as guest or sign in, seed your knowledge base, run discovery, and generate a draft in your voice.",
         step: ONBOARDING_STEPS.map((step, index) => ({
           "@type": "HowToStep",
           position: index + 1,
@@ -109,10 +111,9 @@ export function buildLoginJsonLd() {
   return {
     "@context": SCHEMA_CONTEXT,
     "@type": "WebPage",
-    name: `Sign in · ${SITE_NAME}`,
+    name: `Get started · ${SITE_NAME}`,
     url: `${siteUrl}/login`,
-    description:
-      "Sign in to Content OS with Google to access your topic board, knowledge base, and drafts.",
+    description: GUEST_MODE_LOGIN_DESCRIPTION,
     isPartOf: { "@id": `${siteUrl}/#website` },
     inLanguage: "en-US",
   };

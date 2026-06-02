@@ -2,8 +2,9 @@
 export const ONBOARDING_STEPS = [
   {
     num: "01",
-    label: "Connect",
-    detail: "Sign in free. Add API keys when you're ready.",
+    label: "Start free",
+    detail:
+      "Try as guest from the login page (no account), or sign in with Google to save your work.",
   },
   {
     num: "02",

@@ -154,8 +154,8 @@ export function LandingPage({
               data-hero-reveal
               className="mx-auto mt-6 max-w-2xl text-balance text-body-lg text-muted-foreground"
             >
-              Content OS finds high-signal topics and drafts in your voice. Free
-              with your API keys, no auto-posting.
+              Content OS finds high-signal topics and drafts in your voice.
+              Try as a guest or sign in free — your API keys, no auto-posting.
             </p>
             <div
               data-hero-reveal
@@ -274,7 +274,7 @@ export function LandingPage({
                 Frequently asked questions
               </h2>
               <p className="mt-3 text-sm text-muted-foreground sm:mt-4">
-                Pricing, keys, and how your data stays yours.
+                Guest preview, pricing, keys, and how your data stays yours.
               </p>
             </div>
             <LandingFaq />
@@ -290,8 +290,8 @@ export function LandingPage({
               Ready to write with signal?
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-forest-foreground/80 sm:mt-4 sm:max-w-lg sm:text-base">
-              Free forever. Sign in with Google, add keys when you want drafts
-              or discovery.
+              Free forever. Try as guest or sign in with Google — add keys when
+              you want drafts or discovery.
             </p>
             <div className="mt-8">
               <LandingAuthButtons

@@ -3,6 +3,11 @@ export type FaqItem = {
   answer: string;
 };
 
+import {
+  GUEST_MODE_FAQ_DIFF,
+  GUEST_MODE_FAQ_TRY,
+} from "@/lib/seo/guest-mode";
+
 export const LANDING_FAQ: FaqItem[] = [
   {
     question: "What is Content OS?",
@@ -12,8 +17,10 @@ export const LANDING_FAQ: FaqItem[] = [
   {
     question: "Is Content OS free to use?",
     answer:
-      "Yes. The Content OS app is free forever with no subscription. You sign in with Google and optionally connect your own AI and discovery API keys when you want drafts or live topic discovery.",
+      "Yes. The Content OS app is free forever with no subscription. Try as a guest with no account, or sign in with Google and optionally connect your own AI and discovery API keys when you want drafts or live topic discovery.",
   },
+  GUEST_MODE_FAQ_TRY,
+  GUEST_MODE_FAQ_DIFF,
   {
     question: "Do I need my own API keys?",
     answer:

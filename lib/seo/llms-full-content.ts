@@ -1,5 +1,6 @@
 import { PRODUCT_FEATURES } from "@/lib/seo/features";
 import { LANDING_FAQ } from "@/lib/seo/faq";
+import { buildGuestModeLlmsSection } from "@/lib/seo/guest-mode";
 import { ONBOARDING_STEPS } from "@/lib/seo/steps";
 import {
   SITE_DESCRIPTION,
@@ -60,13 +61,15 @@ ${stepsBlock}
 ## Pricing and API keys
 
 - **Price:** Free forever. No subscription.
-- **Sign in:** Google OAuth
-- **API keys:** Optional until you run discovery or generate drafts. Keys are stored encrypted (BYOK). Supported providers include OpenRouter, OpenAI, Tavily, Firecrawl, and others depending on your configuration.
+- **Sign in:** Google OAuth, or guest preview without an account (session-only, nothing saved)
+- **API keys:** Optional until you run discovery or generate drafts (signed-in users). Keys are stored encrypted (BYOK). Supported providers include OpenRouter, OpenAI, Tavily, Firecrawl, and others depending on your configuration.
+
+${buildGuestModeLlmsSection(siteUrl)}
 
 ## Trust and data
 
 - No auto-posting to LinkedIn, X, or any social platform
-- Authenticated areas (/dashboard, /knowledge, /drafts, /settings, /api/*) require login and are not intended for crawling
+- Authenticated areas (/dashboard, /knowledge, /drafts, /settings, /api/*) require login or a guest session cookie and are not intended for search or AI crawling
 - Open source: ${SITE_SAME_AS[0]}
 
 ## Public URLs
@@ -84,7 +87,7 @@ ${faqBlock}
 
 ## Keywords
 
-content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, Instagram trends, founder content workflow, personal brand, signal over noise, BYOK, no auto-posting
+content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, Instagram trends, founder content workflow, personal brand, signal over noise, BYOK, no auto-posting, guest mode, try without signup
 
 ## Crawl policy
 

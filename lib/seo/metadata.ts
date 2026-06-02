@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GUEST_MODE_LOGIN_DESCRIPTION } from "@/lib/seo/guest-mode";
 import {
   CANONICAL_SITE_ORIGIN,
   SITE_DESCRIPTION,
@@ -86,18 +87,21 @@ export const homePageMetadata: Metadata = {
 };
 
 export const loginPageMetadata: Metadata = {
-  title: "Sign in",
-  description:
-    "Sign in to Content OS with Google to access your topic board, knowledge base, and drafts.",
+  title: "Get started — sign in or try as guest",
+  description: GUEST_MODE_LOGIN_DESCRIPTION,
   alternates: {
     canonical: "/login",
   },
   robots: { index: true, follow: true },
   openGraph: {
-    title: `Sign in · ${SITE_NAME}`,
-    description:
-      "Sign in to Content OS with Google to access your topic board, knowledge base, and drafts.",
+    title: `Get started · ${SITE_NAME}`,
+    description: GUEST_MODE_LOGIN_DESCRIPTION,
     url: "/login",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Get started · ${SITE_NAME}`,
+    description: GUEST_MODE_LOGIN_DESCRIPTION,
   },
 };
 

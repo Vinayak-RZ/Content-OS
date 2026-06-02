@@ -38,7 +38,7 @@ export const SITE_TAGLINE =
   "Thinking amplification for founders, creators, and builders";
 
 export const SITE_DESCRIPTION =
-  "Content OS discovers high-signal topics from Hacker News, Instagram, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Free app - bring your own API keys. No auto-posting.";
+  "Content OS discovers high-signal topics from Hacker News, Instagram, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Try as a guest or sign in free — bring your own API keys. No auto-posting.";
 
 export const SITE_KEYWORDS = [
   "content creation",
@@ -55,4 +55,7 @@ export const SITE_KEYWORDS = [
   "personal brand",
   "signal over noise",
   "content operating system",
+  "try without signup",
+  "guest mode",
+  "free content workflow",
 ] as const;

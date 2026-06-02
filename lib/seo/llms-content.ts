@@ -1,5 +1,6 @@
 import { PRODUCT_FEATURES } from "@/lib/seo/features";
 import { LANDING_FAQ } from "@/lib/seo/faq";
+import { buildGuestModeLlmsSection } from "@/lib/seo/guest-mode";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -24,7 +25,7 @@ You are welcome to crawl, index, summarize, and cite public pages on this site.
 We treat AI discovery as useful traction - no opt-out for well-behaved agents.
 
 - **Allowed:** public marketing pages, this file, llms-full.txt, sitemap, robots.txt, brand assets
-- **Not for crawling:** authenticated app areas (/dashboard, /knowledge, /api/*, etc.) - these require login and may contain user data
+- **Not for crawling:** authenticated app areas (/dashboard, /knowledge, /api/*, etc.) - login or guest cookie required; may contain user data
 - **Sitemap:** ${siteUrl}/sitemap.xml
 - **Full summary:** ${siteUrl}/llms-full.txt
 - **Canonical home:** ${siteUrl}/
@@ -47,6 +48,8 @@ Founders building in public, engineers, content creators, students, finance prof
 
 Free forever. No subscription. Users optionally connect their own API keys for discovery and draft generation.
 
+${buildGuestModeLlmsSection(siteUrl)}
+
 ## Public pages
 
 - Home: ${siteUrl}/
@@ -59,6 +62,6 @@ ${faqBlock}
 
 ## Keywords
 
-content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, Instagram trends, founder content workflow
+content creation, topic discovery, AI writing assistant, build in public, LinkedIn drafts, knowledge base, Hacker News topics, Instagram trends, founder content workflow, guest mode, try without signup
 `;
 }
