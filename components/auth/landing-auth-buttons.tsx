@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { SignInButton } from "@/components/auth/sign-in-button";
 import { Button } from "@/components/ui/button";
 
 interface LandingAuthButtonsProps {
@@ -52,7 +51,9 @@ export function LandingAuthButtons({
             Sign in
           </Button>
         </Link>
-        <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
+        <Link href="/login">
+          <Button size={size}>Get started</Button>
+        </Link>
       </div>
     );
   }
@@ -60,7 +61,11 @@ export function LandingAuthButtons({
   if (layout === "cta") {
     return (
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <SignInButton size={size} callbackUrl="/dashboard" label="Get started" />
+        <Link href="/login">
+          <Button size={size} className={buttonClassName}>
+            Get started
+          </Button>
+        </Link>
         <Link href="/login">
           <Button
             variant="ghost"
@@ -76,12 +81,11 @@ export function LandingAuthButtons({
 
   return (
     <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
-      <SignInButton
-        size={size}
-        callbackUrl="/dashboard"
-        label="Get started"
-        className={buttonClassName}
-      />
+      <Link href="/login">
+        <Button size={size} className={buttonClassName}>
+          Get started
+        </Button>
+      </Link>
       <Link href="/login">
         <Button variant="ghost" size={size} className={buttonClassName}>
           Sign in

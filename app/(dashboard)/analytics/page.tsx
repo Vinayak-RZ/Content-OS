@@ -1,11 +1,16 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { AppHeader } from "@/components/app-header";
 import { PublicationChart } from "@/components/analytics/publication-chart";
+import {
+  GuestPreviewPage,
+  GuestSignInOverlay,
+} from "@/components/guest/guest-sign-in-overlay";
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { fetchAnalyticsSummary } from "@/lib/analytics/summary";
-import { getSession } from "@/lib/session";
+import type { AnalyticsSummary } from "@/lib/analytics/summary";
+import { getAppAccess } from "@/lib/app-access";
+import { GUEST_DEMO_ANALYTICS } from "@/lib/guest/demo-data";
 
 function StatCard({
   label,
@@ -31,11 +36,130 @@ function StatCard({
   );
 }
 
-export default async function AnalyticsPage() {
-  const session = await getSession();
-  if (!session?.user?.id) redirect("/login");
+function AnalyticsBody({ analytics }: { analytics: AnalyticsSummary }) {
+  return (
+    <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:gap-8 sm:pt-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Published posts"
+          value={analytics.publishedCount}
+          hint="Drafts marked as published"
+        />
+        <StatCard
+          label="Published this week"
+          value={analytics.publishedThisWeek}
+          hint="Since Monday"
+        />
+        <StatCard
+          label="Discovery runs"
+          value={analytics.discoveryRunsTotal}
+          hint="All time"
+        />
+        <StatCard
+          label="Runs today"
+          value={analytics.discoveryRunsToday}
+          hint="Manual runs only"
+        />
+      </div>
 
-  const analytics = await fetchAnalyticsSummary(session.user.id);
+      <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">
+              Posts published per day
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Last 14 days based on when you marked drafts as published.
+            </p>
+          </div>
+          <p className="font-heading text-sm font-semibold text-brand">
+            {analytics.publishedThisWeek} this week
+          </p>
+        </div>
+        <PublicationChart data={analytics.publishedByDay} />
+      </section>
+
+      <section className="rounded-xl border border-subtle bg-card shadow-ambient">
+        <div className="border-b border-subtle px-6 py-4 sm:px-8">
+          <h2 className="font-heading text-lg font-semibold">Published drafts</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Posts you have shipped from this account.
+          </p>
+        </div>
+        {analytics.recentPublished.length === 0 ? (
+          <div className="px-6 py-12 text-center sm:px-8">
+            <p className="text-sm text-muted-foreground">
+              No published posts yet. Mark a draft as published when it goes live.
+            </p>
+            <Link
+              href="/drafts"
+              className="mt-4 inline-flex h-9 items-center justify-center rounded-xl border border-input bg-background px-4 text-sm font-medium shadow-pill hover:bg-muted/60"
+            >
+              Open drafts
+            </Link>
+          </div>
+        ) : (
+          <ul className="divide-y divide-subtle">
+            {analytics.recentPublished.map((draft) => (
+              <li
+                key={draft.id}
+                className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{draft.topicTitle}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(draft.updatedAt).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DraftStatusBadge status="published" />
+                  <Link
+                    href={`/draft/${draft.id}`}
+                    className="font-heading text-xs font-semibold text-brand hover:underline"
+                  >
+                    View
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default async function AnalyticsPage() {
+  const access = await getAppAccess();
+  const isGuest = access?.mode === "guest";
+
+  if (isGuest) {
+    return (
+      <GuestPreviewPage
+        header={
+          <AppHeader
+            title="Analytics"
+            breadcrumb="Insights"
+            description="Published output and discovery activity for your account."
+          />
+        }
+        overlay={
+          <GuestSignInOverlay
+            feature="Analytics"
+            description="Preview charts and published-draft history. Sign in to track your real output over time."
+          >
+            <AnalyticsBody analytics={GUEST_DEMO_ANALYTICS} />
+          </GuestSignInOverlay>
+        }
+      />
+    );
+  }
+
+  if (!access || access.mode !== "user") {
+    return null;
+  }
+
+  const analytics = await fetchAnalyticsSummary(access.userId);
 
   return (
     <>
@@ -44,97 +168,7 @@ export default async function AnalyticsPage() {
         breadcrumb="Insights"
         description="Published output and discovery activity for your account."
       />
-      <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:gap-8 sm:pt-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Published posts"
-            value={analytics.publishedCount}
-            hint="Drafts marked as published"
-          />
-          <StatCard
-            label="Published this week"
-            value={analytics.publishedThisWeek}
-            hint="Since Monday"
-          />
-          <StatCard
-            label="Discovery runs"
-            value={analytics.discoveryRunsTotal}
-            hint="All time"
-          />
-          <StatCard
-            label="Runs today"
-            value={analytics.discoveryRunsToday}
-            hint="Manual runs only"
-          />
-        </div>
-
-        <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="font-heading text-lg font-semibold">
-                Posts published per day
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Last 14 days based on when you marked drafts as published.
-              </p>
-            </div>
-            <p className="font-heading text-sm font-semibold text-brand">
-              {analytics.publishedThisWeek} this week
-            </p>
-          </div>
-          <PublicationChart data={analytics.publishedByDay} />
-        </section>
-
-        <section className="rounded-xl border border-subtle bg-card shadow-ambient">
-          <div className="border-b border-subtle px-6 py-4 sm:px-8">
-            <h2 className="font-heading text-lg font-semibold">
-              Published drafts
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Posts you have shipped from this account.
-            </p>
-          </div>
-          {analytics.recentPublished.length === 0 ? (
-            <div className="px-6 py-12 text-center sm:px-8">
-              <p className="text-sm text-muted-foreground">
-                No published posts yet. Mark a draft as published when it goes
-                live.
-              </p>
-              <Link
-                href="/drafts"
-                className="mt-4 inline-flex h-9 items-center justify-center rounded-xl border border-input bg-background px-4 text-sm font-medium shadow-pill hover:bg-muted/60"
-              >
-                Open drafts
-              </Link>
-            </div>
-          ) : (
-            <ul className="divide-y divide-subtle">
-              {analytics.recentPublished.map((draft) => (
-                <li
-                  key={draft.id}
-                  className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{draft.topicTitle}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(draft.updatedAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DraftStatusBadge status="published" />
-                    <Link
-                      href={`/draft/${draft.id}`}
-                      className="font-heading text-xs font-semibold text-brand hover:underline"
-                    >
-                      View
-                    </Link>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+      <AnalyticsBody analytics={analytics} />
     </>
   );
 }

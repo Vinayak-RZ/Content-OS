@@ -28,7 +28,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </p>
         </div>
         <p className="text-xs text-forest-foreground/50">
-          Encrypted API keys · Google sign-in
+          Google sign-in · try as guest
         </p>
       </aside>
 

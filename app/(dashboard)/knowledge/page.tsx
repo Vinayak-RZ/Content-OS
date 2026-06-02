@@ -1,18 +1,51 @@
 import { AppHeader } from "@/components/app-header";
 import { KnowledgeShell } from "@/components/knowledge-shell";
 import { ProfilePromptPanel } from "@/components/knowledge/profile-prompt-panel";
+import {
+  GuestPreviewPage,
+  GuestSignInOverlay,
+} from "@/components/guest/guest-sign-in-overlay";
+import { getAppAccess } from "@/lib/app-access";
+import { GUEST_DEMO_KNOWLEDGE_FILES } from "@/lib/guest/demo-data";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/session";
-import { redirect } from "next/navigation";
 import { isPersonaType } from "@/lib/personas/types";
 
 export default async function KnowledgePage() {
-  const session = await getSession();
-  if (!session?.user?.id) {
-    redirect("/login");
+  const access = await getAppAccess();
+  const isGuest = access?.mode === "guest";
+
+  if (isGuest) {
+    return (
+      <GuestPreviewPage
+        header={
+          <AppHeader
+            title="Knowledge"
+            breadcrumb="Workspace"
+            description="Context files that ground discovery and draft generation in your voice."
+          />
+        }
+        overlay={
+          <GuestSignInOverlay
+            feature="Knowledge"
+            description="Preview how documents, roles, and starter templates are organized. Sign in to upload files and run real ranking."
+          >
+            <div className="page-x flex flex-col gap-4 pb-8 pt-4 sm:gap-6 sm:pt-6">
+              <ProfilePromptPanel personaType="founder" personaCustom={null} />
+              <KnowledgeShell
+                initialFiles={GUEST_DEMO_KNOWLEDGE_FILES}
+                previewMode
+              />
+            </div>
+          </GuestSignInOverlay>
+        }
+      />
+    );
   }
 
-  const userId = session.user.id;
+  if (!access || access.mode !== "user") {
+    return null;
+  }
+  const userId = access.userId;
 
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },

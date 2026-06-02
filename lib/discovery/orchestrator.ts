@@ -1,12 +1,8 @@
 import { randomUUID } from "crypto";
 
 import { prisma } from "@/lib/db";
-import { fetchFirecrawlSearch, firecrawlScrapeMarkdown } from "@/lib/discovery/adapters/firecrawl";
-import { fetchGitHubTrending } from "@/lib/discovery/adapters/github";
-import { fetchHackerNews } from "@/lib/discovery/adapters/hn";
-import { fetchRedditHot } from "@/lib/discovery/adapters/reddit";
-import { fetchRssFeeds } from "@/lib/discovery/adapters/rss";
-import { fetchTavily } from "@/lib/discovery/adapters/tavily";
+import { firecrawlScrapeMarkdown } from "@/lib/discovery/adapters/firecrawl";
+import { fetchDiscoveryCandidates } from "@/lib/discovery/fetch-candidates";
 import {
   computeFetchBudget,
   getSavedTrendsForDiscovery,
@@ -21,7 +17,7 @@ import {
   collectMemoryExcludedUrlHashes,
   dedupNewCandidates,
 } from "@/lib/discovery/dedup";
-import type { AdapterRunResult, TrendCandidate } from "@/lib/discovery/types";
+import type { TrendCandidate } from "@/lib/discovery/types";
 import { urlSha256 } from "@/lib/discovery/urls";
 import { rankDiscoveryPool } from "@/lib/ranking";
 import { getDecryptedKey } from "@/lib/user-settings";
@@ -35,10 +31,6 @@ function platformGithubToken(): string | undefined {
   const raw = process.env["GITHUB_TOKEN"];
   const t = typeof raw === "string" ? raw.trim() : "";
   return t || undefined;
-}
-
-function mergeCounts(a: AdapterRunResult, map: Record<string, number>): void {
-  map[a.sourceType] = (map[a.sourceType] ?? 0) + a.fetched;
 }
 
 export type DiscoveryRunResult = {
@@ -82,48 +74,15 @@ export async function runDiscoveryForUser(
     memorySkipped: 0,
   };
 
-  const b = Math.max(newFetchBudget, 0);
-  const noTavily = !tavilyKey;
-  const hnTake = Math.min(noTavily ? 6 : 8, Math.max(3, b + (noTavily ? 2 : 3)));
-  const rssTake = Math.min(
-    noTavily ? 20 : 14,
-    Math.max(noTavily ? 12 : 6, b + (noTavily ? 10 : 5)),
-  );
-  const rdTake = Math.min(
-    noTavily ? 20 : 14,
-    Math.max(noTavily ? 12 : 6, b + (noTavily ? 10 : 5)),
-  );
-  const ghTake = Math.min(noTavily ? 3 : 5, Math.max(1, b + (noTavily ? 0 : 1)));
-  const tvTake = tavilyKey ? Math.min(16, Math.max(8, b * 3)) : 0;
-  const fcTake =
-    firecrawlKey && b > 0 && discoveryQueries.firecrawl[0] ? 2 : 0;
-
-  const adapterResults = await Promise.all([
-    fetchHackerNews(hnTake),
-    fetchRssFeeds(rssTake),
-    fetchRedditHot(rdTake),
-    fetchGitHubTrending(ghTake, platformGithubToken()),
-    tavilyKey
-      ? fetchTavily(tavilyKey, tvTake, discoveryQueries.tavily)
-      : Promise.resolve({ sourceType: "tavily" as const, fetched: 0, candidates: [] }),
-    firecrawlKey && fcTake > 0 && discoveryQueries.firecrawl[0]
-      ? fetchFirecrawlSearch(
-          firecrawlKey,
-          discoveryQueries.firecrawl[0]!,
-          fcTake,
-        )
-      : Promise.resolve({
-          sourceType: "firecrawl" as const,
-          fetched: 0,
-          candidates: [],
-        }),
-  ]);
-
-  let merged: TrendCandidate[] = [];
-  for (const r of adapterResults) {
-    mergeCounts(r, sourceCounts);
-    merged = merged.concat(r.candidates);
-  }
+  const { candidates: merged, sourceCounts: fetchCounts } =
+    await fetchDiscoveryCandidates({
+      discoveryQueries,
+      tavilyKey: tavilyKey ?? undefined,
+      firecrawlKey: firecrawlKey ?? undefined,
+      githubToken: platformGithubToken(),
+      newFetchBudget,
+    });
+  Object.assign(sourceCounts, fetchCounts);
 
   const [existingHashes, memoryHashes] = await Promise.all([
     collectExistingTrendUrlHashes(userId),

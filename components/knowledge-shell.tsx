@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
+import { getGuestDemoKnowledgeContent } from "@/lib/guest/demo-data";
 import { cn } from "@/lib/utils";
 import {
   KNOWLEDGE_ROLES,
@@ -25,6 +26,8 @@ type ListFile = {
 
 type KnowledgeShellProps = {
   initialFiles: ListFile[];
+  /** Guest preview: use local demo content, no authenticated API calls. */
+  previewMode?: boolean;
 };
 
 const ROLE_ORDER: KnowledgeRole[] = [
@@ -44,7 +47,10 @@ function slugifyDisplayName(name: string): string {
     .slice(0, 49);
 }
 
-export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
+export function KnowledgeShell({
+  initialFiles,
+  previewMode = false,
+}: KnowledgeShellProps) {
   const [files, setFiles] = useState<ListFile[]>(initialFiles);
   const [selected, setSelected] = useState<string | null>(
     initialFiles[0]?.slug ?? null,
@@ -65,6 +71,9 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   const [mobileShowList, setMobileShowList] = useState(true);
 
   const loadList = useCallback(async () => {
+    if (previewMode) {
+      return initialFiles;
+    }
     const res = await fetch("/api/knowledge");
     const data = (await res.json()) as { files?: ListFile[]; error?: string };
     if (!res.ok) {
@@ -72,26 +81,34 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
     }
     setFiles(data.files ?? []);
     return data.files ?? [];
-  }, []);
+  }, [initialFiles, previewMode]);
 
-  const loadFile = useCallback(async (slug: string) => {
-    setLoadingFile(true);
-    setErr(null);
-    try {
-      const res = await fetch(`/api/knowledge/${encodeURIComponent(slug)}`);
-      const data = (await res.json()) as {
-        content?: string;
-        error?: string;
-      };
-      if (!res.ok) {
-        throw new Error(data.error ?? "Failed to load file");
+  const loadFile = useCallback(
+    async (slug: string) => {
+      setLoadingFile(true);
+      setErr(null);
+      try {
+        if (previewMode) {
+          setContent(getGuestDemoKnowledgeContent(slug));
+          setDirty(false);
+          return;
+        }
+        const res = await fetch(`/api/knowledge/${encodeURIComponent(slug)}`);
+        const data = (await res.json()) as {
+          content?: string;
+          error?: string;
+        };
+        if (!res.ok) {
+          throw new Error(data.error ?? "Failed to load file");
+        }
+        setContent(data.content ?? "");
+        setDirty(false);
+      } finally {
+        setLoadingFile(false);
       }
-      setContent(data.content ?? "");
-      setDirty(false);
-    } finally {
-      setLoadingFile(false);
-    }
-  }, []);
+    },
+    [previewMode],
+  );
 
   useEffect(() => {
     const first = files[0];
@@ -130,7 +147,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   );
 
   async function save() {
-    if (!selected) return;
+    if (!selected || previewMode) return;
     setSaving(true);
     setErr(null);
     setMsg(null);
@@ -155,6 +172,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   }
 
   async function importSeeds() {
+    if (previewMode) return;
     setSeeding(true);
     setErr(null);
     setMsg(null);
@@ -188,6 +206,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
     role: KnowledgeRole;
     template?: "linkedin-profile";
   }) {
+    if (previewMode) return;
     setCreating(true);
     setErr(null);
     setMsg(null);
@@ -244,7 +263,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   }
 
   async function deleteSelected() {
-    if (!selected || !meta) return;
+    if (!selected || !meta || previewMode) return;
     if (meta.isSystem) return;
     if (!confirm(`Delete "${meta.displayName}"? This cannot be undone.`)) {
       return;
@@ -272,7 +291,7 @@ export function KnowledgeShell({ initialFiles }: KnowledgeShellProps) {
   }
 
   async function resetSystemDoc() {
-    if (!selected || !meta?.isSystem) return;
+    if (!selected || !meta?.isSystem || previewMode) return;
     if (
       !confirm(
         `Reset "${meta.displayName}" to the default template? Your edits will be replaced.`,

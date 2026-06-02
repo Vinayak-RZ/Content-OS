@@ -13,7 +13,13 @@ import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  isGuest = false,
+}: {
+  children: ReactNode;
+  isGuest?: boolean;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const menuRef = useRef<HTMLElement>(null);
@@ -38,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <KeyboardShortcuts onCloseMobileMenu={() => setMobileOpen(false)} />
 
       <aside className="hidden w-60 shrink-0 flex-col border-r border-subtle bg-sidebar lg:flex">
-        <SidebarNav />
+        <SidebarNav isGuest={isGuest} />
       </aside>
 
       <button
@@ -74,10 +80,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             <X className="size-5" />
           </button>
         </div>
-        <SidebarNav showLogo={false} onNavigate={() => setMobileOpen(false)} />
+        <SidebarNav
+          showLogo={false}
+          isGuest={isGuest}
+          onNavigate={() => setMobileOpen(false)}
+        />
       </aside>
 
-      <div className="relative flex min-w-0 flex-1 flex-col">
+      <div className="relative flex min-h-screen min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-subtle bg-background/95 px-4 backdrop-blur-sm lg:hidden">
           <button
             ref={menuButtonRef}

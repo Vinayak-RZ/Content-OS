@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { SignInToSaveButton } from "@/components/auth/sign-in-to-save-button";
 import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
 import { TopicSaveToggle } from "@/components/dashboard/topic-save-toggle";
@@ -17,13 +18,18 @@ import { cn } from "@/lib/utils";
 type TopicPoolTableProps = {
   trends: SerializedDashboardTrend[];
   latestBatchId: string | null;
+  guestMode?: boolean;
 };
 
 function score10(finalScore: number): string {
   return (finalScore * 10).toFixed(2);
 }
 
-export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
+export function TopicPoolTable({
+  trends,
+  latestBatchId,
+  guestMode,
+}: TopicPoolTableProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (trends.length === 0) return null;
@@ -40,8 +46,9 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
           Topic pool ({trends.length})
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ranked topics without a recent draft. Unsaved backlog items expire after{" "}
-          {TOPIC_POOL_TTL_DAYS} days — use Save to keep a topic in your pool.
+          {guestMode
+            ? "Preview pool for this browser session. Sign in to save topics permanently."
+            : `Ranked topics without a recent draft. Unsaved backlog items expire after ${TOPIC_POOL_TTL_DAYS} days — use Save to keep a topic in your pool.`}{" "}
           Showing top{" "}
           {expanded ? trends.length : Math.min(DASHBOARD_TOP_TOPICS_LIMIT, trends.length)}
           {hasMore && !expanded ? ` of ${trends.length}` : ""}.
@@ -104,16 +111,26 @@ export function TopicPoolTable({ trends, latestBatchId }: TopicPoolTableProps) {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <TopicSaveToggle
-                      trendId={t.id}
-                      saved={isSaved}
-                      size="sm"
-                    />
+                    {guestMode ? (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    ) : (
+                      <TopicSaveToggle
+                        trendId={t.id}
+                        saved={isSaved}
+                        size="sm"
+                      />
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <TopicDraftButton trendId={t.id} size="sm" />
-                      <TopicRemoveButton trendId={t.id} size="sm" />
+                      {guestMode ? (
+                        <SignInToSaveButton size="sm" />
+                      ) : (
+                        <>
+                          <TopicDraftButton trendId={t.id} size="sm" />
+                          <TopicRemoveButton trendId={t.id} size="sm" />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -6,13 +6,25 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchJson } from "@/lib/client/fetch-json";
 import { toast } from "@/lib/client/toast";
+import type { SerializedDashboardTrend } from "@/lib/trends/types";
+
+type DiscoverResponse = {
+  newStored?: number;
+  carriedOver?: number;
+  batchId?: string;
+  topics?: SerializedDashboardTrend[];
+};
 
 export function DiscoveryRunButton({
   onCompleted,
+  onGuestCompleted,
+  guest,
   compact,
   className,
 }: {
   onCompleted?: () => void | Promise<void>;
+  onGuestCompleted?: (data: DiscoverResponse) => void | Promise<void>;
+  guest?: boolean;
   compact?: boolean;
   className?: string;
 }) {
@@ -21,10 +33,10 @@ export function DiscoveryRunButton({
   async function run() {
     setRunning(true);
     try {
-      const result = await fetchJson<{
-        newStored?: number;
-        carriedOver?: number;
-      }>("/api/discover", { method: "POST" });
+      const endpoint = guest ? "/api/discover/guest" : "/api/discover";
+      const result = await fetchJson<DiscoverResponse>(endpoint, {
+        method: "POST",
+      });
 
       if (!result.ok) {
         throw new Error(result.error);
@@ -32,11 +44,19 @@ export function DiscoveryRunButton({
 
       const newStored = result.data.newStored ?? 0;
       const carried = result.data.carriedOver ?? 0;
-      toast(
-        `Added ${newStored} new topic${newStored === 1 ? "" : "s"}; ${carried} carried from your queue.`,
-        "success",
-      );
-      await onCompleted?.();
+      if (guest) {
+        await onGuestCompleted?.(result.data);
+        toast(
+          `Found ${newStored} new topic${newStored === 1 ? "" : "s"} (guest preview — sign in to save).`,
+          "success",
+        );
+      } else {
+        toast(
+          `Added ${newStored} new topic${newStored === 1 ? "" : "s"}; ${carried} carried from your queue.`,
+          "success",
+        );
+        await onCompleted?.();
+      }
     } catch (e) {
       toast(
         e instanceof Error ? e.message : "Discovery failed. Try again.",

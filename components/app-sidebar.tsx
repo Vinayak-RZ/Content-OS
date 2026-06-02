@@ -11,7 +11,9 @@ import {
   Settings,
 } from "lucide-react";
 
+import { SignInButton } from "@/components/auth/sign-in-button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { useNavigationProgress } from "@/lib/client/navigation-progress";
 import { cn } from "@/lib/utils";
@@ -32,9 +34,11 @@ const navItems: {
 export function SidebarNav({
   onNavigate,
   showLogo = true,
+  isGuest = false,
 }: {
   onNavigate?: () => void;
   showLogo?: boolean;
+  isGuest?: boolean;
 }) {
   const pathname = usePathname();
   const { pendingPath, startNavigation } = useNavigationProgress();
@@ -93,7 +97,24 @@ export function SidebarNav({
       </nav>
 
       <div className="border-t border-subtle p-4">
-        <SignOutButton variant="ghost" size="sm" className="w-full justify-start" />
+        {isGuest ? (
+          <div className="flex flex-col gap-2">
+            <p className="px-1 text-xs text-muted-foreground">Guest session</p>
+            <SignInButton
+              size="sm"
+              callbackUrl="/dashboard"
+              label="Sign in to save"
+              className="w-full"
+            />
+            <Link href="/" className="w-full">
+              <Button variant="ghost" size="sm" className="w-full justify-start">
+                Back to home
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <SignOutButton variant="ghost" size="sm" className="w-full justify-start" />
+        )}
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThumbsDown } from "lucide-react";
 
+import { SignInToSaveButton } from "@/components/auth/sign-in-to-save-button";
 import { TopicDraftButton } from "@/components/dashboard/topic-draft-button";
 import { TopicRemoveButton } from "@/components/dashboard/topic-remove-button";
 import { TopicSaveToggle } from "@/components/dashboard/topic-save-toggle";
@@ -52,10 +53,12 @@ export function TopicCard({
   trend,
   className,
   onDismiss,
+  guestMode,
 }: {
   trend: SerializedDashboardTrend;
   className?: string;
   onDismiss?: (id: string) => void;
+  guestMode?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -139,28 +142,32 @@ export function TopicCard({
         </a>
       </CardContent>
       <div className="shrink-0 border-t border-subtle px-6 pb-5 pt-3 sm:px-8 sm:pb-6">
-        <div className="flex items-center gap-2">
-          <TopicDraftButton trendId={trend.id} size="sm" className="min-w-0 flex-1" />
-          <TopicSaveToggle
-            trendId={trend.id}
-            saved={trend.feedbackStatus === "saved"}
-            compact
-            className="shrink-0"
-          />
-          <div className="flex shrink-0 items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={busy}
-              onClick={() => void patchFeedback("dismissed")}
-              aria-label="Dismiss topic"
-            >
-              <ThumbsDown className="size-4" />
-            </Button>
-            <TopicRemoveButton trendId={trend.id} size="sm" />
+        {guestMode ? (
+          <SignInToSaveButton className="w-full" />
+        ) : (
+          <div className="flex items-center gap-2">
+            <TopicDraftButton trendId={trend.id} size="sm" className="min-w-0 flex-1" />
+            <TopicSaveToggle
+              trendId={trend.id}
+              saved={trend.feedbackStatus === "saved"}
+              compact
+              className="shrink-0"
+            />
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => void patchFeedback("dismissed")}
+                aria-label="Dismiss topic"
+              >
+                <ThumbsDown className="size-4" />
+              </Button>
+              <TopicRemoveButton trendId={trend.id} size="sm" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Card>
   );
