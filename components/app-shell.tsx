@@ -40,10 +40,10 @@ export function AppShell({
 
   return (
     <NavigationProgressProvider>
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
       <KeyboardShortcuts onCloseMobileMenu={() => setMobileOpen(false)} />
 
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-subtle bg-sidebar lg:flex">
+      <aside className="hidden h-screen w-60 shrink-0 flex-col overflow-hidden border-r border-subtle bg-sidebar lg:flex">
         <SidebarNav isGuest={isGuest} />
       </aside>
 
@@ -80,14 +80,16 @@ export function AppShell({
             <X className="size-5" />
           </button>
         </div>
-        <SidebarNav
-          showLogo={false}
-          isGuest={isGuest}
-          onNavigate={() => setMobileOpen(false)}
-        />
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <SidebarNav
+            showLogo={false}
+            isGuest={isGuest}
+            onNavigate={() => setMobileOpen(false)}
+          />
+        </div>
       </aside>
 
-      <div className="relative flex min-h-screen min-w-0 flex-1 flex-col">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
         <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-subtle bg-background/95 px-4 backdrop-blur-sm lg:hidden">
           <button
             ref={menuButtonRef}

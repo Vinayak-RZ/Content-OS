@@ -19,9 +19,9 @@ export function KnowledgeEmptyBanner({ className }: KnowledgeEmptyBannerProps) {
       <p className="font-heading text-sm font-semibold text-foreground sm:text-base">
         Not getting relevant discoveries or drafts?
       </p>
-      <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        Topics rank against your knowledge profile. Build yours so discovery and
-        drafts match what you actually care about.
+      <p className="mt-1 text-pretty text-sm leading-relaxed text-muted-foreground">
+        Topics rank against your knowledge profile. Build yours so discovery and drafts
+        match what you actually care&nbsp;about.
       </p>
       <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand group-hover:underline">
         Build knowledge

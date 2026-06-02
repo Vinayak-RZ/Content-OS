@@ -44,14 +44,14 @@ export function SidebarNav({
   const { pendingPath, startNavigation } = useNavigationProgress();
 
   return (
-    <>
+    <div className="flex h-full min-h-0 flex-col">
       {showLogo ? (
-        <div className="px-5 py-6">
+        <div className="shrink-0 px-5 py-6">
           <Logo href="/" size="sm" />
         </div>
       ) : null}
 
-      <nav className="flex flex-1 flex-col gap-0.5 px-3">
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -96,7 +96,7 @@ export function SidebarNav({
         })}
       </nav>
 
-      <div className="border-t border-subtle p-4">
+      <div className="mt-auto shrink-0 border-t border-subtle bg-sidebar p-4">
         {isGuest ? (
           <div className="flex flex-col gap-2">
             <p className="px-1 text-xs text-muted-foreground">Guest session</p>
@@ -116,7 +116,7 @@ export function SidebarNav({
           <SignOutButton variant="ghost" size="sm" className="w-full justify-start" />
         )}
       </div>
-    </>
+    </div>
   );
 }
 
