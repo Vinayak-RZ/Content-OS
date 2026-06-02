@@ -138,12 +138,6 @@ export function LandingPage({
         {/* Hero */}
         <section className="container-stamped pb-section pt-16 sm:pt-24 lg:pt-28">
           <div className="mx-auto max-w-3xl text-center">
-            <p
-              data-hero-reveal
-              className="mb-6 font-heading text-xs font-semibold uppercase tracking-[0.12em] text-brand"
-            >
-              Founders & creators
-            </p>
             <h1
               data-hero-reveal
               className="font-display text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-display-hero"
@@ -158,9 +152,8 @@ export function LandingPage({
               data-hero-reveal
               className="mx-auto mt-6 max-w-2xl text-balance text-body-lg text-muted-foreground"
             >
-              Topic discovery from Hacker News, Reddit, RSS, and more — ranked
-              against your knowledge base, drafted in your voice. Try as a guest
-              or sign in free; BYOK, no auto-posting.
+              Content OS finds high-signal topics and drafts in your voice. Try
+              as a guest or sign in free - your API keys, no auto-posting.
             </p>
             <div
               data-hero-reveal
@@ -279,7 +272,7 @@ export function LandingPage({
                 Frequently asked questions
               </h2>
               <p className="mt-3 text-sm text-muted-foreground sm:mt-4">
-                Guest preview, pricing, keys, and how your data stays yours.
+                Pricing, API keys, and how your data stays yours.
               </p>
             </div>
             <LandingFaq />
@@ -295,7 +288,7 @@ export function LandingPage({
               Ready to write with signal?
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm text-forest-foreground/80 sm:mt-4 sm:max-w-lg sm:text-base">
-              Free forever. Try as guest or sign in with Google — add keys when
+              Free forever. Try as guest or sign in with Google - add keys when
               you want drafts or discovery.
             </p>
             <div className="mt-8">
