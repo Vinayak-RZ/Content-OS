@@ -2,7 +2,14 @@ import { GUEST_MODE_LOGIN_DESCRIPTION } from "@/lib/seo/guest-mode";
 import { LANDING_FAQ } from "@/lib/seo/faq";
 import { ONBOARDING_STEPS } from "@/lib/seo/steps";
 import {
+  FOUNDER_LINKEDIN_URL,
+  FOUNDER_NAME,
+  FOUNDER_SOCIAL_URLS,
+  GITHUB_PROFILE_URL,
+} from "@/lib/seo/social-links";
+import {
   SITE_DESCRIPTION,
+  SITE_META_DESCRIPTION,
   SITE_NAME,
   SITE_SAME_AS,
   SITE_TAGLINE,
@@ -15,10 +22,7 @@ export function buildHomeJsonLd() {
   const siteUrl = getSiteUrl();
   const logoUrl = `${siteUrl}/brand/logo-mark.png`;
   const modified = new Date().toISOString().split("T")[0];
-
-  return {
-    "@context": SCHEMA_CONTEXT,
-    "@graph": [
+  const graph: Record<string, unknown>[] = [
       {
         "@type": "Organization",
         "@id": `${siteUrl}/#organization`,
@@ -38,7 +42,7 @@ export function buildHomeJsonLd() {
         "@id": `${siteUrl}/#website`,
         name: SITE_NAME,
         url: siteUrl,
-        description: SITE_DESCRIPTION,
+        description: SITE_META_DESCRIPTION,
         inLanguage: "en-US",
         publisher: { "@id": `${siteUrl}/#organization` },
       },
@@ -101,7 +105,19 @@ export function buildHomeJsonLd() {
           },
         })),
       },
-    ],
+      {
+        "@type": "Person",
+        "@id": `${siteUrl}/#founder`,
+        name: FOUNDER_NAME,
+        url: FOUNDER_LINKEDIN_URL,
+        sameAs: [GITHUB_PROFILE_URL, ...FOUNDER_SOCIAL_URLS],
+        worksFor: { "@id": `${siteUrl}/#organization` },
+      },
+  ];
+
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@graph": graph,
   };
 }
 

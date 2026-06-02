@@ -16,6 +16,7 @@ import {
 import { PRODUCT_FEATURES } from "@/lib/seo/features";
 import { Logo } from "@/components/brand/logo";
 import { LandingAuthButtons } from "@/components/auth/landing-auth-buttons";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingStepsFlow } from "@/components/landing/landing-steps-flow";
 import { FeatureRequestPanel } from "@/components/feature-request-panel";
@@ -147,15 +148,19 @@ export function LandingPage({
               data-hero-reveal
               className="font-display text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-display-hero"
             >
-              <span className="block">From discovery to draft</span>
+              <span className="block font-heading text-lg font-semibold text-brand sm:text-xl">
+                AI content workflow for founders & creators
+              </span>
+              <span className="mt-3 block">From discovery to draft</span>
               <span className="block">on your terms</span>
             </h1>
             <p
               data-hero-reveal
               className="mx-auto mt-6 max-w-2xl text-balance text-body-lg text-muted-foreground"
             >
-              Content OS finds high-signal topics and drafts in your voice.
-              Try as a guest or sign in free — your API keys, no auto-posting.
+              Topic discovery from Hacker News, Reddit, RSS, and more — ranked
+              against your knowledge base, drafted in your voice. Try as a guest
+              or sign in free; BYOK, no auto-posting.
             </p>
             <div
               data-hero-reveal
@@ -227,7 +232,7 @@ export function LandingPage({
           <div className="container-stamped">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-heading text-headline-md font-semibold sm:text-headline-lg">
-                Built for depth, not volume
+                Topic discovery built for depth, not volume
               </h2>
               <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base">
                 Discovery to draft in one workflow. No feed addiction, no
@@ -305,33 +310,7 @@ export function LandingPage({
         </section>
       </main>
 
-      <footer className="relative z-10 border-t border-subtle py-10">
-        <div className="container-stamped flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <Logo size="sm" />
-          <p className="text-center text-sm text-muted-foreground sm:text-right">
-            Content OS · Thinking amplification for founders & creators · Free
-            forever
-            <span className="mx-2 text-muted-foreground/40" aria-hidden>
-              ·
-            </span>
-            <a
-              href="/llms.txt"
-              className="underline-offset-2 hover:text-foreground hover:underline"
-            >
-              AI & crawlers welcome
-            </a>
-            <span className="mx-2 text-muted-foreground/40" aria-hidden>
-              ·
-            </span>
-            <a
-              href="/llms-full.txt"
-              className="underline-offset-2 hover:text-foreground hover:underline"
-            >
-              Full summary
-            </a>
-          </p>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

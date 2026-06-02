@@ -1,4 +1,4 @@
-import { GITHUB_REPO_URL } from "@/lib/github-links";
+import { buildSiteSameAs } from "@/lib/seo/social-links";
 
 /** Production canonical origin (non-www). Used when env URLs are missing or misconfigured. */
 export const CANONICAL_SITE_ORIGIN = "https://content-os.stamped.work";
@@ -30,15 +30,20 @@ export function getSiteUrl(): string {
 }
 
 /** Organization / sameAs profiles for EEAT structured data. */
-export const SITE_SAME_AS = [GITHUB_REPO_URL] as const;
+export const SITE_SAME_AS = buildSiteSameAs();
 
 export const SITE_NAME = "Content OS";
 
 export const SITE_TAGLINE =
   "Thinking amplification for founders, creators, and builders";
 
+/** Full product summary for JSON-LD, llms files, and Open Graph body copy. */
 export const SITE_DESCRIPTION =
   "Content OS discovers high-signal topics from Hacker News, Instagram, Reddit, RSS, and GitHub, ranks them against your knowledge base, and drafts posts in your voice. Try as a guest or sign in free — bring your own API keys. No auto-posting.";
+
+/** SERP meta description (~155 chars; Google truncates longer snippets). */
+export const SITE_META_DESCRIPTION =
+  "Free AI content workflow for founders: topic discovery from HN, Reddit, RSS & more, knowledge-base ranking, drafts in your voice. Guest trial · BYOK · no auto-posting.";
 
 export const SITE_KEYWORDS = [
   "content creation",

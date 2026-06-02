@@ -4,9 +4,13 @@ import {
   CANONICAL_SITE_ORIGIN,
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
+  SITE_META_DESCRIPTION,
   SITE_NAME,
   getSiteUrl,
 } from "@/lib/seo/site-config";
+
+const HOME_TITLE = "AI content workflow for founders · topic discovery to draft";
+const HOME_OG_TITLE = `${SITE_NAME} — AI content workflow for founders`;
 
 function siteVerification(): Metadata["verification"] | undefined {
   const google = process.env["GOOGLE_SITE_VERIFICATION"]?.trim();
@@ -21,10 +25,10 @@ export function buildRootMetadata(): Metadata {
     metadataBase: new URL(siteUrl),
     applicationName: SITE_NAME,
     title: {
-      default: `${SITE_NAME} - From discovery to draft on your terms`,
+      default: HOME_OG_TITLE,
       template: `%s · ${SITE_NAME}`,
     },
-    description: SITE_DESCRIPTION,
+    description: SITE_META_DESCRIPTION,
     keywords: [...SITE_KEYWORDS],
     authors: [{ name: SITE_NAME, url: siteUrl }],
     creator: SITE_NAME,
@@ -57,13 +61,13 @@ export function buildRootMetadata(): Metadata {
       locale: "en_US",
       url: siteUrl,
       siteName: SITE_NAME,
-      title: `${SITE_NAME} - From discovery to draft on your terms`,
+      title: HOME_OG_TITLE,
       description: SITE_DESCRIPTION,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${SITE_NAME} - From discovery to draft on your terms`,
-      description: SITE_DESCRIPTION,
+      title: HOME_OG_TITLE,
+      description: SITE_META_DESCRIPTION,
     },
     verification: siteVerification(),
     other: {
@@ -74,15 +78,20 @@ export function buildRootMetadata(): Metadata {
 }
 
 export const homePageMetadata: Metadata = {
-  title: "From discovery to draft on your terms",
-  description: SITE_DESCRIPTION,
+  title: HOME_TITLE,
+  description: SITE_META_DESCRIPTION,
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: `${SITE_NAME} - From discovery to draft on your terms`,
+    title: HOME_OG_TITLE,
     description: SITE_DESCRIPTION,
     url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_OG_TITLE,
+    description: SITE_META_DESCRIPTION,
   },
 };
 

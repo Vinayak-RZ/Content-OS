@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Jost, Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { Providers } from "@/app/providers";
+import { SitemapHeadLink } from "@/components/seo/sitemap-head-link";
 import { buildRootMetadata } from "@/lib/seo/metadata";
 import "./globals.css";
 
@@ -50,6 +51,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <SitemapHeadLink />
+      </head>
       <body
         className={`${body.variable} ${heading.variable} ${display.variable} min-h-screen font-sans antialiased`}
       >

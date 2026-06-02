@@ -21,11 +21,10 @@ export function Logo({ className, size = "md", href = "/" }: LogoProps) {
     <>
       <Image
         src="/brand/logo-mark.png"
-        alt=""
+        alt="Content OS logo"
         width={s.mark}
         height={s.mark}
         className="shrink-0"
-        aria-hidden
       />
       <span className={cn("font-heading font-semibold tracking-tight", s.word)}>
         Content OS
