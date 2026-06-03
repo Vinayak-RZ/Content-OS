@@ -157,7 +157,7 @@ export function LandingPage({
             </p>
             <div
               data-hero-reveal
-              className="mx-auto mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap"
+              className="mx-auto mt-10 flex flex-wrap items-center justify-center gap-3"
             >
               <LandingAuthButtons
                 isAuthenticated={isAuthenticated}

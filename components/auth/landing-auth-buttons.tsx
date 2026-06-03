@@ -60,47 +60,37 @@ export function LandingAuthButtons({
 
   if (layout === "cta") {
     return (
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link href="/login">
-            <Button size={size} className={buttonClassName}>
-              Get started
-            </Button>
-          </Link>
-          <Link href="/api/guest/enter">
-            <Button
-              variant="outline"
-              size={size}
-              className="border-forest-foreground/25 bg-transparent text-forest-foreground hover:border-forest-foreground/40 hover:bg-forest-foreground/10 hover:text-forest-foreground"
-            >
-              Try as guest
-            </Button>
-          </Link>
-        </div>
-        <p className="text-xs text-forest-foreground/70">
-          No account required for preview
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-2.5">
-      <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <Link href="/login">
           <Button size={size} className={buttonClassName}>
             Get started
           </Button>
         </Link>
         <Link href="/api/guest/enter">
-          <Button variant="outline" size={size} className={buttonClassName}>
+          <Button
+            variant="outline"
+            size={size}
+            className="border-forest-foreground/25 bg-transparent text-forest-foreground hover:border-forest-foreground/40 hover:bg-forest-foreground/10 hover:text-forest-foreground"
+          >
             Try as guest
           </Button>
         </Link>
       </div>
-      <p className="text-xs text-muted-foreground">
-        No account required · sign in when you want to save
-      </p>
-    </div>
+    );
+  }
+
+  return (
+    <>
+      <Link href="/login">
+        <Button size={size} className={buttonClassName}>
+          Get started
+        </Button>
+      </Link>
+      <Link href="/api/guest/enter">
+        <Button variant="outline" size={size} className={buttonClassName}>
+          Try as guest
+        </Button>
+      </Link>
+    </>
   );
 }
