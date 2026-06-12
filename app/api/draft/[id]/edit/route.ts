@@ -1,6 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import { ApiError, errorResponse } from "@/lib/api-error";
-import { appendDraftRevision } from "@/lib/drafts/revision";
+import {
+  appendDraftRevision,
+  revisionLabelForCommand,
+} from "@/lib/drafts/revision";
 import { buildEditMessages } from "@/lib/generation/prompts";
 import { requireDraftProviderAuth } from "@/lib/llm/draft-provider";
 import { sseResponse, streamChatCompletionToSse } from "@/lib/llm/sse-stream";
@@ -54,10 +57,11 @@ export async function POST(request: Request, context: RouteParams) {
     const { provider, apiKey } = requireDraftProviderAuth(user);
 
     const writingStyle = await fetchWritingStyleText(session.user.id);
+    const contentBefore = draft.currentContent;
 
     const messages = buildEditMessages({
       retrievedWritingStyle: writingStyle,
-      currentDraft: draft.currentContent,
+      currentDraft: contentBefore,
       command: parsed.data.command,
       customInstruction: parsed.data.customInstruction,
       personaType: user.personaType,
@@ -75,8 +79,12 @@ export async function POST(request: Request, context: RouteParams) {
           data: {
             currentContent: newContent,
             revisionHistory: appendDraftRevision(draft.revisionHistory, {
-              command: parsed.data.command,
               at: new Date().toISOString(),
+              kind: "ai_edit",
+              label: revisionLabelForCommand(parsed.data.command),
+              content: contentBefore,
+              hookIx: draft.selectedHook,
+              ctaIx: draft.selectedCta,
             }) as Prisma.InputJsonValue,
           },
         });

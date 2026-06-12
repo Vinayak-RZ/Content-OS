@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
+import type { Prisma } from "@prisma/client";
+
 import { ApiError, errorResponse } from "@/lib/api-error";
+import { createInitialRevision } from "@/lib/drafts/revision";
 import { canonicalizeUrl, urlSha256 } from "@/lib/discovery/urls";
 import {
   draftGenerationMetaSchema,
@@ -187,6 +190,9 @@ export async function POST(request: Request) {
                 ctaVariants: metaParsed.data.ctas,
                 sources,
                 status: "draft",
+                revisionHistory: createInitialRevision({
+                  content: postBody,
+                }) as Prisma.InputJsonValue,
               },
             });
 
@@ -278,6 +284,9 @@ export async function POST(request: Request) {
         ctaVariants: gen.data.ctas,
         sources,
         status: "draft",
+        revisionHistory: createInitialRevision({
+          content: gen.data.post,
+        }) as Prisma.InputJsonValue,
       },
     });
 

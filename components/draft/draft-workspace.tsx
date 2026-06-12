@@ -11,9 +11,13 @@ import {
   Loader2,
   Send,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 import { DraftPreviewOverlay } from "@/components/draft/draft-preview-overlay";
+import { DraftRevisionPanel } from "@/components/draft/draft-revision-panel";
+import { DraftXThreadPanel } from "@/components/draft/draft-x-thread-panel";
+import type { DraftRevisionEntry } from "@/lib/drafts/revision";
 import type { ClientDraftPayload } from "@/lib/drafts/serialize-for-client";
 
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
@@ -32,7 +36,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-type DraftPayload = ClientDraftPayload;
+type DraftPayload = ClientDraftPayload & {
+  revisions?: DraftRevisionEntry[];
+};
 
 type EditGroup = {
   title: string;
@@ -117,7 +123,8 @@ function AiEditsPanel({
           <CardTitle className="text-base">AI edits</CardTitle>
         </div>
         <CardDescription>
-          Applies to the post body above - uses your writing-style knowledge
+          Applies to the post body above. Each edit is saved to version history
+          so you can restore earlier versions.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -290,22 +297,32 @@ export function DraftWorkspace({
   const [content, setContent] = useState(initialDraft?.currentContent ?? "");
   const [hookIx, setHookIx] = useState(initialDraft?.selectedHook ?? 0);
   const [ctaIx, setCtaIx] = useState(initialDraft?.selectedCta ?? 0);
-  const [busy, setBusy] = useState<"idle" | "load" | "edit" | "publish">(
-    initialDraft ? "idle" : "load",
+  const [xThreadParts, setXThreadParts] = useState<string[]>(
+    initialDraft?.xThreadParts ?? [],
   );
+  const [revisions, setRevisions] = useState<DraftRevisionEntry[]>(
+    initialDraft?.revisions ?? [],
+  );
+  const [busy, setBusy] = useState<
+    "idle" | "load" | "edit" | "publish" | "xthread" | "delete"
+  >(initialDraft ? "idle" : "load");
   const [saveState, setSaveState] = useState<
     "idle" | "saving" | "saved" | "error"
   >(initialDraft ? "saved" : "idle");
   const [customEdit, setCustomEdit] = useState("");
   const [assembleOpen, setAssembleOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [xThreadExpanded, setXThreadExpanded] = useState(
+    (initialDraft?.xThreadParts?.length ?? 0) > 0,
+  );
   const saveInFlight = useRef(false);
   const latestDraftRef = useRef<DraftPayload | null>(null);
   const latestContentRef = useRef("");
   const latestHookIxRef = useRef(0);
   const latestCtaIxRef = useRef(0);
 
-  const blocksEditing = busy === "load" || busy === "edit";
+  const blocksEditing =
+    busy === "load" || busy === "edit" || busy === "xthread" || busy === "delete";
 
   const load = useCallback(async () => {
     setBusy("load");
@@ -318,6 +335,8 @@ export function DraftWorkspace({
       setContent(d.currentContent);
       setHookIx(d.selectedHook);
       setCtaIx(d.selectedCta);
+      setXThreadParts(d.xThreadParts ?? []);
+      setRevisions(d.revisions ?? []);
       setSaveState("saved");
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Load error");
@@ -362,6 +381,7 @@ export function DraftWorkspace({
         });
         if (!result.ok) throw new Error(result.error);
         setDraft(result.data);
+        setRevisions(result.data.revisions ?? []);
         setSaveState("saved");
         if (!silent) toast("Saved.", "success");
       } catch {
@@ -458,6 +478,7 @@ export function DraftWorkspace({
       setContent(body.currentContent);
       setSaveState("saved");
       toast("Edit applied.", "success");
+      await load();
     } catch (e) {
       toast(e instanceof Error ? e.message : "Edit failed", "error");
       if (!receivedDelta && draft) setContent(draft.currentContent);
@@ -484,6 +505,89 @@ export function DraftWorkspace({
     } catch {
       toast("Could not publish. Try again.", "error");
     } finally {
+      setBusy("idle");
+    }
+  }
+
+  async function restoreRevision(revisionId: string): Promise<void> {
+    setBusy("edit");
+    try {
+      const result = await fetchJson<DraftPayload>(`/api/draft/${draftId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restoreRevisionId: revisionId }),
+      });
+      if (!result.ok) throw new Error(result.error);
+      const d = result.data;
+      setDraft(d);
+      setContent(d.currentContent);
+      setHookIx(d.selectedHook);
+      setCtaIx(d.selectedCta);
+      setRevisions(d.revisions ?? []);
+      setSaveState("saved");
+      toast("Version restored.", "success");
+    } catch {
+      toast("Could not restore version.", "error");
+    } finally {
+      setBusy("idle");
+    }
+  }
+
+  async function generateXThread(): Promise<void> {
+    if (!draft) return;
+    setBusy("xthread");
+    try {
+      if (hasUnsavedChanges(draft, content, hookIx, ctaIx)) {
+        await saveBody(true);
+      }
+      const result = await fetchJson<{ xThreadParts: string[] }>(
+        `/api/draft/${draftId}/x-thread`,
+        { method: "POST" },
+      );
+      if (!result.ok) throw new Error(result.error);
+      setXThreadParts(result.data.xThreadParts);
+      setXThreadExpanded(true);
+      toast("X thread generated.", "success");
+      router.refresh();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "X thread failed", "error");
+    } finally {
+      setBusy("idle");
+    }
+  }
+
+  async function saveXThread(parts: string[]): Promise<void> {
+    setXThreadParts(parts);
+    try {
+      await fetchJson(`/api/draft/${draftId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ xThreadParts: parts }),
+      });
+    } catch {
+      toast("Could not save X thread edits.", "error");
+    }
+  }
+
+  async function deleteDraft(): Promise<void> {
+    if (
+      !window.confirm(
+        `Delete "${draft?.topicTitle}"? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+    setBusy("delete");
+    try {
+      const result = await fetchJson<{ ok: boolean }>(`/api/draft/${draftId}`, {
+        method: "DELETE",
+      });
+      if (!result.ok) throw new Error(result.error);
+      toast("Draft deleted.", "success");
+      router.push("/drafts");
+      router.refresh();
+    } catch {
+      toast("Could not delete draft.", "error");
       setBusy("idle");
     }
   }
@@ -578,6 +682,16 @@ export function DraftWorkspace({
       >
         Mark as published
       </Button>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={busy !== "idle"}
+        className="gap-1 text-destructive hover:text-destructive"
+        onClick={() => void deleteDraft()}
+      >
+        <Trash2 className="size-4" />
+        Delete
+      </Button>
     </div>
   );
 
@@ -668,6 +782,22 @@ export function DraftWorkspace({
             customEdit={customEdit}
             onCustomChange={setCustomEdit}
             onRun={(cmd) => void runEdit(cmd)}
+          />
+
+          <DraftRevisionPanel
+            revisions={revisions}
+            currentContent={content}
+            disabled={blocksEditing}
+            onRestore={(id) => void restoreRevision(id)}
+          />
+
+          <DraftXThreadPanel
+            parts={xThreadParts}
+            disabled={blocksEditing}
+            generating={busy === "xthread"}
+            defaultExpanded={xThreadExpanded}
+            onGenerate={() => void generateXThread()}
+            onChange={(parts) => void saveXThread(parts)}
           />
 
           <div>

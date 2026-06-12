@@ -1,5 +1,7 @@
 import type { Draft, Trend } from "@prisma/client";
 
+import { parseDraftRevisions, type DraftRevisionEntry } from "@/lib/drafts/revision";
+
 export type ClientDraftPayload = {
   id: string;
   topicTitle: string;
@@ -8,8 +10,10 @@ export type ClientDraftPayload = {
   ctaVariants: string[];
   selectedHook: number;
   selectedCta: number;
+  xThreadParts: string[];
   status: string;
   sources: string[];
+  revisions: DraftRevisionEntry[];
   trend: { url: string; title: string } | null;
 };
 
@@ -26,8 +30,10 @@ export function serializeDraftForClient(draft: DraftWithTrend): ClientDraftPaylo
     ctaVariants: draft.ctaVariants,
     selectedHook: draft.selectedHook,
     selectedCta: draft.selectedCta,
+    xThreadParts: draft.xThreadParts ?? [],
     status: draft.status,
     sources: draft.sources,
+    revisions: parseDraftRevisions(draft.revisionHistory),
     trend: draft.trend
       ? { url: draft.trend.url, title: draft.trend.title }
       : null,
