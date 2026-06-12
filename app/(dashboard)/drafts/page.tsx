@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppHeader } from "@/components/app-header";
+import { DraftsLibrary } from "@/components/drafts/drafts-library";
 import { DraftsTable } from "@/components/drafts/drafts-table";
 import {
   GuestPreviewPage,
@@ -84,7 +85,7 @@ export default async function DraftsLibraryPage() {
             </Link>
           </div>
         ) : (
-          <DraftsTable drafts={initialDrafts} />
+          <DraftsLibrary initialDrafts={initialDrafts} />
         )}
       </div>
     </>
