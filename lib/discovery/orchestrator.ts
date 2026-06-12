@@ -33,12 +33,21 @@ function platformGithubToken(): string | undefined {
   return t || undefined;
 }
 
+export type DiscoveryRunTopicSnapshot = {
+  trendId: string;
+  topicTitle: string;
+  finalScore: number;
+  source: string;
+  role: "new" | "carried";
+};
+
 export type DiscoveryRunResult = {
   userId: string;
   batchId: string;
   carriedOver: number;
   newStored: number;
   sourceCounts: Record<string, number>;
+  topics: DiscoveryRunTopicSnapshot[];
 };
 
 /**
@@ -142,6 +151,7 @@ export async function runDiscoveryForUser(
 
   const newSlots = DISCOVERY_NEW_PER_RUN;
   const toStore = rankedNew.slice(0, newSlots).map((r) => r.c);
+  const runTopics: DiscoveryRunTopicSnapshot[] = [];
 
   await prisma.$transaction(
     async (tx) => {
@@ -149,13 +159,21 @@ export async function runDiscoveryForUser(
         const s = saved[i];
         const fs = finalScores[i];
         if (!s) continue;
+        const score = typeof fs === "number" ? fs : s.trendScore;
         await tx.trend.update({
           where: { id: s.id },
           data: {
             discoveryBatchId: batchId,
             expiresAt,
-            finalScore: typeof fs === "number" ? fs : s.trendScore,
+            finalScore: score,
           },
+        });
+        runTopics.push({
+          trendId: s.id,
+          topicTitle: s.title,
+          finalScore: score,
+          source: s.source,
+          role: "carried",
         });
       }
 
@@ -164,7 +182,7 @@ export async function runDiscoveryForUser(
         if (!row) continue;
         const c = row.c;
         const fs = row.score;
-        await tx.trend.create({
+        const created = await tx.trend.create({
           data: {
             userId,
             title: c.title.slice(0, 240),
@@ -180,6 +198,13 @@ export async function runDiscoveryForUser(
             expiresAt,
             discoveryBatchId: batchId,
           },
+        });
+        runTopics.push({
+          trendId: created.id,
+          topicTitle: created.title,
+          finalScore: created.finalScore,
+          source: created.source,
+          role: "new",
         });
       }
     },
@@ -203,5 +228,6 @@ export async function runDiscoveryForUser(
     carriedOver: saved.length,
     newStored: toStore.length,
     sourceCounts,
+    topics: runTopics.sort((a, b) => b.finalScore - a.finalScore),
   };
 }

@@ -8,6 +8,7 @@ import {
   BookOpen,
   FileText,
   LayoutDashboard,
+  Radar,
   Settings,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const navItems: {
   disabled?: boolean;
 }[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Research", href: "/research", icon: Radar },
   { label: "Drafts", href: "/drafts", icon: FileText },
   { label: "Knowledge", href: "/knowledge", icon: BookOpen },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },

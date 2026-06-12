@@ -37,6 +37,7 @@ model User {
   knowledgeFiles    KnowledgeFile[]
   topicEngagements  TopicEngagement[]
   cronLogs          CronLog[]
+  discoveryRuns     DiscoveryRun[]
   usageCounters     UsageCounter[]
 }
 
@@ -73,11 +74,13 @@ model Trend {
 
   user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   drafts            Draft[]
-  topicEngagements  TopicEngagement[]
+  topicEngagements    TopicEngagement[]
+  discoveryRunTopics  DiscoveryRunTopic[]
 
   @@index([userId, urlHash])
   @@index([userId, discoveredAt])
   @@index([userId, feedbackStatus])
+  @@index([userId, discoveryBatchId])
 }
 
 model Draft {
@@ -91,8 +94,10 @@ model Draft {
   selectedHook    Int      @default(0)
   selectedCta     Int      @default(0)
   revisionHistory Json     @default("[]")
+  xThreadParts    String[] @default([])
   sources         String[]
   status          String   @default("draft")
+  publishedAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -170,4 +175,39 @@ model CronLog {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, runAt])
+}
+
+model DiscoveryRun {
+  id              String   @id @default(uuid())
+  userId          String
+  batchId         String
+  runAt           DateTime @default(now())
+  success         Boolean  @default(true)
+  sourceCounts    Json
+  totalDiscovered Int
+  newStored       Int
+  carriedOver     Int
+  durationMs      Int
+  errorMessage    String?
+
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topics DiscoveryRunTopic[]
+
+  @@unique([userId, batchId])
+  @@index([userId, runAt])
+}
+
+model DiscoveryRunTopic {
+  id         String  @id @default(uuid())
+  runId      String
+  trendId    String?
+  topicTitle String
+  finalScore Float
+  source     String?
+  role       String // new | carried
+
+  run   DiscoveryRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  trend Trend?       @relation(fields: [trendId], references: [id], onDelete: SetNull)
+
+  @@index([runId])
 }

@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 import { ApiError, errorResponse } from "@/lib/api-error";
 import { prisma } from "@/lib/db";
+import { persistDiscoveryRunSnapshot } from "@/lib/discovery/persist-run";
 import { runDiscoveryForUser } from "@/lib/discovery/orchestrator";
 import { consumeDiscoverManualRateLimit } from "@/lib/rate-limit";
 import { getSession } from "@/lib/session";
@@ -21,15 +22,19 @@ export async function POST() {
 
     const t0 = Date.now();
     const result = await runDiscoveryForUser(session.user.id);
-    await prisma.cronLog.create({
-      data: {
-        userId: session.user.id,
-        success: true,
-        sourceCounts: result.sourceCounts as unknown as Prisma.InputJsonValue,
-        totalDiscovered: result.newStored + result.carriedOver,
-        durationMs: Date.now() - t0,
-      },
-    });
+    const durationMs = Date.now() - t0;
+    await Promise.all([
+      prisma.cronLog.create({
+        data: {
+          userId: session.user.id,
+          success: true,
+          sourceCounts: result.sourceCounts as unknown as Prisma.InputJsonValue,
+          totalDiscovered: result.newStored + result.carriedOver,
+          durationMs,
+        },
+      }),
+      persistDiscoveryRunSnapshot(result, durationMs),
+    ]);
 
     return NextResponse.json(result);
   } catch (error) {
