@@ -38,8 +38,8 @@ export function RecentBlogsPanel({
       <CardContent className="flex flex-col gap-2">
         {blogs.length === 0 ? (
           <p className="rounded-lg border border-dashed border-subtle bg-muted/20 px-3 py-4 text-sm text-muted-foreground">
-            No blogs yet. Compose one above — research sources, pick a read
-            time, and generate in your voice.
+            No blogs yet. Use the composer above to research sources, pick a read
+            time, and generate your first post.
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
