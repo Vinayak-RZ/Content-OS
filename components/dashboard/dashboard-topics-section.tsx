@@ -1,5 +1,4 @@
 import { hasEncryptedSecret } from "@/lib/crypto";
-import { listRecentBlogs } from "@/lib/blogs/list";
 import { prisma } from "@/lib/db";
 import { DASHBOARD_POOL_FETCH_LIMIT } from "@/lib/discovery/founder-profile";
 import { userHasFilledKnowledge } from "@/lib/knowledge/is-filled";
@@ -22,7 +21,6 @@ export async function DashboardTopicsSection({
     userKeys,
     lastLog,
     draftCount,
-    recentBlogs,
   ] = await Promise.all([
     fetchDashboardTrendsBundle(userId, DASHBOARD_POOL_FETCH_LIMIT),
     prisma.trend.findFirst({
@@ -51,7 +49,6 @@ export async function DashboardTopicsSection({
       },
     }),
     prisma.draft.count({ where: { userId } }),
-    listRecentBlogs(userId, 8),
   ]);
 
   const serialized = trends.map(serializeDashboardTrend);
@@ -86,9 +83,6 @@ export async function DashboardTopicsSection({
         hasEncryptedSecret(userKeys?.firecrawlApiKey)
       }
       hasAnyDraftKey={hasAnyDraftKey}
-      recentBlogs={recentBlogs}
-      hasTavilyKey={hasEncryptedSecret(userKeys?.tavilyApiKey)}
-      hasFirecrawlKey={hasEncryptedSecret(userKeys?.firecrawlApiKey)}
     />
   );
 }

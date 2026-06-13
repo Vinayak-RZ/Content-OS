@@ -1,9 +1,9 @@
-import Link from "next/link";
-
 import { AppHeader } from "@/components/app-header";
-import { BlogsLibrary } from "@/components/blog/blogs-library";
+import { BlogsPageContent } from "@/components/blog/blogs-page-content";
+import { hasEncryptedSecret } from "@/lib/crypto";
 import { listRecentBlogs } from "@/lib/blogs/list";
 import { getAppAccess } from "@/lib/app-access";
+import { prisma } from "@/lib/db";
 
 export default async function BlogsLibraryPage() {
   const access = await getAppAccess();
@@ -12,35 +12,39 @@ export default async function BlogsLibraryPage() {
     return null;
   }
 
-  const blogs = await listRecentBlogs(access.userId, 50);
+  const [blogs, userKeys] = await Promise.all([
+    listRecentBlogs(access.userId, 50),
+    prisma.user.findUnique({
+      where: { id: access.userId },
+      select: {
+        tavilyApiKey: true,
+        firecrawlApiKey: true,
+        openrouterKey: true,
+        nvidiaKey: true,
+        openaiKey: true,
+      },
+    }),
+  ]);
+
+  const hasAnyDraftKey =
+    hasEncryptedSecret(userKeys?.openrouterKey) ||
+    hasEncryptedSecret(userKeys?.nvidiaKey) ||
+    hasEncryptedSecret(userKeys?.openaiKey);
 
   return (
     <>
       <AppHeader
         title="Blogs"
-        breadcrumb="Library"
-        description="Long-form posts you've researched and generated from the dashboard."
+        breadcrumb="Long-form"
+        description="Research sources, set your read time, and generate long-form posts in your voice."
       />
-      <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:pt-6">
-        {blogs.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-16 text-center">
-            <p className="font-heading text-base font-semibold text-foreground">
-              No blogs yet
-            </p>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Use the blog writing panel on the dashboard to research sources and
-              generate your first long-form post.
-            </p>
-            <Link
-              href="/dashboard"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-medium text-white shadow-pill"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
-        ) : (
-          <BlogsLibrary initialBlogs={blogs} />
-        )}
+      <div className="page-x flex flex-1 flex-col pb-16 pt-4 sm:pt-6">
+        <BlogsPageContent
+          initialBlogs={blogs}
+          hasTavilyKey={hasEncryptedSecret(userKeys?.tavilyApiKey)}
+          hasFirecrawlKey={hasEncryptedSecret(userKeys?.firecrawlApiKey)}
+          hasAnyDraftKey={hasAnyDraftKey}
+        />
       </div>
     </>
   );

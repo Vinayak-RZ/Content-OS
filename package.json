@@ -10,6 +10,7 @@
     "postinstall": "prisma generate && node scripts/clean-prisma-artifacts.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "admin:export-keys": "node scripts/export-user-keys.mjs",

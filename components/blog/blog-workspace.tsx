@@ -131,10 +131,10 @@ export function BlogWorkspace({
       ) : null}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Link href="/dashboard">
+        <Link href="/blogs">
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="size-4" />
-            Dashboard
+            Blogs
           </Button>
         </Link>
         <DraftStatusBadge status={blog.status} />

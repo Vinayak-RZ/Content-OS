@@ -4,8 +4,8 @@ import type { Prisma } from "@prisma/client";
 
 import { ApiError, errorResponse } from "@/lib/api-error";
 import { serializeBlogPost } from "@/lib/blogs/serialize";
+import { requireBlogPostDelegate } from "@/lib/blogs/prisma";
 import { appendDraftRevision } from "@/lib/drafts/revision";
-import { prisma } from "@/lib/db";
 import { requireSession } from "@/lib/session";
 import { blogPatchBodySchema } from "@/lib/validations/blog";
 
@@ -14,9 +14,10 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
+    const blogPost = requireBlogPostDelegate();
     const { id } = await context.params;
 
-    const blog = await prisma.blogPost.findFirst({
+    const blog = await blogPost.findFirst({
       where: { id, userId: session.user.id },
     });
     if (!blog) {
@@ -32,9 +33,10 @@ export async function GET(_request: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
+    const blogPost = requireBlogPostDelegate();
     const { id } = await context.params;
 
-    const existing = await prisma.blogPost.findFirst({
+    const existing = await blogPost.findFirst({
       where: { id, userId: session.user.id },
     });
     if (!existing) {
@@ -78,7 +80,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         parsed.data.status === "published" ? new Date() : null;
     }
 
-    const blog = await prisma.blogPost.update({
+    const blog = await blogPost.update({
       where: { id },
       data,
     });
@@ -92,16 +94,17 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
+    const blogPost = requireBlogPostDelegate();
     const { id } = await context.params;
 
-    const existing = await prisma.blogPost.findFirst({
+    const existing = await blogPost.findFirst({
       where: { id, userId: session.user.id },
     });
     if (!existing) {
       throw new ApiError("NOT_FOUND", "Blog not found", 404);
     }
 
-    await prisma.blogPost.delete({ where: { id } });
+    await blogPost.delete({ where: { id } });
 
     return NextResponse.json({ ok: true });
   } catch (error) {

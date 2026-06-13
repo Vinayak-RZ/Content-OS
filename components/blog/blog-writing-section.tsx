@@ -11,9 +11,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
-import { RecentBlogsPanel } from "@/components/blog/recent-blogs-panel";
 import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,6 @@ import { generateBlogStream } from "@/lib/client/generate-blog-stream";
 import { fetchJson } from "@/lib/client/fetch-json";
 import { toast } from "@/lib/client/toast";
 import { useAppRouter } from "@/lib/client/use-app-router";
-import type { SerializedBlogSummary } from "@/lib/blogs/types";
 import { cn } from "@/lib/utils";
 
 function SourceBadge({ source }: { source: BlogSourceText["source"] }) {
@@ -46,18 +44,15 @@ function SourceBadge({ source }: { source: BlogSourceText["source"] }) {
 }
 
 export function BlogWritingSection({
-  initialBlogs,
   hasTavilyKey,
   hasFirecrawlKey,
   hasAnyDraftKey,
 }: {
-  initialBlogs: SerializedBlogSummary[];
   hasTavilyKey: boolean;
   hasFirecrawlKey: boolean;
   hasAnyDraftKey: boolean;
 }) {
   const router = useAppRouter();
-  const [blogs, setBlogs] = useState(initialBlogs);
   const [title, setTitle] = useState("");
   const [urlInputs, setUrlInputs] = useState<string[]>([""]);
   const [sourceTexts, setSourceTexts] = useState<BlogSourceText[]>([]);
@@ -68,13 +63,6 @@ export function BlogWritingSection({
   const [streamStatus, setStreamStatus] = useState<string | null>(null);
 
   const seedUrls = urlInputs.map((u) => u.trim()).filter(Boolean);
-
-  const refreshBlogs = useCallback(async () => {
-    const result = await fetchJson<{ blogs: SerializedBlogSummary[] }>("/api/blog");
-    if (result.ok) {
-      setBlogs(result.data.blogs);
-    }
-  }, []);
 
   function updateUrl(index: number, value: string) {
     setUrlInputs((prev) => prev.map((u, i) => (i === index ? value : u)));
@@ -154,7 +142,7 @@ export function BlogWritingSection({
       });
       toast("Blog draft ready.", "success");
       router.push(`/blog/${result.blogId}?new=1`);
-      void refreshBlogs();
+      router.refresh();
     } catch (e) {
       const message = e instanceof Error ? e.message : "Generate failed";
       setMsg(message);
@@ -167,8 +155,7 @@ export function BlogWritingSection({
 
   return (
     <>
-      <div className="flex flex-col gap-6">
-        <Card className="border-border/80 shadow-pill">
+      <Card className="border-border/80 shadow-pill">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <PenLine className="size-5 text-brand" />
@@ -366,9 +353,6 @@ export function BlogWritingSection({
             ) : null}
           </CardContent>
         </Card>
-
-        <RecentBlogsPanel blogs={blogs} />
-      </div>
 
       {busy === "gen" ? (
         <DraftGenerationOverlay

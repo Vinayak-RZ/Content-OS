@@ -13,6 +13,7 @@ import {
   sseResponse,
 } from "@/lib/llm/sse-stream";
 import { prisma } from "@/lib/db";
+import { requireBlogPostDelegate } from "@/lib/blogs/prisma";
 import { consumeGenerateRateLimit } from "@/lib/rate-limit";
 import { retrieveKnowledgeContext } from "@/lib/retrieval";
 import { requireSession } from "@/lib/session";
@@ -64,6 +65,8 @@ export async function POST(request: Request) {
       personaCustom: user.personaCustom,
     });
 
+    const blogPost = requireBlogPostDelegate();
+
     if (parsed.data.stream) {
       const stream = new ReadableStream<Uint8Array>({
         async start(controller) {
@@ -92,7 +95,7 @@ export async function POST(request: Request) {
               throw new Error("Generated blog was too short");
             }
 
-            const blog = await prisma.blogPost.create({
+            const blog = await blogPost.create({
               data: {
                 userId: session.user.id,
                 title: title.slice(0, 240),
@@ -147,7 +150,7 @@ export async function POST(request: Request) {
       throw new ApiError("BAD_GENERATION", "Generated blog was too short", 502);
     }
 
-    const blog = await prisma.blogPost.create({
+    const blog = await blogPost.create({
       data: {
         userId: session.user.id,
         title: title.slice(0, 240),

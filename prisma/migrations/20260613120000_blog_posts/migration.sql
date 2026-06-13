@@ -24,3 +24,7 @@ CREATE INDEX "BlogPost_userId_status_idx" ON "BlogPost"("userId", "status");
 
 -- AddForeignKey
 ALTER TABLE "BlogPost" ADD CONSTRAINT "BlogPost_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Supabase: match RLS hardening on other public tables (Prisma bypasses via service role)
+ALTER TABLE "BlogPost" ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE "BlogPost" FROM anon, authenticated;
