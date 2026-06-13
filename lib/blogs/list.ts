@@ -1,10 +1,8 @@
-import type { BlogPost } from "@prisma/client";
-
-import { prisma } from "@/lib/db";
 import {
   isBlogDatastoreError,
   logBlogDatastoreWarning,
 } from "@/lib/blogs/is-available";
+import { getBlogPostDelegate } from "@/lib/blogs/prisma";
 import { serializeBlogSummary } from "@/lib/blogs/serialize";
 import type { SerializedBlogSummary } from "@/lib/blogs/types";
 
@@ -12,25 +10,22 @@ export async function listRecentBlogs(
   userId: string,
   limit = 8,
 ): Promise<SerializedBlogSummary[]> {
-  const blogDelegate = (
-    prisma as unknown as {
-      blogPost?: { findMany: (args: unknown) => Promise<unknown[]> };
-    }
-  ).blogPost;
-
-  if (!blogDelegate?.findMany) {
+  const blogPost = getBlogPostDelegate();
+  if (!blogPost) {
     logBlogDatastoreWarning(
-      new Error("Prisma client missing BlogPost model — run npm run db:generate"),
+      new Error(
+        "Prisma client missing BlogPost model — run npm run db:generate and restart the dev server",
+      ),
     );
     return [];
   }
 
   try {
-    const rows = (await blogDelegate.findMany({
+    const rows = await blogPost.findMany({
       where: { userId },
       orderBy: { createdAt: "desc" },
       take: limit,
-    })) as BlogPost[];
+    });
     return rows.map(serializeBlogSummary);
   } catch (error) {
     if (isBlogDatastoreError(error)) {

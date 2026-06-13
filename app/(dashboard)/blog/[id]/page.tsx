@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
 import { BlogWorkspace } from "@/components/blog/blog-workspace";
 import { serializeBlogPost } from "@/lib/blogs/serialize";
+import { getBlogPostDelegate } from "@/lib/blogs/prisma";
 import { getAppAccess } from "@/lib/app-access";
-import { prisma } from "@/lib/db";
 
 export default async function BlogPage({
   params,
@@ -20,7 +20,12 @@ export default async function BlogPage({
     notFound();
   }
 
-  const blog = await prisma.blogPost.findFirst({
+  const blogPost = getBlogPostDelegate();
+  if (!blogPost) {
+    notFound();
+  }
+
+  const blog = await blogPost.findFirst({
     where: { id: params.id, userId: access.userId },
   });
 
