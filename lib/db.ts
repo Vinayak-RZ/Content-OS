@@ -4,15 +4,42 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient(): PrismaClient {
+  return new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
         ? ["error", "warn"]
         : ["error"],
   });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
 }
+
+function resolvePrismaClient(): PrismaClient {
+  const cached = globalForPrisma.prisma;
+
+  // Dev HMR keeps a global singleton; after `prisma generate` adds new models
+  // the cached client may lack delegates (e.g. blogPost) until server restart.
+  // Cast to object so TS doesn't narrow PrismaClient to `never` — the generated
+  // type always includes blogPost even when a stale runtime instance does not.
+  if (
+    process.env.NODE_ENV !== "production" &&
+    cached != null &&
+    !("blogPost" in (cached as object))
+  ) {
+    const fresh = createPrismaClient();
+    if ("blogPost" in fresh) {
+      void cached.$disconnect().catch(() => {});
+      globalForPrisma.prisma = fresh;
+      return fresh;
+    }
+  }
+
+  if (cached) return cached;
+
+  const client = createPrismaClient();
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+  return client;
+}
+
+export const prisma = resolvePrismaClient();
