@@ -39,6 +39,7 @@ model User {
   cronLogs          CronLog[]
   discoveryRuns     DiscoveryRun[]
   usageCounters     UsageCounter[]
+  blogPosts         BlogPost[]
 }
 
 model UsageCounter {
@@ -195,6 +196,26 @@ model DiscoveryRun {
 
   @@unique([userId, batchId])
   @@index([userId, runAt])
+}
+
+model BlogPost {
+  id              String   @id @default(uuid())
+  userId          String
+  title           String
+  currentContent  String   @db.Text
+  sources         String[]
+  sourceTexts     Json     @default("[]")
+  readTimeMinutes Int      @default(5)
+  revisionHistory Json     @default("[]")
+  status          String   @default("draft")
+  publishedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
 }
 
 model DiscoveryRunTopic {

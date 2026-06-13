@@ -9,6 +9,7 @@ import { useAppRouter } from "@/lib/client/use-app-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DiscoveryRunButton } from "@/components/discovery-run-button";
+import { BlogWritingSection } from "@/components/blog/blog-writing-section";
 import { FirstRunChecklist } from "@/components/dashboard/first-run-checklist";
 import { DraftGenerationOverlay } from "@/components/draft/draft-generation-overlay";
 import { KnowledgeEmptyBanner } from "@/components/dashboard/knowledge-empty-banner";
@@ -34,6 +35,7 @@ import {
   DISCOVERY_VISIBLE_POOL_MIN,
 } from "@/lib/discovery/founder-profile";
 import { TOPIC_POOL_TTL_DAYS } from "@/lib/discovery/topic-pool-ttl";
+import type { SerializedBlogSummary } from "@/lib/blogs/types";
 import type { SerializedDashboardTrend } from "@/lib/trends/types";
 
 export function TopicsDashboard({
@@ -48,6 +50,9 @@ export function TopicsDashboard({
   draftCount = 0,
   hasDiscoveryKey = false,
   hasAnyDraftKey = false,
+  recentBlogs = [],
+  hasTavilyKey = false,
+  hasFirecrawlKey = false,
 }: {
   initialTrends: SerializedDashboardTrend[];
   lastDiscovery: {
@@ -64,6 +69,9 @@ export function TopicsDashboard({
   draftCount?: number;
   hasDiscoveryKey?: boolean;
   hasAnyDraftKey?: boolean;
+  recentBlogs?: SerializedBlogSummary[];
+  hasTavilyKey?: boolean;
+  hasFirecrawlKey?: boolean;
 }) {
   const router = useAppRouter();
   const [moreExpanded, setMoreExpanded] = useState(false);
@@ -113,7 +121,8 @@ export function TopicsDashboard({
       : "Run discovery to populate your topic board.";
 
   return (
-    <div className="flex flex-col gap-10 pb-20">
+    <div className="grid gap-10 pb-20 xl:grid-cols-[minmax(0,1fr)_min(24rem,34%)] xl:items-start">
+      <div className="flex min-w-0 flex-col gap-10">
       {showFirstRunChecklist ? (
         <FirstRunChecklist
           knowledgeFilled={knowledgeFilled}
@@ -265,6 +274,16 @@ export function TopicsDashboard({
       >
         <DiscoveryRunButton onCompleted={refresh} className="w-full" />
       </div>
+      </div>
+
+      <aside className="min-w-0 xl:sticky xl:top-4">
+        <BlogWritingSection
+          initialBlogs={recentBlogs}
+          hasTavilyKey={hasTavilyKey}
+          hasFirecrawlKey={hasFirecrawlKey}
+          hasAnyDraftKey={hasAnyDraftKey}
+        />
+      </aside>
     </div>
   );
 }
