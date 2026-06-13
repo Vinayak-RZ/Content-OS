@@ -3,6 +3,7 @@ export type AppSseEvent =
   | { type: "status"; message: string }
   | { type: "done"; draft: unknown }
   | { type: "done"; draftId: string; imageIdea?: string }
+  | { type: "done"; blogId: string }
   | { type: "error"; message: string; code?: string };
 
 export type ConsumeAppSseOptions = {

@@ -8,6 +8,7 @@ import {
   BookOpen,
   FileText,
   LayoutDashboard,
+  PenLine,
   Radar,
   Settings,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const navItems: {
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Research", href: "/research", icon: Radar },
   { label: "Drafts", href: "/drafts", icon: FileText },
+  { label: "Blogs", href: "/blogs", icon: PenLine },
   { label: "Knowledge", href: "/knowledge", icon: BookOpen },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
