@@ -12,12 +12,16 @@ const MAX_FOUNDER_CHARS = 12000;
 const MAX_TECH_CHARS = 14000;
 const MAX_STUDIO_CHARS = 16000;
 
+const MAX_INSIGHTS_CHARS = 6000;
+
 export type RetrievedKnowledgeContext = {
   writingStyleBlock: string;
   founderContextBlock: string;
   technicalContextBlock: string;
   /** Studio-role docs — journey, ICP, platform context (full inject when forStudio). */
   studioContextBlock: string;
+  /** Agent-written performance insights — injected into drafts when available. */
+  performanceInsightsBlock: string;
 };
 
 export type RetrieveKnowledgeOptions = {
@@ -64,6 +68,20 @@ async function loadFullStudioBlock(
   return mergeChunks(chunks, MAX_STUDIO_CHARS);
 }
 
+async function loadInsightsBlock(userId: string): Promise<string> {
+  const files = await prisma.knowledgeFile.findMany({
+    where: { userId, role: "insights", isAgentManaged: true },
+    orderBy: [{ sortOrder: "asc" }, { fileName: "asc" }],
+    select: { fileName: true, content: true },
+  });
+  if (files.length === 0) return "";
+  const parts = files.map((f) => `[${f.fileName}]\n${f.content}`);
+  const combined = parts.join("\n\n");
+  return combined.length > MAX_INSIGHTS_CHARS
+    ? `${combined.slice(0, MAX_INSIGHTS_CHARS)}…`
+    : combined;
+}
+
 /**
  * pgvector cosine retrieval: top 20, filter sim > 0.72, cap 8;
  * always inject all style-role files; bucket others by document role.
@@ -84,7 +102,10 @@ export async function retrieveKnowledgeContext(
     founderContextBlock: "",
     technicalContextBlock: "",
     studioContextBlock: "",
+    performanceInsightsBlock: "",
   };
+
+  const performanceInsightsBlock = await loadInsightsBlock(userId);
 
   const topicText = `${topicTitle}\n\n${topicSummary}`.slice(0, 8000);
   const [topicEmb] = await embedTexts([topicText]);
@@ -104,7 +125,7 @@ export async function retrieveKnowledgeContext(
     : "";
 
   if (!topicEmb || topicEmb.length !== 1536) {
-    return { ...empty, writingStyleBlock, studioContextBlock };
+    return { ...empty, writingStyleBlock, studioContextBlock, performanceInsightsBlock };
   }
 
   const vectorLiteral = `[${topicEmb.join(",")}]`;
@@ -170,6 +191,7 @@ export async function retrieveKnowledgeContext(
     studioContextBlock: forStudio
       ? studioContextBlock
       : studioFromHits || studioContextBlock,
+    performanceInsightsBlock,
   };
 }
 

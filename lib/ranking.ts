@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
 import type { KnowledgeRole } from "@/lib/knowledge/constants";
 import type { ContentPipeline } from "@/lib/pipelines/types";
+import { getUserRankingWeights } from "@/lib/improvement/ranking-weights";
+import { getRankingWeights } from "@/lib/improvement/weights";
 import { embedTexts } from "@/lib/knowledge/embed";
 import { getEngagementVectorsForOriginality } from "@/lib/topic-memory";
 import {
@@ -11,14 +13,14 @@ import {
   parsePgVectorText,
 } from "@/lib/vector/math";
 
-/** Signals pipeline — weights sum to 1. */
+/** Default Signals pipeline weights (used when no user override). */
 const SIGNALS_W_TECH = 0.4;
 const SIGNALS_W_MOMENTUM = 0.25;
 const SIGNALS_W_FOUNDER = 0.2;
 const SIGNALS_W_ORIGINAL = 0.1;
 const SIGNALS_W_WRITING = 0.05;
 
-/** Studio pipeline — personal relevance; studio docs weighted highest. */
+/** Default Studio pipeline weights. */
 const STUDIO_W_STUDIO = 0.4;
 const STUDIO_W_FOUNDER = 0.25;
 const STUDIO_W_BRAND = 0.15;
@@ -115,6 +117,16 @@ export async function rankDiscoveryPool(
   if (rows.length === 0) return [];
 
   const isStudio = pipeline === "studio";
+  const userWeights = await getUserRankingWeights(userId);
+  const weights = getRankingWeights(pipeline, userWeights);
+
+  const wTech = weights.technical ?? (isStudio ? STUDIO_W_TECH : SIGNALS_W_TECH);
+  const wMomentum = weights.momentum ?? (isStudio ? STUDIO_W_MOMENTUM : SIGNALS_W_MOMENTUM);
+  const wFounder = weights.founder ?? (isStudio ? STUDIO_W_FOUNDER : SIGNALS_W_FOUNDER);
+  const wOriginal = weights.original ?? (isStudio ? STUDIO_W_ORIGINAL : SIGNALS_W_ORIGINAL);
+  const wWriting = weights.writing ?? (isStudio ? STUDIO_W_WRITING : SIGNALS_W_WRITING);
+  const wStudio = weights.studio ?? STUDIO_W_STUDIO;
+  const wBrand = weights.brand ?? STUDIO_W_BRAND;
 
   try {
     const [
@@ -178,18 +190,18 @@ export async function rankDiscoveryPool(
       const trendMomentum = clamp01(row.trendMomentum);
 
       const finalScore = isStudio
-        ? studioFit * STUDIO_W_STUDIO +
-          founderRelevance * STUDIO_W_FOUNDER +
-          brandFit * STUDIO_W_BRAND +
-          writingCompatibility * STUDIO_W_WRITING +
-          originalityPotential * STUDIO_W_ORIGINAL +
-          trendMomentum * STUDIO_W_MOMENTUM +
-          technicalAlignment * STUDIO_W_TECH
-        : technicalAlignment * SIGNALS_W_TECH +
-          trendMomentum * SIGNALS_W_MOMENTUM +
-          founderRelevance * SIGNALS_W_FOUNDER +
-          originalityPotential * SIGNALS_W_ORIGINAL +
-          writingCompatibility * SIGNALS_W_WRITING;
+        ? studioFit * wStudio +
+          founderRelevance * wFounder +
+          brandFit * wBrand +
+          writingCompatibility * wWriting +
+          originalityPotential * wOriginal +
+          trendMomentum * wMomentum +
+          technicalAlignment * wTech
+        : technicalAlignment * wTech +
+          trendMomentum * wMomentum +
+          founderRelevance * wFounder +
+          originalityPotential * wOriginal +
+          writingCompatibility * wWriting;
 
       scores.push(clamp01(finalScore));
     }

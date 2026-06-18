@@ -79,6 +79,14 @@ export async function PUT(request: Request, context: RouteContext) {
       throw new ApiError("NOT_FOUND", "Knowledge document not found", 404);
     }
 
+    if (exists.isAgentManaged) {
+      throw new ApiError(
+        "FORBIDDEN",
+        "Agent-managed insight files cannot be edited manually. View them on the Improve page.",
+        403,
+      );
+    }
+
     const updated = await syncKnowledgeFile(
       session.user.id,
       slug,
@@ -116,6 +124,14 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
     if (!row) {
       throw new ApiError("NOT_FOUND", "Knowledge document not found", 404);
+    }
+
+    if (row.isAgentManaged && !reset) {
+      throw new ApiError(
+        "FORBIDDEN",
+        "Agent-managed insight files cannot be deleted manually.",
+        403,
+      );
     }
 
     if (reset && row.isSystem) {

@@ -5,6 +5,7 @@ export const KNOWLEDGE_ROLES = [
   "technical",
   "brand",
   "studio",
+  "insights",
   "general",
 ] as const;
 
@@ -97,12 +98,35 @@ export const CANONICAL_KNOWLEDGE_FILES = SYSTEM_KNOWLEDGE_FILES.map(
   (f) => f.fileName,
 ) as readonly string[];
 
+/** Agent-managed insight documents written by the improvement engine. */
+export const AGENT_INSIGHT_FILES = [
+  {
+    slug: "performance-playbook",
+    fileName: "performance-playbook.md",
+    displayName: "Performance playbook",
+    sortOrder: 20,
+  },
+  {
+    slug: "linkedin-trends",
+    fileName: "linkedin-trends.md",
+    displayName: "LinkedIn trends",
+    sortOrder: 21,
+  },
+  {
+    slug: "content-patterns",
+    fileName: "content-patterns.md",
+    displayName: "Content patterns",
+    sortOrder: 22,
+  },
+] as const;
+
 export const ROLE_LABELS: Record<KnowledgeRole, string> = {
   style: "Style",
   narrative: "Narrative",
   technical: "Technical",
   brand: "Brand",
   studio: "Studio",
+  insights: "Insights",
   general: "General",
 };
 
@@ -116,5 +140,7 @@ export const ROLE_DESCRIPTIONS: Record<KnowledgeRole, string> = {
     "Public profile and positioning - topic-matched personal context.",
   studio:
     "Journey, ICP, and personal brand — always prioritized for Studio story ideas and drafts.",
+  insights:
+    "Agent-written performance insights — auto-updated by the Improve engine.",
   general: "Anything else - topic-matched context; not used in discovery ranking.",
 };

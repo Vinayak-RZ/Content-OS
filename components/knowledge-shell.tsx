@@ -19,6 +19,7 @@ type ListFile = {
   role: string;
   sortOrder: number;
   isSystem: boolean;
+  isAgentManaged?: boolean;
   updatedAt: string;
   fileVersion: number;
   chunkCount: number;
@@ -36,6 +37,7 @@ const ROLE_ORDER: KnowledgeRole[] = [
   "technical",
   "brand",
   "studio",
+  "insights",
   "general",
 ];
 
@@ -142,6 +144,7 @@ export function KnowledgeShell({
       description: ROLE_DESCRIPTIONS[role],
       items: map.get(role) ?? [],
       isStudio: role === "studio",
+      isInsights: role === "insights",
     }));
   }, [files]);
 
@@ -154,6 +157,8 @@ export function KnowledgeShell({
     () => files.find((f) => f.slug === selected),
     [files, selected],
   );
+
+  const isSelectedAgentManaged = meta?.isAgentManaged === true;
 
   async function save() {
     if (!selected || previewMode) return;
@@ -474,7 +479,11 @@ export function KnowledgeShell({
             </p>
           ) : (
             grouped.map((group) => {
-              if (group.role !== "studio" && group.items.length === 0) {
+              if (
+                group.role !== "studio" &&
+                group.role !== "insights" &&
+                group.items.length === 0
+              ) {
                 return null;
               }
               return (
@@ -483,6 +492,8 @@ export function KnowledgeShell({
                 className={cn(
                   group.isStudio &&
                     "rounded-xl border border-brand/25 bg-brand/5 p-2",
+                  group.isInsights &&
+                    "rounded-xl border border-violet-300/40 bg-violet-50/50 p-2 dark:bg-violet-950/20",
                 )}
               >
                 <div className="mb-1 flex items-start justify-between gap-2 px-1">
@@ -490,21 +501,27 @@ export function KnowledgeShell({
                     <p
                       className={cn(
                         "text-[10px] font-semibold uppercase tracking-wider",
-                        group.isStudio ? "text-brand" : "text-muted-foreground",
+                        group.isStudio
+                          ? "text-brand"
+                          : group.isInsights
+                            ? "text-violet-700 dark:text-violet-300"
+                            : "text-muted-foreground",
                       )}
                     >
                       {group.label}
                     </p>
-                    {group.isStudio ? (
+                    {group.isStudio || group.isInsights ? (
                       <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
                         {group.description}
                       </p>
                     ) : null}
                   </div>
                 </div>
-                {group.items.length === 0 && group.isStudio ? (
+                {group.items.length === 0 && (group.isStudio || group.isInsights) ? (
                   <p className="px-1 pb-1 text-xs text-muted-foreground">
-                    No Studio docs yet.
+                    {group.isStudio
+                      ? "No Studio docs yet."
+                      : "Run Improve to generate agent insight files."}
                   </p>
                 ) : (
                 <div className="flex flex-col gap-1">
@@ -527,6 +544,14 @@ export function KnowledgeShell({
                             title="System document"
                           >
                             🔒
+                          </span>
+                        ) : null}
+                        {f.isAgentManaged ? (
+                          <span
+                            className="shrink-0 text-[10px] text-violet-600"
+                            title="Agent-managed"
+                          >
+                            🤖
                           </span>
                         ) : null}
                       </span>
@@ -602,6 +627,11 @@ export function KnowledgeShell({
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
+                {isSelectedAgentManaged ? (
+                  <span className="rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800">
+                    Agent-managed — read only
+                  </span>
+                ) : null}
                 {meta.isSystem ? (
                   <button
                     type="button"
@@ -615,11 +645,13 @@ export function KnowledgeShell({
                   <button
                     type="button"
                     onClick={() => void deleteSelected()}
-                    className="rounded-full border border-red-200 bg-card px-4 py-2 text-sm font-medium text-red-700 shadow-pill hover:bg-red-50"
+                    disabled={isSelectedAgentManaged}
+                    className="rounded-full border border-red-200 bg-card px-4 py-2 text-sm font-medium text-red-700 shadow-pill hover:bg-red-50 disabled:opacity-50"
                   >
                     Delete
                   </button>
                 )}
+                {!isSelectedAgentManaged ? (
                 <button
                   type="button"
                   onClick={() => void save()}
@@ -628,6 +660,7 @@ export function KnowledgeShell({
                 >
                   {saving ? "Saving…" : "Save & re-embed"}
                 </button>
+                ) : null}
               </div>
             </div>
             {loadingFile ? (
@@ -636,11 +669,16 @@ export function KnowledgeShell({
               <textarea
                 value={content}
                 onChange={(e) => {
+                  if (isSelectedAgentManaged) return;
                   setContent(e.target.value);
                   setDirty(true);
                 }}
+                readOnly={isSelectedAgentManaged}
                 spellCheck={false}
-                className="min-h-[280px] flex-1 resize-y rounded-2xl border border-input bg-card p-4 font-mono text-sm leading-relaxed shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[480px]"
+                className={cn(
+                  "min-h-[280px] flex-1 resize-y rounded-2xl border border-input bg-card p-4 font-mono text-sm leading-relaxed shadow-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-[480px]",
+                  isSelectedAgentManaged && "bg-muted/20",
+                )}
                 aria-label="Knowledge document content"
               />
             )}

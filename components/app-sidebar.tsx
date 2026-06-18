@@ -12,6 +12,7 @@ import {
   Radio,
   Settings,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 
 import { SignInButton } from "@/components/auth/sign-in-button";
@@ -34,6 +35,7 @@ const navItems: {
   { label: "Blogs", href: "/blogs", icon: PenLine },
   { label: "Knowledge", href: "/knowledge", icon: BookOpen },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Improve", href: "/improve", icon: TrendingUp },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

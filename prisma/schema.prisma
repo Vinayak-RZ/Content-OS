@@ -32,6 +32,7 @@ model User {
   bufferOrganizationId   String?
   bufferLastSyncAt       DateTime?
   bufferLastSyncError    String?
+  rankingWeights         Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -46,6 +47,8 @@ model User {
   blogPosts         BlogPost[]
   bufferChannels    BufferChannel[]
   socialPosts       SocialPost[]
+  improvementRuns   ImprovementRun[]
+  improvementProposals ImprovementProposal[]
 }
 
 model UsageCounter {
@@ -123,9 +126,11 @@ model KnowledgeFile {
   slug        String
   fileName    String
   displayName String
-  role        String // style | narrative | technical | brand | general
+  role        String // style | narrative | technical | brand | studio | insights | general
   sortOrder   Int      @default(0)
   isSystem    Boolean  @default(false)
+  isAgentManaged Boolean @default(false)
+  lastImprovementRunId String?
   content     String   @db.Text
   fileVersion Int      @default(1)
   createdAt   DateTime @default(now())
@@ -271,6 +276,8 @@ model SocialPost {
   bufferPostId     String
   channelId        String
   draftId          String?
+  attributionConfidence Float?
+  attributionMethod     String?
   text             String    @db.Text
   status           String
   publishedAt      DateTime?
@@ -303,4 +310,41 @@ model SocialPostMetricSnapshot {
   socialPost SocialPost @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
 
   @@index([socialPostId, type, recordedAt])
+}
+
+model ImprovementRun {
+  id          String    @id @default(uuid())
+  userId      String
+  status      String    // running | completed | failed
+  step        String?   // sync | attribute | analyze | research | insights | proposals
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  summary     Json?
+  error       String?
+
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposals ImprovementProposal[]
+
+  @@index([userId, startedAt])
+}
+
+model ImprovementProposal {
+  id            String    @id @default(uuid())
+  userId        String
+  runId         String
+  type          String    // style_edit | ranking_weights
+  target        String
+  title         String
+  rationale     String    @db.Text
+  currentValue  Json
+  proposedValue Json
+  status        String    @default("pending") // pending | applied | rejected
+  createdAt     DateTime  @default(now())
+  decidedAt     DateTime?
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  run  ImprovementRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([runId])
 }

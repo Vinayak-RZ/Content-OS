@@ -10,6 +10,9 @@ const KIND_GENERATE = "generate_hour";
 const KIND_DISCOVER = "discover_day";
 const KIND_STUDIO = "studio_day";
 const KIND_BUFFER_SYNC = "buffer_sync_minute";
+export const IMPROVE_DAILY_LIMIT = 3;
+
+const KIND_IMPROVE = "improve_day";
 
 /** UTC hour bucket `YYYY-MM-DDTHH` */
 export function utcHourWindowKey(d = new Date()): string {
@@ -30,6 +33,9 @@ function rateLimitMessage(kind: string, limit: number): string {
   }
   if (kind === KIND_STUDIO) {
     return `Studio idea generation limit reached (${limit}/day).`;
+  }
+  if (kind === KIND_IMPROVE) {
+    return `Improvement run limit reached (${limit}/day).`;
   }
   return `Manual discovery limit reached (${limit}/day).`;
 }
@@ -110,5 +116,14 @@ export async function consumeBufferSyncRateLimit(userId: string): Promise<void> 
     KIND_BUFFER_SYNC,
     utcMinuteWindowKey(),
     BUFFER_SYNC_MINUTE_LIMIT,
+  );
+}
+
+export async function consumeImproveRateLimit(userId: string): Promise<void> {
+  await consumeWithinLimit(
+    userId,
+    KIND_IMPROVE,
+    utcDayWindowKey(),
+    IMPROVE_DAILY_LIMIT,
   );
 }

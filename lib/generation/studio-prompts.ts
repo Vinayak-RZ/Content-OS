@@ -45,6 +45,11 @@ export function buildStudioGenerationMessages(params: {
     params.retrieved.technicalContextBlock.trim() ||
     "(No expertise chunks — optional.)";
 
+  const insightsPrefix =
+    params.retrieved.performanceInsightsBlock.trim().length > 0
+      ? `PERFORMANCE INSIGHTS:\n${params.retrieved.performanceInsightsBlock.trim()}\n\n`
+      : "";
+
   const systemContent = `${studioSystemBase(params.personaType, params.personaCustom)}
 
 Return ONLY valid JSON: { "post", "hooks" (3 strings), "ctas" (2-3 strings), "imageIdea" (string) }.
@@ -52,7 +57,7 @@ Return ONLY valid JSON: { "post", "hooks" (3 strings), "ctas" (2-3 strings), "im
 WRITING STYLE:
 ${writing}`;
 
-  const userContent = `STUDIO KNOWLEDGE (highest priority — journey, ICP, platform):
+  const userContent = `${insightsPrefix}STUDIO KNOWLEDGE (highest priority — journey, ICP, platform):
 ${studio}
 
 BACKGROUND / NARRATIVE / BRAND:
@@ -96,6 +101,11 @@ export function buildStudioGenerationBodyMessages(params: {
     params.retrieved.technicalContextBlock.trim() ||
     "(No expertise chunks — optional.)";
 
+  const insightsPrefix =
+    params.retrieved.performanceInsightsBlock.trim().length > 0
+      ? `PERFORMANCE INSIGHTS:\n${params.retrieved.performanceInsightsBlock.trim()}\n\n`
+      : "";
+
   const systemContent = `${studioSystemBase(params.personaType, params.personaCustom)}
 
 Return ONLY the post body text. No JSON. No hooks.
@@ -103,7 +113,7 @@ Return ONLY the post body text. No JSON. No hooks.
 WRITING STYLE:
 ${writing}`;
 
-  const userContent = `STUDIO KNOWLEDGE (highest priority):
+  const userContent = `${insightsPrefix}STUDIO KNOWLEDGE (highest priority):
 ${studio}
 
 BACKGROUND / NARRATIVE / BRAND:

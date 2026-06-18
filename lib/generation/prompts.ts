@@ -30,6 +30,12 @@ Write in first person. Be specific. Add a real opinion or lesson.
 ${contentAngle}`;
 }
 
+function formatInsightsPrefix(retrieved: RetrievedKnowledgeContext): string {
+  const block = retrieved.performanceInsightsBlock.trim();
+  if (!block) return "";
+  return `PERFORMANCE INSIGHTS (what works for this creator):\n${block}\n\n`;
+}
+
 export function buildGenerationMessages(params: {
   retrieved: RetrievedKnowledgeContext;
   topicTitle: string;
@@ -73,7 +79,7 @@ This topic is a viral X post. Write your genuine reaction — agree, disagree, e
     : `TASK:
 Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.`;
 
-  const userContent = `BACKGROUND / NARRATIVE:
+  const userContent = `${formatInsightsPrefix(params.retrieved)}BACKGROUND / NARRATIVE:
 ${narrative}
 
 INTERESTS & EXPERTISE (use when relevant, do not force):
@@ -141,7 +147,7 @@ This topic is a viral X post. Write your genuine reaction — agree, disagree, e
     : `TASK:
 Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.`;
 
-  const userContent = `BACKGROUND / NARRATIVE:
+  const userContent = `${formatInsightsPrefix(params.retrieved)}BACKGROUND / NARRATIVE:
 ${narrative}
 
 INTERESTS & EXPERTISE (use when relevant, do not force):
