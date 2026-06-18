@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { buildPublicationByDay } from "@/lib/analytics/date-buckets";
+import type { DayCount } from "@/lib/analytics/date-buckets";
 import {
   getMetricValue,
   parsePostMetrics,
@@ -11,6 +13,8 @@ export type BufferAnalyticsSummary = {
   lastSyncError: string | null;
   channelCount: number;
   postCount: number;
+  publishedThisWeek: number;
+  publishedByDay: DayCount[];
   totals: {
     impressions: number;
     reactions: number;
@@ -59,7 +63,7 @@ export async function fetchBufferAnalyticsSummary(
     return null;
   }
 
-  const [channelCount, posts] = await Promise.all([
+  const [channelCount, posts, sentPostsForChart, postCount] = await Promise.all([
     prisma.bufferChannel.count({ where: { userId } }),
     prisma.socialPost.findMany({
       where: { userId },
@@ -71,7 +75,24 @@ export async function fetchBufferAnalyticsSummary(
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       take: 50,
     }),
+    prisma.socialPost.findMany({
+      where: {
+        userId,
+        status: "sent",
+        publishedAt: { not: null },
+      },
+      select: { publishedAt: true },
+    }),
+    prisma.socialPost.count({
+      where: { userId, status: "sent", publishedAt: { not: null } },
+    }),
   ]);
+
+  const { publishedByDay, publishedThisWeek } = buildPublicationByDay(
+    sentPostsForChart
+      .map((p) => p.publishedAt)
+      .filter((d): d is Date => d != null),
+  );
 
   let impressions = 0;
   let reactions = 0;
@@ -102,7 +123,9 @@ export async function fetchBufferAnalyticsSummary(
     lastSyncAt: user.bufferLastSyncAt?.toISOString() ?? null,
     lastSyncError: user.bufferLastSyncError,
     channelCount,
-    postCount: await prisma.socialPost.count({ where: { userId } }),
+    postCount,
+    publishedThisWeek,
+    publishedByDay,
     totals: {
       impressions,
       reactions,

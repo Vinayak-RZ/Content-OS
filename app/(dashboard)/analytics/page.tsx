@@ -122,18 +122,26 @@ function AnalyticsBody({
   analytics: AnalyticsSummary;
   buffer: BufferAnalyticsSummary | null;
 }) {
+  const chartData = buffer?.publishedByDay ?? [];
+  const chartThisWeek = buffer?.publishedThisWeek ?? 0;
+  const publishedCount = buffer?.postCount ?? analytics.publishedCount;
+  const publishedThisWeek = buffer?.publishedThisWeek ?? analytics.publishedThisWeek;
+  const publishedHint = buffer
+    ? "Sent via Buffer (LinkedIn & X)"
+    : "Connect Buffer in Settings";
+
   return (
     <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:gap-8 sm:pt-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Published posts"
-          value={analytics.publishedCount}
-          hint="Drafts marked as published"
+          value={publishedCount}
+          hint={publishedHint}
         />
         <StatCard
           label="Published this week"
-          value={analytics.publishedThisWeek}
-          hint="Since Monday"
+          value={publishedThisWeek}
+          hint={buffer ? "Buffer sent posts since Monday" : "Since Monday"}
         />
         <StatCard
           label="Discovery runs"
@@ -156,15 +164,25 @@ function AnalyticsBody({
               Posts published per day
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Last 14 days based on when you marked drafts as published in
-              Content OS.
+              {buffer
+                ? "Last 14 days of sent LinkedIn and X posts synced from Buffer."
+                : "Connect Buffer in Settings to chart posts published to LinkedIn and X."}
             </p>
           </div>
-          <p className="font-heading text-sm font-semibold text-brand">
-            {analytics.publishedThisWeek} this week
-          </p>
+          {buffer ? (
+            <p className="font-heading text-sm font-semibold text-brand">
+              {chartThisWeek} this week
+            </p>
+          ) : null}
         </div>
-        <PublicationChart data={analytics.publishedByDay} />
+        {buffer ? (
+          <PublicationChart data={chartData} />
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No Buffer data yet. Add your API key in Settings, then use Sync now
+            on this page.
+          </p>
+        )}
       </section>
 
       <section className="rounded-xl border border-subtle bg-card shadow-ambient">
