@@ -9,9 +9,11 @@ import type {
 
 const ORGANIZATIONS_QUERY = `
   query GetOrganizations {
-    organizations {
-      id
-      name
+    account {
+      organizations {
+        id
+        name
+      }
     }
   }
 `;
@@ -97,11 +99,10 @@ const AGGREGATED_METRICS_QUERY = `
 export async function fetchBufferOrganizations(
   apiKey: string,
 ): Promise<BufferOrganization[]> {
-  const data = await bufferGraphql<{ organizations: BufferOrganization[] }>(
-    apiKey,
-    ORGANIZATIONS_QUERY,
-  );
-  return data.organizations ?? [];
+  const data = await bufferGraphql<{
+    account: { organizations: BufferOrganization[] };
+  }>(apiKey, ORGANIZATIONS_QUERY);
+  return data.account?.organizations ?? [];
 }
 
 export async function fetchBufferChannels(

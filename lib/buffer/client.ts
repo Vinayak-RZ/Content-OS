@@ -32,19 +32,19 @@ export async function bufferGraphql<T>(
 
   const payload = (await response.json()) as GraphqlResponse<T>;
 
-  if (!response.ok) {
-    throw new BufferApiError(
-      `Buffer API request failed (${response.status})`,
-      response.status,
-      payload,
-    );
-  }
-
   if (payload.errors?.length) {
     throw new BufferApiError(
       payload.errors.map((e) => e.message).join("; "),
       response.status,
       payload.errors,
+    );
+  }
+
+  if (!response.ok) {
+    throw new BufferApiError(
+      `Buffer API request failed (${response.status})`,
+      response.status,
+      payload,
     );
   }
 
