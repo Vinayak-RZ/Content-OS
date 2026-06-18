@@ -28,6 +28,10 @@ model User {
   onboardingCompletedAt DateTime?
   emailDigest     Boolean  @default(true)
   sourceConfig    Json?
+  bufferApiKey           String?
+  bufferOrganizationId   String?
+  bufferLastSyncAt       DateTime?
+  bufferLastSyncError    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -40,6 +44,8 @@ model User {
   discoveryRuns     DiscoveryRun[]
   usageCounters     UsageCounter[]
   blogPosts         BlogPost[]
+  bufferChannels    BufferChannel[]
+  socialPosts       SocialPost[]
 }
 
 model UsageCounter {
@@ -105,6 +111,7 @@ model Draft {
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   trend            Trend?            @relation(fields: [trendId], references: [id], onDelete: SetNull)
   topicEngagements TopicEngagement[]
+  socialPosts      SocialPost[]
 }
 
 model KnowledgeFile {
@@ -231,4 +238,65 @@ model DiscoveryRunTopic {
   trend Trend?       @relation(fields: [trendId], references: [id], onDelete: SetNull)
 
   @@index([runId])
+}
+
+model BufferChannel {
+  id              String   @id @default(uuid())
+  userId          String
+  bufferChannelId String
+  organizationId  String
+  service         String // linkedin | twitter | ...
+  name            String
+  displayName     String?
+  avatar          String?
+  isQueuePaused   Boolean  @default(false)
+  lastSyncedAt    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialPosts SocialPost[]
+
+  @@unique([userId, bufferChannelId])
+  @@index([userId, service])
+}
+
+model SocialPost {
+  id               String    @id @default(uuid())
+  userId           String
+  bufferPostId     String
+  channelId        String
+  draftId          String?
+  text             String    @db.Text
+  status           String
+  publishedAt      DateTime?
+  scheduledAt      DateTime?
+  metricsUpdatedAt DateTime?
+  metrics          Json      @default("[]")
+  lastSyncedAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user       User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel    BufferChannel              @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  draft      Draft?                     @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  metricSnapshots SocialPostMetricSnapshot[]
+
+  @@unique([userId, bufferPostId])
+  @@index([userId, publishedAt])
+  @@index([userId, status])
+}
+
+model SocialPostMetricSnapshot {
+  id           String   @id @default(uuid())
+  socialPostId String
+  type         String
+  name         String
+  value        Float
+  unit         String
+  recordedAt   DateTime @default(now())
+
+  socialPost SocialPost @relation(fields: [socialPostId], references: [id], onDelete: Cascade)
+
+  @@index([socialPostId, type, recordedAt])
 }

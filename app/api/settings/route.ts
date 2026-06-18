@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/session";
 import {
   buildSettingsUpdate,
   toSettingsResponse,
+  validateBufferSettings,
   validateDraftProviderSettings,
 } from "@/lib/user-settings";
 import { settingsPatchSchema } from "@/lib/validations/settings";
@@ -49,6 +50,17 @@ export async function PATCH(request: Request) {
     }
 
     const data = buildSettingsUpdate(user, parsed.data);
+
+    try {
+      await validateBufferSettings(user, parsed.data, data);
+    } catch (e) {
+      throw new ApiError(
+        "VALIDATION_ERROR",
+        e instanceof Error ? e.message : "Invalid Buffer settings",
+        400,
+      );
+    }
+
     if (Object.keys(data).length === 0) {
       throw new ApiError("VALIDATION_ERROR", "No valid fields to update", 400);
     }

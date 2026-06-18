@@ -22,6 +22,7 @@ export type SettingsKeys = {
   openrouter: boolean;
   nvidia: boolean;
   openai: boolean;
+  buffer: boolean;
 };
 
 export function countConfiguredKeys(keys: SettingsKeys): {

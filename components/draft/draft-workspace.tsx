@@ -17,6 +17,7 @@ import {
 import { DraftPreviewOverlay } from "@/components/draft/draft-preview-overlay";
 import { DraftRevisionPanel } from "@/components/draft/draft-revision-panel";
 import { DraftXThreadPanel } from "@/components/draft/draft-x-thread-panel";
+import { BufferPublishDialog } from "@/components/draft/buffer-publish-dialog";
 import type { DraftRevisionEntry } from "@/lib/drafts/revision";
 import type { ClientDraftPayload } from "@/lib/drafts/serialize-for-client";
 
@@ -312,6 +313,7 @@ export function DraftWorkspace({
   const [customEdit, setCustomEdit] = useState("");
   const [assembleOpen, setAssembleOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [bufferPublishOpen, setBufferPublishOpen] = useState(false);
   const [xThreadExpanded, setXThreadExpanded] = useState(
     (initialDraft?.xThreadParts?.length ?? 0) > 0,
   );
@@ -484,6 +486,18 @@ export function DraftWorkspace({
       if (!receivedDelta && draft) setContent(draft.currentContent);
     } finally {
       setBusy("idle");
+    }
+  }
+
+  async function openBufferPublish(): Promise<void> {
+    if (!draft) return;
+    try {
+      if (hasUnsavedChanges(draft, content, hookIx, ctaIx)) {
+        await saveBody(true);
+      }
+      setBufferPublishOpen(true);
+    } catch {
+      toast("Save your draft before publishing to Buffer.", "error");
     }
   }
 
@@ -674,6 +688,16 @@ export function DraftWorkspace({
       >
         <Eye className="size-4" />
         Preview
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={busy !== "idle" || draft.status === "published"}
+        onClick={() => void openBufferPublish()}
+        className="gap-1"
+      >
+        <Send className="size-4" />
+        Publish to Buffer
       </Button>
       <Button
         type="button"
@@ -877,6 +901,17 @@ export function DraftWorkspace({
           </Button>
           <Button
             type="button"
+            variant="outline"
+            size="sm"
+            className="flex-1 gap-1"
+            disabled={busy !== "idle" || draft.status === "published"}
+            onClick={() => void openBufferPublish()}
+          >
+            <Send className="size-3.5" />
+            Buffer
+          </Button>
+          <Button
+            type="button"
             size="sm"
             className="flex-1"
             disabled={busy !== "idle" || draft.status === "published"}
@@ -894,6 +929,16 @@ export function DraftWorkspace({
           onCopy={() => void copyAssembled()}
         />
       ) : null}
+
+      <BufferPublishDialog
+        draftId={draftId}
+        open={bufferPublishOpen}
+        onOpenChange={setBufferPublishOpen}
+        onPublished={(socialPostId) => {
+          router.push(`/analytics/posts/${socialPostId}`);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

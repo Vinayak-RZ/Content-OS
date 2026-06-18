@@ -1,7 +1,9 @@
 import Link from "next/link";
 
 import { AppHeader } from "@/components/app-header";
+import { BufferSyncButton } from "@/components/analytics/buffer-sync-button";
 import { PublicationChart } from "@/components/analytics/publication-chart";
+import { SocialPostTable } from "@/components/analytics/social-post-table";
 import {
   GuestPreviewPage,
   GuestSignInOverlay,
@@ -9,6 +11,10 @@ import {
 import { DraftStatusBadge } from "@/components/ui/draft-status-badge";
 import { fetchAnalyticsSummary } from "@/lib/analytics/summary";
 import type { AnalyticsSummary } from "@/lib/analytics/summary";
+import {
+  fetchBufferAnalyticsSummary,
+  type BufferAnalyticsSummary,
+} from "@/lib/analytics/buffer-summary";
 import { getAppAccess } from "@/lib/app-access";
 import { GUEST_DEMO_ANALYTICS } from "@/lib/guest/demo-data";
 
@@ -36,7 +42,86 @@ function StatCard({
   );
 }
 
-function AnalyticsBody({ analytics }: { analytics: AnalyticsSummary }) {
+function BufferAnalyticsSection({
+  buffer,
+}: {
+  buffer: BufferAnalyticsSummary;
+}) {
+  return (
+    <>
+      <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">
+              Buffer post performance
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Impressions and engagement for sent LinkedIn and X posts synced
+              from Buffer.
+            </p>
+          </div>
+          <BufferSyncButton
+            connected={buffer.connected}
+            lastSyncAt={buffer.lastSyncAt}
+          />
+        </div>
+
+        {buffer.lastSyncError ? (
+          <p className="mb-4 text-sm text-red-600">{buffer.lastSyncError}</p>
+        ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <StatCard
+            label="Synced posts"
+            value={buffer.postCount}
+            hint={`${buffer.channelCount} channel${buffer.channelCount === 1 ? "" : "s"}`}
+          />
+          <StatCard
+            label="Impressions"
+            value={buffer.totals.impressions.toLocaleString()}
+            hint="Across recent synced posts"
+          />
+          <StatCard
+            label="Reactions"
+            value={buffer.totals.reactions.toLocaleString()}
+          />
+          <StatCard
+            label="Comments"
+            value={buffer.totals.comments.toLocaleString()}
+          />
+          <StatCard
+            label="Avg engagement"
+            value={
+              buffer.totals.engagementRate != null
+                ? `${buffer.totals.engagementRate.toFixed(1)}%`
+                : "—"
+            }
+            hint="When reported by network"
+          />
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-subtle bg-card shadow-ambient">
+        <div className="border-b border-subtle px-6 py-4 sm:px-8">
+          <h2 className="font-heading text-lg font-semibold">Buffer posts</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Detailed metrics per post. Missing values mean the network has not
+            reported them yet.
+          </p>
+        </div>
+        <SocialPostTable posts={buffer.posts} />
+      </section>
+    </>
+  );
+}
+
+function AnalyticsBody({
+  analytics,
+  buffer,
+}: {
+  analytics: AnalyticsSummary;
+  buffer: BufferAnalyticsSummary | null;
+}) {
   return (
     <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:gap-8 sm:pt-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -62,6 +147,8 @@ function AnalyticsBody({ analytics }: { analytics: AnalyticsSummary }) {
         />
       </div>
 
+      {buffer ? <BufferAnalyticsSection buffer={buffer} /> : null}
+
       <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -69,7 +156,8 @@ function AnalyticsBody({ analytics }: { analytics: AnalyticsSummary }) {
               Posts published per day
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Last 14 days based on when you marked drafts as published.
+              Last 14 days based on when you marked drafts as published in
+              Content OS.
             </p>
           </div>
           <p className="font-heading text-sm font-semibold text-brand">
@@ -81,7 +169,9 @@ function AnalyticsBody({ analytics }: { analytics: AnalyticsSummary }) {
 
       <section className="rounded-xl border border-subtle bg-card shadow-ambient">
         <div className="border-b border-subtle px-6 py-4 sm:px-8">
-          <h2 className="font-heading text-lg font-semibold">Published drafts</h2>
+          <h2 className="font-heading text-lg font-semibold">
+            Content OS published drafts
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Posts you have shipped from this account.
           </p>
@@ -148,7 +238,7 @@ export default async function AnalyticsPage() {
             feature="Analytics"
             description="Preview charts and published-draft history. Sign in to track your real output over time."
           >
-            <AnalyticsBody analytics={GUEST_DEMO_ANALYTICS} />
+            <AnalyticsBody analytics={GUEST_DEMO_ANALYTICS} buffer={null} />
           </GuestSignInOverlay>
         }
       />
@@ -159,7 +249,10 @@ export default async function AnalyticsPage() {
     return null;
   }
 
-  const analytics = await fetchAnalyticsSummary(access.userId);
+  const [analytics, buffer] = await Promise.all([
+    fetchAnalyticsSummary(access.userId),
+    fetchBufferAnalyticsSummary(access.userId),
+  ]);
 
   return (
     <>
@@ -168,7 +261,7 @@ export default async function AnalyticsPage() {
         breadcrumb="Insights"
         description="Published output and discovery activity for your account."
       />
-      <AnalyticsBody analytics={analytics} />
+      <AnalyticsBody analytics={analytics} buffer={buffer} />
     </>
   );
 }

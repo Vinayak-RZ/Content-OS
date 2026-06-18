@@ -3,9 +3,11 @@ import { prisma } from "@/lib/db";
 
 export const GENERATE_HOURLY_LIMIT = 20;
 export const DISCOVER_MANUAL_DAILY_LIMIT = 5;
+export const BUFFER_SYNC_MINUTE_LIMIT = 1;
 
 const KIND_GENERATE = "generate_hour";
 const KIND_DISCOVER = "discover_day";
+const KIND_BUFFER_SYNC = "buffer_sync_minute";
 
 /** UTC hour bucket `YYYY-MM-DDTHH` */
 export function utcHourWindowKey(d = new Date()): string {
@@ -18,9 +20,13 @@ export function utcDayWindowKey(d = new Date()): string {
 }
 
 function rateLimitMessage(kind: string, limit: number): string {
-  return kind === KIND_GENERATE
-    ? `Generate limit reached (${limit}/hour). Try again soon.`
-    : `Manual discovery limit reached (${limit}/day).`;
+  if (kind === KIND_GENERATE) {
+    return `Generate limit reached (${limit}/hour). Try again soon.`;
+  }
+  if (kind === KIND_BUFFER_SYNC) {
+    return "Buffer sync limit reached (1/min). Try again shortly.";
+  }
+  return `Manual discovery limit reached (${limit}/day).`;
 }
 
 /**
@@ -75,5 +81,18 @@ export async function consumeDiscoverManualRateLimit(
     KIND_DISCOVER,
     utcDayWindowKey(),
     DISCOVER_MANUAL_DAILY_LIMIT,
+  );
+}
+
+function utcMinuteWindowKey(d = new Date()): string {
+  return d.toISOString().slice(0, 16);
+}
+
+export async function consumeBufferSyncRateLimit(userId: string): Promise<void> {
+  await consumeWithinLimit(
+    userId,
+    KIND_BUFFER_SYNC,
+    utcMinuteWindowKey(),
+    BUFFER_SYNC_MINUTE_LIMIT,
   );
 }

@@ -4,7 +4,8 @@ export type ProviderLinkKey =
   | "openai"
   | "nvidia"
   | "tavily"
-  | "firecrawl";
+  | "firecrawl"
+  | "buffer";
 
 export type ProviderLink = {
   label: string;
@@ -43,5 +44,11 @@ export const PROVIDER_LINKS: Record<ProviderLinkKey, ProviderLink> = {
     signupUrl: "https://www.firecrawl.dev/app/api-keys",
     signupLabel: "Get a Firecrawl key",
     blurb: "Scrape URLs when you paste a custom topic link on the dashboard.",
+  },
+  buffer: {
+    label: "Buffer",
+    signupUrl: "https://publish.buffer.com/settings/api",
+    signupLabel: "Get a Buffer API key",
+    blurb: "Sync LinkedIn and X metrics and publish drafts to your channels.",
   },
 };

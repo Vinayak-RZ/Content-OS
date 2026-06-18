@@ -17,6 +17,8 @@ import {
 import type { PersonaType } from "@/lib/personas/types";
 import { isPersonaType } from "@/lib/personas/types";
 import type { SettingsPatchInput } from "@/lib/validations/settings";
+import { fetchBufferOrganizations } from "@/lib/buffer/queries";
+import { BufferApiError } from "@/lib/buffer/client";
 
 export type SettingsResponse = {
   email: string;
@@ -32,7 +34,11 @@ export type SettingsResponse = {
     openrouter: boolean;
     nvidia: boolean;
     openai: boolean;
+    buffer: boolean;
   };
+  bufferOrganizationId: string | null;
+  bufferLastSyncAt: string | null;
+  bufferLastSyncError: string | null;
   draftProvider: DraftProviderKind | null;
   draftModelId: string | null;
   /** Resolved provider when keys allow (preference + fallback). */
@@ -65,7 +71,11 @@ export function toSettingsResponse(user: User): SettingsResponse {
       openrouter: hasEncryptedSecret(user.openrouterKey),
       nvidia: hasEncryptedSecret(user.nvidiaKey),
       openai: hasEncryptedSecret(user.openaiKey),
+      buffer: hasEncryptedSecret(user.bufferApiKey),
     },
+    bufferOrganizationId: user.bufferOrganizationId ?? null,
+    bufferLastSyncAt: user.bufferLastSyncAt?.toISOString() ?? null,
+    bufferLastSyncError: user.bufferLastSyncError ?? null,
     draftProvider: (user.draftProvider as DraftProviderKind | null) ?? null,
     draftModelId,
     activeDraftProvider: getActiveDraftProviderKind(user),
@@ -155,8 +165,61 @@ export function buildSettingsUpdate(
   } else if (input.openaiKey) {
     data.openaiKey = encryptSecret(input.openaiKey);
   }
+  if (input.clearBuffer) {
+    data.bufferApiKey = null;
+    data.bufferOrganizationId = null;
+    data.bufferLastSyncAt = null;
+    data.bufferLastSyncError = null;
+  } else if (input.bufferApiKey) {
+    data.bufferApiKey = encryptSecret(input.bufferApiKey);
+  }
+  if (input.bufferOrganizationId !== undefined) {
+    data.bufferOrganizationId = input.bufferOrganizationId || null;
+  }
 
   return data;
+}
+
+export async function validateBufferSettings(
+  user: User,
+  input: SettingsPatchInput,
+  data: Prisma.UserUpdateInput,
+): Promise<void> {
+  const nextKey =
+    input.bufferApiKey != null
+      ? input.bufferApiKey
+      : input.clearBuffer
+        ? null
+        : user.bufferApiKey
+          ? decryptSecret(user.bufferApiKey)
+          : null;
+
+  if (!nextKey) return;
+
+  try {
+    const orgs = await fetchBufferOrganizations(nextKey);
+    if (orgs.length === 0) {
+      throw new Error("Buffer API key is valid but no organizations were found.");
+    }
+
+    const requestedOrg = input.bufferOrganizationId ?? user.bufferOrganizationId;
+    if (requestedOrg && !orgs.some((o) => o.id === requestedOrg)) {
+      throw new Error("Selected Buffer organization is not available for this key.");
+    }
+
+    if (!requestedOrg && orgs.length === 1) {
+      data.bufferOrganizationId = orgs[0]!.id;
+    } else if (!requestedOrg && orgs.length > 1 && input.bufferApiKey) {
+      throw new Error(
+        "Multiple Buffer organizations found. Select one before saving.",
+      );
+    }
+  } catch (error) {
+    if (error instanceof BufferApiError) {
+      throw new Error(`Buffer API key validation failed: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 export function getDecryptedKey(
@@ -166,7 +229,8 @@ export function getDecryptedKey(
     | "firecrawlApiKey"
     | "openrouterKey"
     | "nvidiaKey"
-    | "openaiKey",
+    | "openaiKey"
+    | "bufferApiKey",
 ): string | null {
   const value = user[key];
   if (!value) return null;

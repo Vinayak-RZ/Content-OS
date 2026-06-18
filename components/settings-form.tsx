@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { PersonaPicker } from "@/components/onboarding/persona-picker";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { BufferSettingsCard } from "@/components/settings/buffer-settings-card";
 import { KeysSummary } from "@/components/settings/keys-summary";
 import { DraftProviderSettings } from "@/components/draft-provider-fields";
 import { fetchJson } from "@/lib/client/fetch-json";
@@ -89,6 +90,13 @@ export function SettingsForm({ initial }: SettingsFormProps) {
         firecrawl: "firecrawlApiKey",
       }),
     };
+    const bufferApiKey = String(form.get("bufferApiKey") ?? "").trim();
+    const bufferOrganizationId = String(
+      form.get("bufferOrganizationId") ?? "",
+    ).trim();
+    if (bufferApiKey) patch.bufferApiKey = bufferApiKey;
+    if (bufferOrganizationId) patch.bufferOrganizationId = bufferOrganizationId;
+    if (form.get("clearBuffer") === "on") patch.clearBuffer = true;
     void save(patch);
   }
 
@@ -188,6 +196,7 @@ export function SettingsForm({ initial }: SettingsFormProps) {
             embedded
             includeDiscoveryKeys
           />
+          <BufferSettingsCard settings={settings} />
         </CardContent>
       </Card>
 

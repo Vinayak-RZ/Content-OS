@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/cron/buffer-sync",
+      "schedule": "0 6 * * *"
+    }
+  ],
   "functions": {
     "app/api/**/route.js": {
       "maxDuration": 300

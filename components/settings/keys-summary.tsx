@@ -10,6 +10,7 @@ const KEY_LABELS: { key: keyof SettingsResponse["keys"]; label: string }[] = [
   { key: "openrouter", label: "OpenRouter" },
   { key: "nvidia", label: "NVIDIA" },
   { key: "openai", label: "OpenAI" },
+  { key: "buffer", label: "Buffer" },
 ];
 
 export function KeysSummary({ keys }: { keys: SettingsResponse["keys"] }) {
