@@ -1,19 +1,14 @@
 import { prisma } from "@/lib/db";
 import { isPlaceholderKnowledgeContent } from "@/lib/knowledge/is-filled";
 
-/** Studio ideation needs real narrative + brand knowledge. */
+/** Studio ideation needs at least one filled Studio-role document. */
 export async function userHasStudioKnowledge(userId: string): Promise<boolean> {
   const files = await prisma.knowledgeFile.findMany({
-    where: { userId, role: { in: ["narrative", "brand"] } },
-    select: { content: true, role: true },
+    where: { userId, role: "studio" },
+    select: { content: true },
   });
 
-  const hasNarrative = files.some(
-    (f) => f.role === "narrative" && !isPlaceholderKnowledgeContent(f.content),
-  );
-  const hasBrand = files.some(
-    (f) => f.role === "brand" && !isPlaceholderKnowledgeContent(f.content),
-  );
+  if (files.length === 0) return false;
 
-  return hasNarrative && hasBrand;
+  return files.some((f) => !isPlaceholderKnowledgeContent(f.content));
 }

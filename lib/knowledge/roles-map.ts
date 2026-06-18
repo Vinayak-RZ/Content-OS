@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 export type KnowledgeRoleMap = {
   roleByFileName: Map<string, KnowledgeRole>;
   styleFileNames: string[];
+  studioFileNames: string[];
 };
 
 /** Load per-user fileName → role for retrieval and ranking. */
@@ -18,6 +19,7 @@ export async function getKnowledgeRoleMap(
 
   const roleByFileName = new Map<string, KnowledgeRole>();
   const styleFileNames: string[] = [];
+  const studioFileNames: string[] = [];
 
   for (const f of files) {
     const role = f.role as KnowledgeRole;
@@ -25,7 +27,10 @@ export async function getKnowledgeRoleMap(
     if (role === "style") {
       styleFileNames.push(f.fileName);
     }
+    if (role === "studio") {
+      studioFileNames.push(f.fileName);
+    }
   }
 
-  return { roleByFileName, styleFileNames };
+  return { roleByFileName, styleFileNames, studioFileNames };
 }

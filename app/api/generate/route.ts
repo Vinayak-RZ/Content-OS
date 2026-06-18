@@ -94,16 +94,17 @@ export async function POST(request: Request) {
     const summaryBlock =
       topicSummary.length > 0 ? topicSummary : topicTitle;
 
-    const retrieved = await retrieveKnowledgeContext(
-      session.user.id,
-      topicTitle,
-      summaryBlock,
-    );
-
     const isStudio =
       trend?.pipeline === "studio" || trend?.sourceType === "studio";
     const sourceType = trend?.sourceType ?? null;
     const draftPipeline = trend?.pipeline ?? (isStudio ? "studio" : "signals");
+
+    const retrieved = await retrieveKnowledgeContext(
+      session.user.id,
+      topicTitle,
+      summaryBlock,
+      { forStudio: isStudio },
+    );
 
     const promptParams = {
       retrieved,

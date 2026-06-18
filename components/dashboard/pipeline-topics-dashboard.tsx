@@ -210,7 +210,7 @@ export function PipelineTopicsDashboard({
                     href="/knowledge?studio=1"
                     className="text-brand underline-offset-4 hover:underline"
                   >
-                    Open Knowledge builder
+                    Import Studio templates in Knowledge
                   </Link>
                 </p>
               ) : null}
@@ -239,7 +239,7 @@ export function PipelineTopicsDashboard({
                   href="/knowledge?studio=1"
                   className="text-brand underline-offset-4 hover:underline"
                 >
-                  Fill Knowledge
+                  Import Studio templates
                 </Link>
               </CardContent>
             </Card>

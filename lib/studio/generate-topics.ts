@@ -60,9 +60,12 @@ function ideaToCandidate(userId: string, idea: StudioTopicIdea): TrendCandidate 
 function buildStudioIdeationMessages(
   retrieved: Awaited<ReturnType<typeof retrieveKnowledgeContext>>,
 ): { role: "system" | "user"; content: string }[] {
-  const narrative = retrieved.founderContextBlock.trim() ||
-    "(No narrative knowledge yet — infer cautiously from other context.)";
-  const brand = narrative;
+  const studio =
+    retrieved.studioContextBlock.trim() ||
+    "(No Studio knowledge filled yet.)";
+  const narrative =
+    retrieved.founderContextBlock.trim() ||
+    "(No narrative/brand context.)";
   const technical = retrieved.technicalContextBlock.trim() || "(none)";
   const writing = retrieved.writingStyleBlock.trim() || "(concise founder voice)";
 
@@ -72,18 +75,19 @@ function buildStudioIdeationMessages(
       content: `You ideate personal-brand content topics for a founder. Return ONLY valid JSON: { "topics": [ ... ] }.
 Each topic needs: title, summary (2-3 sentences), angle (how to frame it), suggestedHook (opening line), category (one of: founder_journey, startup_update, icp_value, lesson_learned, behind_the_scenes).
 Generate 8-12 distinct ideas grounded in the user's knowledge — not generic motivational fluff.
-Do NOT summarize news articles. These are stories about the user's journey, startup, ICP, and lessons.`,
+Do NOT summarize news articles. These are stories about the user's journey, startup, ICP, and lessons.
+Prioritize STUDIO KNOWLEDGE (journey, ICP, platform) over generic background.`,
     },
     {
       role: "user",
       content: `WRITING STYLE:
 ${writing}
 
-NARRATIVE / JOURNEY:
-${narrative}
+STUDIO KNOWLEDGE (highest priority — journey, ICP, platform):
+${studio}
 
-BRAND / ICP:
-${brand}
+BACKGROUND / NARRATIVE / BRAND:
+${narrative}
 
 EXPERTISE (optional angles):
 ${technical}
@@ -100,7 +104,7 @@ export async function runStudioTopicGeneration(
   const hasKnowledge = await userHasStudioKnowledge(userId);
   if (!hasKnowledge) {
     throw new Error(
-      "Add Knowledge about your journey and brand first (narrative + brand files).",
+      "Add Studio knowledge first — import Studio templates in Knowledge (journey, ICP, platform context).",
     );
   }
 
@@ -111,6 +115,7 @@ export async function runStudioTopicGeneration(
     userId,
     "founder journey startup ICP personal brand",
     "story ideas about my startup journey, ICP pains, and lessons learned",
+    { forStudio: true },
   );
 
   let raw: string;

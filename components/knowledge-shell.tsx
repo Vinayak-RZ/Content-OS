@@ -35,6 +35,7 @@ const ROLE_ORDER: KnowledgeRole[] = [
   "narrative",
   "technical",
   "brand",
+  "studio",
   "general",
 ];
 
@@ -62,6 +63,7 @@ export function KnowledgeShell({
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [seedingStudio, setSeedingStudio] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState("");
@@ -137,9 +139,16 @@ export function KnowledgeShell({
     return ROLE_ORDER.map((role) => ({
       role,
       label: ROLE_LABELS[role],
+      description: ROLE_DESCRIPTIONS[role],
       items: map.get(role) ?? [],
-    })).filter((g) => g.items.length > 0);
+      isStudio: role === "studio",
+    }));
   }, [files]);
+
+  const hasStudioDocs = useMemo(
+    () => files.some((f) => f.role === "studio"),
+    [files],
+  );
 
   const meta = useMemo(
     () => files.find((f) => f.slug === selected),
@@ -197,6 +206,36 @@ export function KnowledgeShell({
       setErr(e instanceof Error ? e.message : "Import failed");
     } finally {
       setSeeding(false);
+    }
+  }
+
+  async function importStudioSeeds() {
+    if (previewMode) return;
+    setSeedingStudio(true);
+    setErr(null);
+    setMsg(null);
+    try {
+      const res = await fetch("/api/knowledge/seed/studio", { method: "POST" });
+      const data = (await res.json()) as {
+        error?: string;
+        created?: string[];
+        skipped?: string[];
+      };
+      if (!res.ok) {
+        throw new Error(data.error ?? "Studio import failed");
+      }
+      const created = data.created ?? [];
+      const skipped = data.skipped ?? [];
+      setMsg(
+        `Studio import done. Created: ${created.length} document(s). Already had: ${skipped.length}.`,
+      );
+      const next = await loadList();
+      const firstStudio = next.find((f) => f.role === "studio");
+      if (firstStudio) setSelected(firstStudio.slug);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Studio import failed");
+    } finally {
+      setSeedingStudio(false);
     }
   }
 
@@ -434,11 +473,40 @@ export function KnowledgeShell({
               No documents yet. Import starter templates or add your first document.
             </p>
           ) : (
-            grouped.map((group) => (
-              <div key={group.role}>
-                <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  {group.label}
-                </p>
+            grouped.map((group) => {
+              if (group.role !== "studio" && group.items.length === 0) {
+                return null;
+              }
+              return (
+              <div
+                key={group.role}
+                className={cn(
+                  group.isStudio &&
+                    "rounded-xl border border-brand/25 bg-brand/5 p-2",
+                )}
+              >
+                <div className="mb-1 flex items-start justify-between gap-2 px-1">
+                  <div>
+                    <p
+                      className={cn(
+                        "text-[10px] font-semibold uppercase tracking-wider",
+                        group.isStudio ? "text-brand" : "text-muted-foreground",
+                      )}
+                    >
+                      {group.label}
+                    </p>
+                    {group.isStudio ? (
+                      <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
+                        {group.description}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                {group.items.length === 0 && group.isStudio ? (
+                  <p className="px-1 pb-1 text-xs text-muted-foreground">
+                    No Studio docs yet.
+                  </p>
+                ) : (
                 <div className="flex flex-col gap-1">
                   {group.items.map((f) => (
                     <button
@@ -468,12 +536,27 @@ export function KnowledgeShell({
                     </button>
                   ))}
                 </div>
+                )}
               </div>
-            ))
+            );
+            })
           )}
         </nav>
 
         <div className="mt-4 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => void importStudioSeeds()}
+            disabled={seedingStudio}
+            className="rounded-full border border-brand/30 bg-brand/10 px-4 py-2 text-sm font-medium text-brand shadow-pill hover:bg-brand/15 disabled:opacity-50"
+          >
+            {seedingStudio ? "Importing Studio…" : "Import Studio templates"}
+          </button>
+          {!hasStudioDocs ? (
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Journey, ICP, and platform docs — weighted highest in Studio.
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={() => void addLinkedInProfile()}

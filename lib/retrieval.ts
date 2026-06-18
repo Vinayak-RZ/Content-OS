@@ -4,16 +4,25 @@ import { embedTexts } from "@/lib/knowledge/embed";
 import { getKnowledgeRoleMap } from "@/lib/knowledge/roles-map";
 
 const SIM_THRESHOLD = 0.72;
+const STUDIO_SIM_THRESHOLD = 0.65;
 const TOP_K_SCAN = 20;
 const TOP_AFTER_FILTER = 8;
 /** Rough char budget (~8k tokens × 4 chars, minus prompts). */
 const MAX_FOUNDER_CHARS = 12000;
 const MAX_TECH_CHARS = 14000;
+const MAX_STUDIO_CHARS = 16000;
 
 export type RetrievedKnowledgeContext = {
   writingStyleBlock: string;
   founderContextBlock: string;
   technicalContextBlock: string;
+  /** Studio-role docs — journey, ICP, platform context (full inject when forStudio). */
+  studioContextBlock: string;
+};
+
+export type RetrieveKnowledgeOptions = {
+  /** When true, always inject all Studio-role files and prioritize studio chunks. */
+  forStudio?: boolean;
 };
 
 function mergeChunks(
@@ -42,29 +51,65 @@ function roleForHit(
   return roleByFileName.get(fileName) ?? "general";
 }
 
+async function loadFullStudioBlock(
+  userId: string,
+  studioFileNames: string[],
+): Promise<string> {
+  if (studioFileNames.length === 0) return "";
+  const chunks = await prisma.knowledgeChunk.findMany({
+    where: { userId, fileName: { in: studioFileNames } },
+    orderBy: [{ fileName: "asc" }, { chunkIndex: "asc" }],
+    select: { fileName: true, chunkText: true },
+  });
+  return mergeChunks(chunks, MAX_STUDIO_CHARS);
+}
+
 /**
  * pgvector cosine retrieval: top 20, filter sim > 0.72, cap 8;
  * always inject all style-role files; bucket others by document role.
+ * Studio mode always injects all studio-role files (like writing style).
  */
 export async function retrieveKnowledgeContext(
   userId: string,
   topicTitle: string,
   topicSummary: string,
+  options: RetrieveKnowledgeOptions = {},
 ): Promise<RetrievedKnowledgeContext> {
-  const { roleByFileName, styleFileNames } = await getKnowledgeRoleMap(userId);
+  const forStudio = options.forStudio === true;
+  const { roleByFileName, styleFileNames, studioFileNames } =
+    await getKnowledgeRoleMap(userId);
+
+  const empty: RetrievedKnowledgeContext = {
+    writingStyleBlock: "",
+    founderContextBlock: "",
+    technicalContextBlock: "",
+    studioContextBlock: "",
+  };
 
   const topicText = `${topicTitle}\n\n${topicSummary}`.slice(0, 8000);
   const [topicEmb] = await embedTexts([topicText]);
+
+  let writingStyleBlock = "";
+  if (styleFileNames.length > 0) {
+    const wsChunks = await prisma.knowledgeChunk.findMany({
+      where: { userId, fileName: { in: styleFileNames } },
+      orderBy: [{ fileName: "asc" }, { chunkIndex: "asc" }],
+      select: { chunkText: true },
+    });
+    writingStyleBlock = wsChunks.map((c) => c.chunkText).join("\n\n");
+  }
+
+  const studioContextBlock = forStudio
+    ? await loadFullStudioBlock(userId, studioFileNames)
+    : "";
+
   if (!topicEmb || topicEmb.length !== 1536) {
-    return {
-      writingStyleBlock: "",
-      founderContextBlock: "",
-      technicalContextBlock: "",
-    };
+    return { ...empty, writingStyleBlock, studioContextBlock };
   }
 
   const vectorLiteral = `[${topicEmb.join(",")}]`;
   const styleSet = new Set(styleFileNames);
+  const studioSet = new Set(studioFileNames);
 
   type RawHit = { fileName: string; chunkText: string; sim: number };
   const hits = await prisma.$queryRawUnsafe<RawHit[]>(
@@ -78,36 +123,29 @@ export async function retrieveKnowledgeContext(
     userId,
   );
 
-  let writingStyleBlock = "";
-  if (styleFileNames.length > 0) {
-    const wsChunks = await prisma.knowledgeChunk.findMany({
-      where: { userId, fileName: { in: styleFileNames } },
-      orderBy: [{ fileName: "asc" }, { chunkIndex: "asc" }],
-      select: { chunkText: true },
-    });
-    writingStyleBlock = wsChunks.map((c) => c.chunkText).join("\n\n");
-  }
+  const simThreshold = forStudio ? STUDIO_SIM_THRESHOLD : SIM_THRESHOLD;
 
   const filtered = hits
     .map((h) => ({
       ...h,
       sim: typeof h.sim === "number" ? h.sim : Number(h.sim),
     }))
-    .filter(
-      (h) =>
-        !styleSet.has(h.fileName) &&
-        !Number.isNaN(h.sim) &&
-        h.sim > SIM_THRESHOLD,
-    )
+    .filter((h) => {
+      if (styleSet.has(h.fileName) || studioSet.has(h.fileName)) return false;
+      return !Number.isNaN(h.sim) && h.sim > simThreshold;
+    })
     .sort((a, b) => b.sim - a.sim)
     .slice(0, TOP_AFTER_FILTER);
 
   const founder: { fileName: string; chunkText: string }[] = [];
   const technical: { fileName: string; chunkText: string }[] = [];
+  const studioHits: { fileName: string; chunkText: string }[] = [];
 
   for (const h of filtered) {
     const role = roleForHit(h.fileName, roleByFileName);
-    if (role === "narrative" || role === "brand") {
+    if (role === "studio") {
+      studioHits.push({ fileName: h.fileName, chunkText: h.chunkText });
+    } else if (role === "narrative" || role === "brand") {
       founder.push({ fileName: h.fileName, chunkText: h.chunkText });
     } else {
       technical.push({ fileName: h.fileName, chunkText: h.chunkText });
@@ -120,10 +158,18 @@ export async function retrieveKnowledgeContext(
   const technicalContextBlock =
     technical.length > 0 ? mergeChunks(technical, MAX_TECH_CHARS) : "";
 
+  const studioFromHits =
+    !forStudio && studioHits.length > 0
+      ? mergeChunks(studioHits, MAX_STUDIO_CHARS)
+      : "";
+
   return {
     writingStyleBlock,
     founderContextBlock,
     technicalContextBlock,
+    studioContextBlock: forStudio
+      ? studioContextBlock
+      : studioFromHits || studioContextBlock,
   };
 }
 

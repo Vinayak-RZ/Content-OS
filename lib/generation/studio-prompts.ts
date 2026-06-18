@@ -18,7 +18,7 @@ function studioSystemBase(
   return `You write first-person founder content for ${audience} on LinkedIn / X.
 
 This is NOT a news reaction or article summary. Write about the founder's journey, startup, ICP pains, lessons, or behind-the-scenes builder stories.
-Pull voice from WRITING STYLE. Pull facts and angles from NARRATIVE, JOURNEY, and BRAND context — do not invent credentials.
+Pull voice from WRITING STYLE. Pull facts and angles from STUDIO KNOWLEDGE first (journey, ICP, platform context), then narrative/brand — do not invent credentials.
 
 Never use generic AI hype. No listicles. Be specific and credible.
 
@@ -35,6 +35,9 @@ export function buildStudioGenerationMessages(params: {
   const writing =
     params.retrieved.writingStyleBlock.trim() ||
     "(No writing-style yet — concise, credible founder voice.)";
+  const studio =
+    params.retrieved.studioContextBlock.trim() ||
+    "(No Studio knowledge yet — import journey, ICP, and platform templates in Knowledge.)";
   const narrative =
     params.retrieved.founderContextBlock.trim() ||
     "(No narrative/brand chunks passed similarity threshold.)";
@@ -49,7 +52,10 @@ Return ONLY valid JSON: { "post", "hooks" (3 strings), "ctas" (2-3 strings), "im
 WRITING STYLE:
 ${writing}`;
 
-  const userContent = `YOUR STORY / NARRATIVE / BRAND:
+  const userContent = `STUDIO KNOWLEDGE (highest priority — journey, ICP, platform):
+${studio}
+
+BACKGROUND / NARRATIVE / BRAND:
 ${narrative}
 
 EXPERTISE (use when it strengthens the story):
@@ -80,6 +86,9 @@ export function buildStudioGenerationBodyMessages(params: {
   const writing =
     params.retrieved.writingStyleBlock.trim() ||
     "(No writing-style yet — concise, credible founder voice.)";
+  const studio =
+    params.retrieved.studioContextBlock.trim() ||
+    "(No Studio knowledge yet — import journey, ICP, and platform templates in Knowledge.)";
   const narrative =
     params.retrieved.founderContextBlock.trim() ||
     "(No narrative/brand chunks passed similarity threshold.)";
@@ -94,7 +103,10 @@ Return ONLY the post body text. No JSON. No hooks.
 WRITING STYLE:
 ${writing}`;
 
-  const userContent = `YOUR STORY / NARRATIVE / BRAND:
+  const userContent = `STUDIO KNOWLEDGE (highest priority):
+${studio}
+
+BACKGROUND / NARRATIVE / BRAND:
 ${narrative}
 
 EXPERTISE:

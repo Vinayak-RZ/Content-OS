@@ -6,6 +6,7 @@ export {
   ROLE_LABELS,
   ROLE_DESCRIPTIONS,
   SYSTEM_KNOWLEDGE_FILES,
+  STUDIO_KNOWLEDGE_FILES,
   type KnowledgeRole,
 } from "@/lib/knowledge/constants";
 export {
@@ -18,5 +19,5 @@ export { embedTexts } from "@/lib/knowledge/embed";
 export { syncKnowledgeFile } from "@/lib/knowledge/sync";
 export { createKnowledgeDocument } from "@/lib/knowledge/create";
 export { deleteKnowledgeDocument } from "@/lib/knowledge/delete";
-export { seedKnowledgeFromRepo } from "@/lib/knowledge/seed";
+export { seedKnowledgeFromRepo, seedStudioKnowledgeFromRepo } from "@/lib/knowledge/seed";
 export { getKnowledgeRoleMap } from "@/lib/knowledge/roles-map";

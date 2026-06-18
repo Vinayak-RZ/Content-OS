@@ -1,7 +1,8 @@
 import {
   KNOWLEDGE_ROLES,
-  type KnowledgeRole,
+  STUDIO_KNOWLEDGE_FILES,
   SYSTEM_KNOWLEDGE_FILES,
+  type KnowledgeRole,
 } from "@/lib/knowledge/constants";
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,48}$/;
@@ -51,6 +52,12 @@ export function isKnowledgeRole(value: string): value is KnowledgeRole {
 
 export function getSystemMetaBySlug(slug: string): (typeof SYSTEM_KNOWLEDGE_FILES)[number] | undefined {
   return SYSTEM_KNOWLEDGE_FILES.find((f) => f.slug === slug);
+}
+
+export function getStudioMetaBySlug(
+  slug: string,
+): (typeof STUDIO_KNOWLEDGE_FILES)[number] | undefined {
+  return STUDIO_KNOWLEDGE_FILES.find((f) => f.slug === slug);
 }
 
 export function getSystemMetaByFileName(

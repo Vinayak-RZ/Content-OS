@@ -18,11 +18,12 @@ const SIGNALS_W_FOUNDER = 0.2;
 const SIGNALS_W_ORIGINAL = 0.1;
 const SIGNALS_W_WRITING = 0.05;
 
-/** Studio pipeline — personal relevance over external momentum. */
-const STUDIO_W_FOUNDER = 0.45;
-const STUDIO_W_BRAND = 0.3;
+/** Studio pipeline — personal relevance; studio docs weighted highest. */
+const STUDIO_W_STUDIO = 0.4;
+const STUDIO_W_FOUNDER = 0.25;
+const STUDIO_W_BRAND = 0.15;
 const STUDIO_W_WRITING = 0.15;
-const STUDIO_W_ORIGINAL = 0.1;
+const STUDIO_W_ORIGINAL = 0.05;
 const STUDIO_W_MOMENTUM = 0;
 const STUDIO_W_TECH = 0;
 
@@ -120,12 +121,14 @@ export async function rankDiscoveryPool(
       technicalCentroid,
       founderCentroid,
       brandCentroid,
+      studioCentroid,
       writingCentroid,
       memoryVecs,
     ] = await Promise.all([
       avgCentroidByRole(userId, "technical"),
       isStudio ? avgCentroidNarrative(userId) : avgCentroidFounderCombined(userId),
       isStudio ? avgCentroidByRole(userId, "brand") : Promise.resolve(null),
+      isStudio ? avgCentroidByRole(userId, "studio") : Promise.resolve(null),
       avgCentroidByRole(userId, "style"),
       getEngagementVectorsForOriginality(userId),
     ]);
@@ -156,6 +159,9 @@ export async function rankDiscoveryPool(
       const brandFit = brandCentroid
         ? clamp01(cosineSimilarity(te, brandCentroid))
         : 0.5;
+      const studioFit = studioCentroid
+        ? clamp01(cosineSimilarity(te, studioCentroid))
+        : 0.5;
       const writingCompatibility = writingCentroid
         ? clamp01(cosineSimilarity(tg, writingCentroid))
         : 0.5;
@@ -172,7 +178,8 @@ export async function rankDiscoveryPool(
       const trendMomentum = clamp01(row.trendMomentum);
 
       const finalScore = isStudio
-        ? founderRelevance * STUDIO_W_FOUNDER +
+        ? studioFit * STUDIO_W_STUDIO +
+          founderRelevance * STUDIO_W_FOUNDER +
           brandFit * STUDIO_W_BRAND +
           writingCompatibility * STUDIO_W_WRITING +
           originalityPotential * STUDIO_W_ORIGINAL +

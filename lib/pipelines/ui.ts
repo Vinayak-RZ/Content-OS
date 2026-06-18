@@ -28,11 +28,11 @@ export const PIPELINE_UI: Record<ContentPipeline, PipelineUiConfig> = {
     runButtonLabel: "Generate ideas",
     runningLabel: "Generating ideas…",
     emptyDescription:
-      "Fill Knowledge about your journey, startup, and ICP — then generate personal story ideas.",
+      "Fill Studio knowledge (journey, ICP, platform) — then generate personal story ideas.",
     poolHint:
-      "Ideas come from your Knowledge — founder journey, brand, and who you serve — not the news.",
+      "Ideas come from your Studio knowledge — journey, ICP, and platform context — not the news.",
     showBlogBanner: false,
     customTopicMode: "text",
-    knowledgeEmptyCta: "Build Knowledge about your journey and ICP first.",
+    knowledgeEmptyCta: "Import Studio templates in Knowledge first.",
   },
 };

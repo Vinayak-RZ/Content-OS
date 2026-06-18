@@ -4,6 +4,7 @@ export const KNOWLEDGE_ROLES = [
   "narrative",
   "technical",
   "brand",
+  "studio",
   "general",
 ] as const;
 
@@ -22,7 +23,42 @@ export type SystemKnowledgeMeta = {
   displayName: string;
   role: KnowledgeRole;
   sortOrder: number;
+  /** Repo path segments after cwd, e.g. ["seeds", "founder", "startup-journey.md"] */
+  seedPath?: readonly string[];
 };
+
+/** Studio-only documents — highest weight in Studio ideation and drafts. */
+export const STUDIO_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
+  {
+    slug: "startup-journey",
+    fileName: "startup-journey.md",
+    displayName: "Startup journey",
+    role: "studio",
+    sortOrder: 10,
+    seedPath: ["seeds", "founder", "startup-journey.md"],
+  },
+  {
+    slug: "platform-context",
+    fileName: "platform-context.md",
+    displayName: "Platform context",
+    role: "studio",
+    sortOrder: 11,
+    seedPath: ["seeds", "founder", "platform-context.md"],
+  },
+  {
+    slug: "icp-profile",
+    fileName: "icp-profile.md",
+    displayName: "ICP profile",
+    role: "studio",
+    sortOrder: 12,
+    seedPath: ["seeds", "templates", "icp-profile.md"],
+  },
+];
+
+/** @deprecated Use STUDIO_KNOWLEDGE_FILES */
+export const STUDIO_OPTIONAL_KNOWLEDGE_FILES = STUDIO_KNOWLEDGE_FILES;
+
+export const FOUNDER_KNOWLEDGE_SEED_DIR = ["seeds", "founder"] as const;
 
 /** Canonical four system documents (bootstrap import). */
 export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
@@ -56,33 +92,6 @@ export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
   },
 ];
 
-/** Optional Studio documents (import from seeds/founder/ or templates). */
-export const STUDIO_OPTIONAL_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
-  {
-    slug: "startup-journey",
-    fileName: "startup-journey.md",
-    displayName: "Startup journey",
-    role: "narrative",
-    sortOrder: 10,
-  },
-  {
-    slug: "platform-context",
-    fileName: "platform-context.md",
-    displayName: "Platform context",
-    role: "brand",
-    sortOrder: 11,
-  },
-  {
-    slug: "icp-profile",
-    fileName: "icp-profile.md",
-    displayName: "ICP profile",
-    role: "brand",
-    sortOrder: 12,
-  },
-];
-
-export const FOUNDER_KNOWLEDGE_SEED_DIR = ["seeds", "founder"] as const;
-
 /** @deprecated Use SYSTEM_KNOWLEDGE_FILES - filenames only for seed loop compatibility */
 export const CANONICAL_KNOWLEDGE_FILES = SYSTEM_KNOWLEDGE_FILES.map(
   (f) => f.fileName,
@@ -93,6 +102,7 @@ export const ROLE_LABELS: Record<KnowledgeRole, string> = {
   narrative: "Narrative",
   technical: "Technical",
   brand: "Brand",
+  studio: "Studio",
   general: "General",
 };
 
@@ -104,5 +114,7 @@ export const ROLE_DESCRIPTIONS: Record<KnowledgeRole, string> = {
     "Interests and expertise - ranking alignment and domain context in drafts.",
   brand:
     "Public profile and positioning - topic-matched personal context.",
+  studio:
+    "Journey, ICP, and personal brand — always prioritized for Studio story ideas and drafts.",
   general: "Anything else - topic-matched context; not used in discovery ranking.",
 };
