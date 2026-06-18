@@ -72,7 +72,8 @@ model Trend {
   finalScore       Float
   tags             String[]
   sourceType       String
-  discoveredAt     DateTime  @default(now())
+  pipeline         String   @default("signals") // signals | studio
+  discoveredAt     DateTime @default(now())
   expiresAt        DateTime
   feedbackStatus   String?   // null | 'saved' | 'dismissed'
   feedbackAt       DateTime?
@@ -88,6 +89,7 @@ model Trend {
   @@index([userId, discoveredAt])
   @@index([userId, feedbackStatus])
   @@index([userId, discoveryBatchId])
+  @@index([userId, pipeline, discoveredAt])
 }
 
 model Draft {
@@ -103,6 +105,7 @@ model Draft {
   revisionHistory Json     @default("[]")
   xThreadParts    String[] @default([])
   sources         String[]
+  pipeline        String   @default("signals")
   status          String   @default("draft")
   publishedAt     DateTime?
   createdAt       DateTime @default(now())
@@ -189,6 +192,7 @@ model DiscoveryRun {
   id              String   @id @default(uuid())
   userId          String
   batchId         String
+  pipeline        String   @default("signals")
   runAt           DateTime @default(now())
   success         Boolean  @default(true)
   sourceCounts    Json

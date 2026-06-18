@@ -12,6 +12,7 @@ export type GuestDemoDraftRow = {
   id: string;
   topicTitle: string;
   status: string;
+  pipeline: string;
   updatedAt: string;
   currentContent: string;
 };
@@ -21,6 +22,7 @@ export const GUEST_DEMO_DRAFTS: GuestDemoDraftRow[] = [
     id: GUEST_DEMO_DRAFT_IDS.primary,
     topicTitle: "Why founders should own distribution, not just product",
     status: "draft",
+    pipeline: "signals",
     updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     currentContent:
       "Most teams ship features and hope distribution follows. The uncomfortable truth: attention is a system, not a launch-day surprise…",
@@ -29,6 +31,7 @@ export const GUEST_DEMO_DRAFTS: GuestDemoDraftRow[] = [
     id: GUEST_DEMO_DRAFT_IDS.second,
     topicTitle: "Open-source LLM tooling is commoditizing - what still matters",
     status: "ready",
+    pipeline: "signals",
     updatedAt: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
     currentContent:
       "When every repo ships a RAG template, differentiation moves to taste, distribution, and workflow…",
@@ -37,6 +40,7 @@ export const GUEST_DEMO_DRAFTS: GuestDemoDraftRow[] = [
     id: GUEST_DEMO_DRAFT_IDS.third,
     topicTitle: "Published: Building in public without performative hustle",
     status: "published",
+    pipeline: "studio",
     updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
     currentContent:
       "I used to post updates because I thought consistency meant visibility. What changed was writing only when I had a real lesson…",

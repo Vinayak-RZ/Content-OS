@@ -4,11 +4,13 @@ import { fetchHackerNews } from "@/lib/discovery/adapters/hn";
 import { fetchRedditHot } from "@/lib/discovery/adapters/reddit";
 import { fetchRssFeeds } from "@/lib/discovery/adapters/rss";
 import { fetchTavily } from "@/lib/discovery/adapters/tavily";
+import { fetchXTavily } from "@/lib/discovery/adapters/x-tavily";
 import type { AdapterRunResult, TrendCandidate } from "@/lib/discovery/types";
 
 export type DiscoveryQuerySet = {
   tavily: string[];
   firecrawl: string[];
+  x: string[];
 };
 
 function mergeCounts(a: AdapterRunResult, map: Record<string, number>): void {
@@ -40,6 +42,7 @@ export async function fetchDiscoveryCandidates(
     github: 0,
     tavily: 0,
     firecrawl: 0,
+    x: 0,
     newFetched: 0,
   };
 
@@ -59,6 +62,8 @@ export async function fetchDiscoveryCandidates(
   const fcTake =
     opts.firecrawlKey && b > 0 && opts.discoveryQueries.firecrawl[0] ? 2 : 0;
 
+  const xTake = opts.tavilyKey ? Math.min(8, Math.max(4, Math.floor(b * 1.5))) : 0;
+
   const adapterResults = await Promise.all([
     fetchHackerNews(hnTake),
     fetchRssFeeds(rssTake),
@@ -67,6 +72,9 @@ export async function fetchDiscoveryCandidates(
     opts.tavilyKey
       ? fetchTavily(opts.tavilyKey, tvTake, opts.discoveryQueries.tavily)
       : Promise.resolve({ sourceType: "tavily" as const, fetched: 0, candidates: [] }),
+    opts.tavilyKey
+      ? fetchXTavily(opts.tavilyKey, xTake, opts.discoveryQueries.x)
+      : Promise.resolve({ sourceType: "x" as const, fetched: 0, candidates: [] }),
     opts.firecrawlKey && fcTake > 0 && opts.discoveryQueries.firecrawl[0]
       ? fetchFirecrawlSearch(
           opts.firecrawlKey,

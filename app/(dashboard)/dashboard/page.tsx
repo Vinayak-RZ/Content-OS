@@ -13,9 +13,9 @@ export default async function DashboardPage() {
     return (
       <>
         <AppHeader
-          title="Dashboard"
+          title="Signals"
           breadcrumb="Topic board"
-          description="Try discovery without an account. Sign in when you're ready to save topics, knowledge, and drafts."
+          description="React to the world — HN, RSS, Reddit, web search, and viral X posts — with your opinion."
         />
         <div className="page-x flex flex-1 flex-col pb-8 pt-4 sm:pt-6">
           <GuestTopicsDashboard />
@@ -32,9 +32,9 @@ export default async function DashboardPage() {
   return (
     <>
       <AppHeader
-        title="Dashboard"
+        title="Signals"
         breadcrumb="Topic board"
-        description="Ranked topics from your discovery sources. Generate drafts from anything worth your time."
+        description="Ranked topics from external sources. Generate drafts with your take on anything worth your time."
       />
       <div className="page-x flex flex-1 flex-col pb-8 pt-4 sm:pt-6">
         <Suspense fallback={<DashboardPageSkeleton />}>

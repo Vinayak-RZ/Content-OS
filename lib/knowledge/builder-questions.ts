@@ -11,7 +11,6 @@ export type BuilderQuestion = {
   personaOnly?: boolean;
 };
 
-/** Shared across all personas (6 questions). Plain language - easy to read, still room for depth in answers. */
 export const KNOWLEDGE_BUILDER_BASE_QUESTIONS: BuilderQuestion[] = [
   {
     id: "nameRole",
@@ -52,6 +51,41 @@ export const KNOWLEDGE_BUILDER_BASE_QUESTIONS: BuilderQuestion[] = [
     type: "short",
     label: "Words you'd never use in a post",
     placeholder: "e.g. synergy, game-changer, thrilled to announce",
+  },
+];
+
+/** Studio-focused questions (journey, ICP, startup story). */
+export const STUDIO_KNOWLEDGE_BUILDER_QUESTIONS: BuilderQuestion[] = [
+  {
+    id: "journeyMoment",
+    type: "long",
+    label: "A pivotal moment in your founder journey",
+    placeholder:
+      "e.g. The week we almost shut down, our first paying customer, why I started building…",
+  },
+  {
+    id: "startupToday",
+    type: "long",
+    label: "What you're building now (plain language)",
+    placeholder: "Product, stage, who it's for, one concrete milestone.",
+  },
+  {
+    id: "icpPains",
+    type: "long",
+    label: "Who you serve and their biggest pain",
+    placeholder: "Role, situation, what they've tried, what still hurts.",
+  },
+  {
+    id: "icpOutcome",
+    type: "long",
+    label: "Outcome your ICP wants",
+    placeholder: "What changes for them when things work?",
+  },
+  {
+    id: "lessonLearned",
+    type: "long",
+    label: "A lesson you'd share publicly",
+    placeholder: "Something you learned the hard way that others could use.",
   },
 ];
 
@@ -171,6 +205,7 @@ export const KNOWLEDGE_BUILDER_QUESTIONS = [
 
 export type BuilderAnswerId =
   | (typeof KNOWLEDGE_BUILDER_BASE_QUESTIONS)[number]["id"]
+  | (typeof STUDIO_KNOWLEDGE_BUILDER_QUESTIONS)[number]["id"]
   | "personaFocus"
   | "personaAngle";
 
@@ -179,7 +214,15 @@ export type BuilderAnswers = Partial<Record<BuilderAnswerId, string>>;
 export function getBuilderQuestions(
   personaType: PersonaType | null | undefined,
   personaCustom?: string | null,
+  studioMode = false,
 ): BuilderQuestion[] {
+  if (studioMode) {
+    return [
+      ...KNOWLEDGE_BUILDER_BASE_QUESTIONS.slice(0, 2),
+      ...STUDIO_KNOWLEDGE_BUILDER_QUESTIONS,
+    ];
+  }
+
   const persona = personaType ?? "other";
   const [q1, q2] = PERSONA_QUESTION_PAIRS[persona];
 
@@ -200,6 +243,7 @@ export function getBuilderQuestions(
 
 export const ALL_BUILDER_ANSWER_IDS: BuilderAnswerId[] = [
   ...KNOWLEDGE_BUILDER_BASE_QUESTIONS.map((q) => q.id as BuilderAnswerId),
+  ...STUDIO_KNOWLEDGE_BUILDER_QUESTIONS.map((q) => q.id as BuilderAnswerId),
   "personaFocus",
   "personaAngle",
 ];

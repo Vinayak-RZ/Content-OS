@@ -4,19 +4,28 @@ import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { DraftsTable, type DraftRow } from "@/components/drafts/drafts-table";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+type PipelineFilter = "all" | "signals" | "studio";
 
 export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) {
   const [drafts, setDrafts] = useState(initialDrafts);
   const [publishedOpen, setPublishedOpen] = useState(false);
+  const [filter, setFilter] = useState<PipelineFilter>("all");
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return drafts;
+    return drafts.filter((d) => d.pipeline === filter);
+  }, [drafts, filter]);
 
   const activeDrafts = useMemo(
-    () => drafts.filter((d) => d.status !== "published"),
-    [drafts],
+    () => filtered.filter((d) => d.status !== "published"),
+    [filtered],
   );
   const publishedDrafts = useMemo(
-    () => drafts.filter((d) => d.status === "published"),
-    [drafts],
+    () => filtered.filter((d) => d.status === "published"),
+    [filtered],
   );
 
   function handleDeleted(id: string) {
@@ -25,14 +34,35 @@ export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) 
 
   return (
     <div className="flex flex-col gap-8">
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["all", "All"],
+            ["signals", "Signals"],
+            ["studio", "Studio"],
+          ] as const
+        ).map(([value, label]) => (
+          <Button
+            key={value}
+            type="button"
+            size="sm"
+            variant={filter === value ? "secondary" : "outline"}
+            onClick={() => setFilter(value)}
+          >
+            {label}
+          </Button>
+        ))}
+      </div>
+
       {activeDrafts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-12 text-center">
           <p className="font-heading text-base font-semibold text-foreground">
             No active drafts
           </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            Published posts live in the archive below. Generate a new draft from
-            the dashboard.
+            {filter === "all"
+              ? "Published posts live in the archive below."
+              : `No ${filter} drafts yet. Generate from the ${filter === "studio" ? "Studio" : "Signals"} board.`}
           </p>
         </div>
       ) : (

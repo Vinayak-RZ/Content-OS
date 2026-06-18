@@ -7,6 +7,7 @@ import type { Trend } from "@prisma/client";
 import type { TrendFeedbackStatus } from "@/types";
 import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
+import type { ContentPipeline } from "@/lib/pipelines/types";
 import { canonicalizeUrl } from "@/lib/discovery/urls";
 
 import {
@@ -77,11 +78,13 @@ export function isTrendActiveForDashboard(
 /** Saved thumbs-up rows eligible for carry-over (no API re-fetch). */
 export async function getSavedTrendsForDiscovery(
   userId: string,
+  pipeline: ContentPipeline = "signals",
 ): Promise<Trend[]> {
   const now = new Date();
   return prisma.trend.findMany({
     where: {
       userId,
+      pipeline,
       feedbackStatus: "saved",
       OR: [{ savedUntil: null }, { savedUntil: { gt: now } }],
     },

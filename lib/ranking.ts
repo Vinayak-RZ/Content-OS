@@ -2,6 +2,7 @@ import type { Trend } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
 import type { KnowledgeRole } from "@/lib/knowledge/constants";
+import type { ContentPipeline } from "@/lib/pipelines/types";
 import { embedTexts } from "@/lib/knowledge/embed";
 import { getEngagementVectorsForOriginality } from "@/lib/topic-memory";
 import {
@@ -10,12 +11,20 @@ import {
   parsePgVectorText,
 } from "@/lib/vector/math";
 
-/** Cursor prompt §ranking - weights sum to 1. */
-const W_TECH = 0.4;
-const W_MOMENTUM = 0.25;
-const W_FOUNDER = 0.2;
-const W_ORIGINAL = 0.1;
-const W_WRITING = 0.05;
+/** Signals pipeline — weights sum to 1. */
+const SIGNALS_W_TECH = 0.4;
+const SIGNALS_W_MOMENTUM = 0.25;
+const SIGNALS_W_FOUNDER = 0.2;
+const SIGNALS_W_ORIGINAL = 0.1;
+const SIGNALS_W_WRITING = 0.05;
+
+/** Studio pipeline — personal relevance over external momentum. */
+const STUDIO_W_FOUNDER = 0.45;
+const STUDIO_W_BRAND = 0.3;
+const STUDIO_W_WRITING = 0.15;
+const STUDIO_W_ORIGINAL = 0.1;
+const STUDIO_W_MOMENTUM = 0;
+const STUDIO_W_TECH = 0;
 
 type RankRow = {
   trendMomentum: number;
@@ -40,8 +49,10 @@ async function avgCentroidByRole(
   return parsePgVectorText(rows[0]?.centroid ?? null);
 }
 
-/** Founder relevance: narrative + brand documents. */
-async function avgCentroidFounder(userId: string): Promise<number[] | null> {
+/** Founder relevance for Signals: narrative + brand. */
+async function avgCentroidFounderCombined(
+  userId: string,
+): Promise<number[] | null> {
   const rows = await prisma.$queryRaw<{ centroid: string | null }[]>`
     SELECT AVG(kc.embedding)::text AS centroid
     FROM "KnowledgeChunk" kc
@@ -52,6 +63,11 @@ async function avgCentroidFounder(userId: string): Promise<number[] | null> {
       AND kc.embedding IS NOT NULL
   `;
   return parsePgVectorText(rows[0]?.centroid ?? null);
+}
+
+/** Narrative-only centroid for Studio ranking. */
+async function avgCentroidNarrative(userId: string): Promise<number[] | null> {
+  return avgCentroidByRole(userId, "narrative");
 }
 
 function trendEmbeddingInputs(rows: RankRow[]): string[] {
@@ -78,6 +94,7 @@ export async function rankDiscoveryPool(
   userId: string,
   carried: Trend[],
   newcomers: TrendCandidate[],
+  pipeline: ContentPipeline = "signals",
 ): Promise<number[]> {
   const rows: RankRow[] = [
     ...carried.map((t) => ({
@@ -96,14 +113,22 @@ export async function rankDiscoveryPool(
 
   if (rows.length === 0) return [];
 
+  const isStudio = pipeline === "studio";
+
   try {
-    const [technicalCentroid, founderCentroid, writingCentroid, memoryVecs] =
-      await Promise.all([
-        avgCentroidByRole(userId, "technical"),
-        avgCentroidFounder(userId),
-        avgCentroidByRole(userId, "style"),
-        getEngagementVectorsForOriginality(userId),
-      ]);
+    const [
+      technicalCentroid,
+      founderCentroid,
+      brandCentroid,
+      writingCentroid,
+      memoryVecs,
+    ] = await Promise.all([
+      avgCentroidByRole(userId, "technical"),
+      isStudio ? avgCentroidNarrative(userId) : avgCentroidFounderCombined(userId),
+      isStudio ? avgCentroidByRole(userId, "brand") : Promise.resolve(null),
+      avgCentroidByRole(userId, "style"),
+      getEngagementVectorsForOriginality(userId),
+    ]);
 
     const trendTexts = trendEmbeddingInputs(rows);
     const tagTexts = tagEmbeddingInputs(rows);
@@ -128,6 +153,9 @@ export async function rankDiscoveryPool(
       const founderRelevance = founderCentroid
         ? clamp01(cosineSimilarity(te, founderCentroid))
         : 0.5;
+      const brandFit = brandCentroid
+        ? clamp01(cosineSimilarity(te, brandCentroid))
+        : 0.5;
       const writingCompatibility = writingCentroid
         ? clamp01(cosineSimilarity(tg, writingCentroid))
         : 0.5;
@@ -143,12 +171,18 @@ export async function rankDiscoveryPool(
 
       const trendMomentum = clamp01(row.trendMomentum);
 
-      const finalScore =
-        technicalAlignment * W_TECH +
-        trendMomentum * W_MOMENTUM +
-        founderRelevance * W_FOUNDER +
-        originalityPotential * W_ORIGINAL +
-        writingCompatibility * W_WRITING;
+      const finalScore = isStudio
+        ? founderRelevance * STUDIO_W_FOUNDER +
+          brandFit * STUDIO_W_BRAND +
+          writingCompatibility * STUDIO_W_WRITING +
+          originalityPotential * STUDIO_W_ORIGINAL +
+          trendMomentum * STUDIO_W_MOMENTUM +
+          technicalAlignment * STUDIO_W_TECH
+        : technicalAlignment * SIGNALS_W_TECH +
+          trendMomentum * SIGNALS_W_MOMENTUM +
+          founderRelevance * SIGNALS_W_FOUNDER +
+          originalityPotential * SIGNALS_W_ORIGINAL +
+          writingCompatibility * SIGNALS_W_WRITING;
 
       scores.push(clamp01(finalScore));
     }

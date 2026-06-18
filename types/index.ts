@@ -13,7 +13,9 @@ export type SourceType =
   | "tavily"
   | "firecrawl"
   | "rss"
-  | "reddit";
+  | "reddit"
+  | "x"
+  | "studio";
 
 export type TopicEngagementStatus = "selected" | "published";
 

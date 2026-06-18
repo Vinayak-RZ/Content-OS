@@ -192,7 +192,8 @@ export function OnboardingWizard({ initial }: OnboardingWizardProps) {
             <CardTitle>Tell us about you</CardTitle>
             <CardDescription>
               Content OS tailors topic discovery and drafts to your background.
-              Pick the closest fit - you can change this later in Settings.
+              Pick the closest fit — you can change this later in Settings.
+              After onboarding: Signals for opinions on trends; Studio for posts about your story.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

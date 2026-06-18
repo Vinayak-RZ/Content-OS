@@ -12,6 +12,7 @@ export async function persistDiscoveryRunSnapshot(
     data: {
       userId: result.userId,
       batchId: result.batchId,
+      pipeline: result.pipeline,
       success: true,
       sourceCounts: result.sourceCounts as unknown as Prisma.InputJsonValue,
       totalDiscovered: result.newStored + result.carriedOver,

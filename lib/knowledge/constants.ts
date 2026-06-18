@@ -56,6 +56,33 @@ export const SYSTEM_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
   },
 ];
 
+/** Optional Studio documents (import from seeds/founder/ or templates). */
+export const STUDIO_OPTIONAL_KNOWLEDGE_FILES: SystemKnowledgeMeta[] = [
+  {
+    slug: "startup-journey",
+    fileName: "startup-journey.md",
+    displayName: "Startup journey",
+    role: "narrative",
+    sortOrder: 10,
+  },
+  {
+    slug: "platform-context",
+    fileName: "platform-context.md",
+    displayName: "Platform context",
+    role: "brand",
+    sortOrder: 11,
+  },
+  {
+    slug: "icp-profile",
+    fileName: "icp-profile.md",
+    displayName: "ICP profile",
+    role: "brand",
+    sortOrder: 12,
+  },
+];
+
+export const FOUNDER_KNOWLEDGE_SEED_DIR = ["seeds", "founder"] as const;
+
 /** @deprecated Use SYSTEM_KNOWLEDGE_FILES - filenames only for seed loop compatibility */
 export const CANONICAL_KNOWLEDGE_FILES = SYSTEM_KNOWLEDGE_FILES.map(
   (f) => f.fileName,

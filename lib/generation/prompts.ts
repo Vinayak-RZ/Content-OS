@@ -8,7 +8,7 @@ export const DEFAULT_POST_HASHTAG_COUNT = 5;
 /** Hashtags when the user runs "Add more hashtags" in AI edits. */
 export const ADD_MORE_HASHTAG_COUNT = 8;
 
-function defaultHashtagInstruction(count: number): string {
+export function defaultHashtagInstruction(count: number): string {
   return `End the post with a new line containing exactly ${count} relevant hashtags (space-separated, each starting with #). Choose tags that fit the topic and audience (LinkedIn/X style).`;
 }
 
@@ -35,6 +35,7 @@ export function buildGenerationMessages(params: {
   topicTitle: string;
   topicSummary: string;
   sources: string[];
+  sourceType?: string | null;
   personaType?: string | null;
   personaCustom?: string | null;
 }): ChatMessage[] {
@@ -65,6 +66,13 @@ Return ONLY valid JSON with keys: post, hooks (array of exactly 3 strings), ctas
 WRITING STYLE:
 ${writing}`;
 
+  const isXPost = params.sourceType === "x";
+  const taskLine = isXPost
+    ? `TASK:
+This topic is a viral X post. Write your genuine reaction — agree, disagree, extend, or connect to your work. Reference the post's core idea without quoting it verbatim. LinkedIn-native opinion format; first person; not a summary thread.`
+    : `TASK:
+Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.`;
+
   const userContent = `BACKGROUND / NARRATIVE:
 ${narrative}
 
@@ -77,8 +85,7 @@ Summary: ${params.topicSummary}
 Sources:
 ${sourcesLine}
 
-TASK:
-Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
+${taskLine}
 Target length: 900-1500 characters for the post body.
 ${defaultHashtagInstruction(DEFAULT_POST_HASHTAG_COUNT)}
 Also generate exactly 3 hook variants and 2-3 CTA variants.
@@ -96,6 +103,7 @@ export function buildGenerationBodyMessages(params: {
   topicTitle: string;
   topicSummary: string;
   sources: string[];
+  sourceType?: string | null;
   personaType?: string | null;
   personaCustom?: string | null;
 }): ChatMessage[] {
@@ -126,6 +134,13 @@ Return ONLY the post body text. No JSON. No hooks. No explanation.
 WRITING STYLE:
 ${writing}`;
 
+  const isXPost = params.sourceType === "x";
+  const taskLine = isXPost
+    ? `TASK:
+This topic is a viral X post. Write your genuine reaction — agree, disagree, extend, or connect to your work. Not a summary.`
+    : `TASK:
+Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.`;
+
   const userContent = `BACKGROUND / NARRATIVE:
 ${narrative}
 
@@ -138,8 +153,7 @@ Summary: ${params.topicSummary}
 Sources:
 ${sourcesLine}
 
-TASK:
-Write a social post with your genuine take on this topic - react, interpret, or connect to your work, not just summarize.
+${taskLine}
 Target length: 900-1500 characters for the post body.
 ${defaultHashtagInstruction(DEFAULT_POST_HASHTAG_COUNT)}`;
 

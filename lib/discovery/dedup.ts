@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { TrendCandidate } from "@/lib/discovery/types";
+import type { ContentPipeline } from "@/lib/pipelines/types";
 import { canonicalizeUrl, urlSha256 } from "@/lib/discovery/urls";
 
 const SELECT_MEMORY_DAYS = 14;
@@ -37,9 +38,13 @@ export async function collectMemoryExcludedUrlHashes(
 
 export async function collectExistingTrendUrlHashes(
   userId: string,
+  pipeline?: ContentPipeline,
 ): Promise<Set<string>> {
   const rows = await prisma.trend.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(pipeline ? { pipeline } : {}),
+    },
     select: { urlHash: true },
   });
   return new Set(rows.map((r) => r.urlHash));

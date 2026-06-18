@@ -60,10 +60,49 @@ export const PERSONA_FIRECRAWL_QUERIES: Record<
 export const DEFAULT_TAVILY_QUERIES = PERSONA_TAVILY_QUERIES.founder;
 export const DEFAULT_FIRECRAWL_QUERIES = PERSONA_FIRECRAWL_QUERIES.founder;
 
+const SHARED_X_QUERIES = [
+  "viral tweet founder startup site:x.com",
+  "trending post AI builders site:x.com",
+  "founder building in public site:x.com",
+];
+
+export const PERSONA_X_QUERIES: Record<
+  Exclude<PersonaType, "other">,
+  string[]
+> = {
+  student: [
+    "student builder project launch site:x.com",
+    "CS career advice viral site:x.com",
+    ...SHARED_X_QUERIES,
+  ],
+  founder: [
+    "viral tweet startup founder site:x.com",
+    "YC founder thread site:x.com",
+    "building in public milestone site:x.com",
+    ...SHARED_X_QUERIES,
+  ],
+  engineer: [
+    "viral tweet AI engineering site:x.com",
+    "open source launch site:x.com",
+    "LLM infra hot take site:x.com",
+    ...SHARED_X_QUERIES,
+  ],
+  content_creator: [
+    "creator growth viral thread site:x.com",
+    "LinkedIn creator advice site:x.com",
+    ...SHARED_X_QUERIES,
+  ],
+  finance: [
+    "fintech markets viral tweet site:x.com",
+    "VC funding news site:x.com",
+    ...SHARED_X_QUERIES,
+  ],
+};
+
 export function getDiscoveryQueries(
   personaType: string | null | undefined,
   personaCustom?: string | null,
-): { tavily: string[]; firecrawl: string[] } {
+): { tavily: string[]; firecrawl: string[]; x: string[] } {
   if (
     personaType &&
     personaType !== "other" &&
@@ -73,6 +112,7 @@ export function getDiscoveryQueries(
     return {
       tavily: PERSONA_TAVILY_QUERIES[key],
       firecrawl: PERSONA_FIRECRAWL_QUERIES[key],
+      x: PERSONA_X_QUERIES[key],
     };
   }
 
@@ -82,11 +122,13 @@ export function getDiscoveryQueries(
     return {
       tavily: [q, `${custom} trends opinion`, ...SHARED_TAVILY],
       firecrawl: [`${custom} analysis essay`],
+      x: [`${custom} viral tweet site:x.com`, ...SHARED_X_QUERIES],
     };
   }
 
   return {
     tavily: DEFAULT_TAVILY_QUERIES,
     firecrawl: DEFAULT_FIRECRAWL_QUERIES,
+    x: PERSONA_X_QUERIES.founder,
   };
 }

@@ -16,6 +16,7 @@ type ProfilePromptPanelProps = {
   className?: string;
   personaType?: PersonaType | null;
   personaCustom?: string | null;
+  studioMode?: boolean;
 };
 
 const STEPS = [
@@ -41,15 +42,16 @@ export function ProfilePromptPanel({
   className,
   personaType = null,
   personaCustom = null,
+  studioMode = false,
 }: ProfilePromptPanelProps) {
   const [howExpanded, setHowExpanded] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
 
   useEffect(() => {
-    if (window.location.hash === "#build") {
+    if (window.location.hash === "#build" || studioMode) {
       setBuilderOpen(true);
     }
-  }, []);
+  }, [studioMode]);
 
   const prompt = useMemo(
     () => buildProfileGenerationPrompt(personaType, personaCustom),
@@ -173,6 +175,7 @@ export function ProfilePromptPanel({
         <KnowledgeBuilderForm
           personaType={personaType}
           personaCustom={personaCustom}
+          studioMode={studioMode}
         />
       ) : null}
     </section>

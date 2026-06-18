@@ -15,6 +15,7 @@ export type DraftRow = {
   id: string;
   topicTitle: string;
   status: string;
+  pipeline: string;
   updatedAt: string;
   currentContent: string;
 };

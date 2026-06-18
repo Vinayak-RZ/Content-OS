@@ -51,6 +51,7 @@ export default async function DraftsLibraryPage() {
       id: true,
       topicTitle: true,
       status: true,
+      pipeline: true,
       updatedAt: true,
       currentContent: true,
     },
@@ -75,13 +76,13 @@ export default async function DraftsLibraryPage() {
               No drafts yet
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Pick a topic on the dashboard and generate your first draft.
+              Pick a topic on Signals or Studio and generate your first draft.
             </p>
             <Link
               href="/dashboard"
               className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-medium text-white shadow-pill"
             >
-              Go to Dashboard
+              Go to Signals
             </Link>
           </div>
         ) : (

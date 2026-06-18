@@ -19,6 +19,7 @@ import {
 } from "@/lib/discovery/dedup";
 import type { TrendCandidate } from "@/lib/discovery/types";
 import { urlSha256 } from "@/lib/discovery/urls";
+import type { ContentPipeline } from "@/lib/pipelines/types";
 import { rankDiscoveryPool } from "@/lib/ranking";
 import { getDecryptedKey } from "@/lib/user-settings";
 
@@ -44,6 +45,7 @@ export type DiscoveryRunTopicSnapshot = {
 export type DiscoveryRunResult = {
   userId: string;
   batchId: string;
+  pipeline: ContentPipeline;
   carriedOver: number;
   newStored: number;
   sourceCounts: Record<string, number>;
@@ -67,7 +69,7 @@ export async function runDiscoveryForUser(
     user.personaCustom,
   );
 
-  const saved = await getSavedTrendsForDiscovery(userId);
+  const saved = await getSavedTrendsForDiscovery(userId, "signals");
   const { newFetchBudget } = computeFetchBudget(saved.length);
 
   const sourceCounts: Record<string, number> = {
@@ -77,6 +79,7 @@ export async function runDiscoveryForUser(
     reddit: 0,
     github: 0,
     tavily: 0,
+    x: 0,
     firecrawl: 0,
     newFetched: 0,
     duplicateSkipped: 0,
@@ -94,7 +97,7 @@ export async function runDiscoveryForUser(
   Object.assign(sourceCounts, fetchCounts);
 
   const [existingHashes, memoryHashes] = await Promise.all([
-    collectExistingTrendUrlHashes(userId),
+    collectExistingTrendUrlHashes(userId, "signals"),
     collectMemoryExcludedUrlHashes(userId),
   ]);
 
@@ -136,7 +139,7 @@ export async function runDiscoveryForUser(
 
   const expiresAt = new Date(Date.now() + TOPIC_POOL_EXPIRES_MS);
 
-  const finalScores = await rankDiscoveryPool(userId, saved, enriched);
+  const finalScores = await rankDiscoveryPool(userId, saved, enriched, "signals");
 
   const newScoreSlice = finalScores.slice(saved.length);
   const rankedNew = enriched
@@ -194,6 +197,7 @@ export async function runDiscoveryForUser(
             finalScore: typeof fs === "number" ? fs : c.trendScore,
             tags: c.tags.slice(0, 20),
             sourceType: c.sourceType,
+            pipeline: "signals",
             discoveredAt: c.discoveredAt,
             expiresAt,
             discoveryBatchId: batchId,
@@ -219,12 +223,13 @@ export async function runDiscoveryForUser(
   sourceCounts.rankedCandidates = enriched.length;
   sourceCounts.storedNew = toStore.length;
 
-  const trimmed = await trimVisibleTopicPool(userId);
+  const trimmed = await trimVisibleTopicPool(userId, "signals");
   sourceCounts.poolTrimmed = trimmed;
 
   return {
     userId,
     batchId,
+    pipeline: "signals",
     carriedOver: saved.length,
     newStored: toStore.length,
     sourceCounts,

@@ -21,20 +21,28 @@ export function DiscoveryRunButton({
   guest,
   compact,
   className,
+  endpoint = "/api/discover",
+  runLabel = "Run discovery",
+  runningLabel = "Running discovery…",
+  successToast,
 }: {
   onCompleted?: () => void | Promise<void>;
   onGuestCompleted?: (data: DiscoverResponse) => void | Promise<void>;
   guest?: boolean;
   compact?: boolean;
   className?: string;
+  endpoint?: string;
+  runLabel?: string;
+  runningLabel?: string;
+  successToast?: (data: DiscoverResponse) => string;
 }) {
   const [running, setRunning] = useState(false);
 
   async function run() {
     setRunning(true);
     try {
-      const endpoint = guest ? "/api/discover/guest" : "/api/discover";
-      const result = await fetchJson<DiscoverResponse>(endpoint, {
+      const endpointPath = guest ? "/api/discover/guest" : endpoint;
+      const result = await fetchJson<DiscoverResponse>(endpointPath, {
         method: "POST",
       });
 
@@ -51,10 +59,10 @@ export function DiscoveryRunButton({
           "success",
         );
       } else {
-        toast(
-          `Added ${newStored} new topic${newStored === 1 ? "" : "s"}; ${carried} carried from your queue.`,
-          "success",
-        );
+        const message =
+          successToast?.(result.data) ??
+          `Added ${newStored} new topic${newStored === 1 ? "" : "s"}; ${carried} carried from your queue.`;
+        toast(message, "success");
         await onCompleted?.();
       }
     } catch (e) {
@@ -79,10 +87,10 @@ export function DiscoveryRunButton({
       {running ? (
         <>
           <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
-          Running discovery…
+          {runningLabel}
         </>
       ) : (
-        "Run discovery"
+        runLabel
       )}
     </Button>
   );

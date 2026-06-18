@@ -10,8 +10,14 @@ import { GUEST_DEMO_KNOWLEDGE_FILES } from "@/lib/guest/demo-data";
 import { prisma } from "@/lib/db";
 import { isPersonaType } from "@/lib/personas/types";
 
-export default async function KnowledgePage() {
+export default async function KnowledgePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ studio?: string }>;
+}) {
   const access = await getAppAccess();
+  const sp = await searchParams;
+  const studioMode = sp.studio === "1";
   const isGuest = access?.mode === "guest";
 
   if (isGuest) {
@@ -97,6 +103,7 @@ export default async function KnowledgePage() {
       />
       <div className="page-x flex flex-1 flex-col gap-4 pb-8 pt-4 sm:gap-6 sm:pt-6">
         <ProfilePromptPanel
+          studioMode={studioMode}
           personaType={
             user.personaType && isPersonaType(user.personaType)
               ? user.personaType

@@ -15,6 +15,10 @@ import {
   buildGenerationMessages,
   buildGenerationMetaMessages,
 } from "@/lib/generation/prompts";
+import {
+  buildStudioGenerationBodyMessages,
+  buildStudioGenerationMessages,
+} from "@/lib/generation/studio-prompts";
 import { draftChatComplete, draftChatStreamRequest } from "@/lib/llm/chat";
 import { requireDraftProviderAuth } from "@/lib/llm/draft-provider";
 import {
@@ -60,6 +64,8 @@ export async function POST(request: Request) {
       summary: string;
       url: string;
       urlHash: string;
+      sourceType: string;
+      pipeline: string;
     } | null = null;
 
     if (parsed.data.trendId) {
@@ -94,15 +100,25 @@ export async function POST(request: Request) {
       summaryBlock,
     );
 
+    const isStudio =
+      trend?.pipeline === "studio" || trend?.sourceType === "studio";
+    const sourceType = trend?.sourceType ?? null;
+    const draftPipeline = trend?.pipeline ?? (isStudio ? "studio" : "signals");
+
+    const promptParams = {
+      retrieved,
+      topicTitle,
+      topicSummary: summaryBlock,
+      sources,
+      sourceType,
+      personaType: user.personaType,
+      personaCustom: user.personaCustom,
+    };
+
     if (parsed.data.stream) {
-      const bodyMessages = buildGenerationBodyMessages({
-        retrieved,
-        topicTitle,
-        topicSummary: summaryBlock,
-        sources,
-        personaType: user.personaType,
-        personaCustom: user.personaCustom,
-      });
+      const bodyMessages = isStudio
+        ? buildStudioGenerationBodyMessages(promptParams)
+        : buildGenerationBodyMessages(promptParams);
 
       const stream = new ReadableStream<Uint8Array>({
         async start(controller) {
@@ -189,6 +205,7 @@ export async function POST(request: Request) {
                 hookVariants: metaParsed.data.hooks,
                 ctaVariants: metaParsed.data.ctas,
                 sources,
+                pipeline: draftPipeline,
                 status: "draft",
                 revisionHistory: createInitialRevision({
                   content: postBody,
@@ -238,14 +255,9 @@ export async function POST(request: Request) {
       return sseResponse(stream);
     }
 
-    const messages = buildGenerationMessages({
-      retrieved,
-      topicTitle,
-      topicSummary: summaryBlock,
-      sources,
-      personaType: user.personaType,
-      personaCustom: user.personaCustom,
-    });
+    const messages = isStudio
+      ? buildStudioGenerationMessages(promptParams)
+      : buildGenerationMessages(promptParams);
 
     let raw: string;
     try {
@@ -283,6 +295,7 @@ export async function POST(request: Request) {
         hookVariants: gen.data.hooks,
         ctaVariants: gen.data.ctas,
         sources,
+        pipeline: draftPipeline,
         status: "draft",
         revisionHistory: createInitialRevision({
           content: gen.data.post,

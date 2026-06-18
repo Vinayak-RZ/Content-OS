@@ -23,6 +23,7 @@ type KnowledgeBuilderFormProps = {
   className?: string;
   personaType?: PersonaType | null;
   personaCustom?: string | null;
+  studioMode?: boolean;
   onSuccess?: () => void;
 };
 
@@ -30,6 +31,7 @@ export function KnowledgeBuilderForm({
   className,
   personaType = null,
   personaCustom = null,
+  studioMode = false,
   onSuccess,
 }: KnowledgeBuilderFormProps) {
   const router = useRouter();
@@ -39,8 +41,8 @@ export function KnowledgeBuilderForm({
   const [success, setSuccess] = useState<string | null>(null);
 
   const questions = useMemo(
-    () => getBuilderQuestions(personaType, personaCustom),
-    [personaType, personaCustom],
+    () => getBuilderQuestions(personaType, personaCustom, studioMode),
+    [personaType, personaCustom, studioMode],
   );
 
   const personaLabel = useMemo(

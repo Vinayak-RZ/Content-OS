@@ -7,10 +7,11 @@ import {
   BarChart3,
   BookOpen,
   FileText,
-  LayoutDashboard,
   PenLine,
   Radar,
+  Radio,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 import { SignInButton } from "@/components/auth/sign-in-button";
@@ -23,10 +24,11 @@ import { cn } from "@/lib/utils";
 const navItems: {
   label: string;
   href: string;
-  icon: typeof LayoutDashboard;
+  icon: typeof Radio;
   disabled?: boolean;
 }[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Signals", href: "/dashboard", icon: Radio },
+  { label: "Studio", href: "/studio", icon: Sparkles },
   { label: "Research", href: "/research", icon: Radar },
   { label: "Drafts", href: "/drafts", icon: FileText },
   { label: "Blogs", href: "/blogs", icon: PenLine },

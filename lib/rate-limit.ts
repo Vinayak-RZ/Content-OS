@@ -3,10 +3,12 @@ import { prisma } from "@/lib/db";
 
 export const GENERATE_HOURLY_LIMIT = 20;
 export const DISCOVER_MANUAL_DAILY_LIMIT = 5;
+export const STUDIO_GENERATE_DAILY_LIMIT = 5;
 export const BUFFER_SYNC_MINUTE_LIMIT = 1;
 
 const KIND_GENERATE = "generate_hour";
 const KIND_DISCOVER = "discover_day";
+const KIND_STUDIO = "studio_day";
 const KIND_BUFFER_SYNC = "buffer_sync_minute";
 
 /** UTC hour bucket `YYYY-MM-DDTHH` */
@@ -25,6 +27,9 @@ function rateLimitMessage(kind: string, limit: number): string {
   }
   if (kind === KIND_BUFFER_SYNC) {
     return "Buffer sync limit reached (1/min). Try again shortly.";
+  }
+  if (kind === KIND_STUDIO) {
+    return `Studio idea generation limit reached (${limit}/day).`;
   }
   return `Manual discovery limit reached (${limit}/day).`;
 }
@@ -81,6 +86,17 @@ export async function consumeDiscoverManualRateLimit(
     KIND_DISCOVER,
     utcDayWindowKey(),
     DISCOVER_MANUAL_DAILY_LIMIT,
+  );
+}
+
+export async function consumeStudioGenerateRateLimit(
+  userId: string,
+): Promise<void> {
+  await consumeWithinLimit(
+    userId,
+    KIND_STUDIO,
+    utcDayWindowKey(),
+    STUDIO_GENERATE_DAILY_LIMIT,
   );
 }
 

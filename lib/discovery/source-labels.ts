@@ -5,6 +5,8 @@ const SOURCE_TYPE_LABELS: Record<string, string> = {
   github: "GitHub",
   tavily: "Web",
   firecrawl: "Web",
+  x: "X",
+  studio: "Studio",
 };
 
 export function formatSourceType(sourceType: string): string {

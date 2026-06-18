@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { DISCOVERY_VISIBLE_POOL_MAX } from "@/lib/discovery/founder-profile";
+import type { ContentPipeline } from "@/lib/pipelines/types";
 import { getExcludedUrlHashesForDashboard } from "@/lib/topic-memory";
 
 /**
@@ -8,6 +9,7 @@ import { getExcludedUrlHashesForDashboard } from "@/lib/topic-memory";
  */
 export async function trimVisibleTopicPool(
   userId: string,
+  pipeline: ContentPipeline = "signals",
   maxVisible = DISCOVERY_VISIBLE_POOL_MAX,
 ): Promise<number> {
   const now = new Date();
@@ -17,6 +19,7 @@ export async function trimVisibleTopicPool(
   const active = await prisma.trend.findMany({
     where: {
       userId,
+      pipeline,
       OR: [{ feedbackStatus: null }, { feedbackStatus: "saved" }],
       expiresAt: { gt: now },
       ...(excludeArr.length > 0 ? { urlHash: { notIn: excludeArr } } : {}),
