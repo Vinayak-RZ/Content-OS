@@ -187,7 +187,7 @@ export function ImproveDashboard() {
 
       <Section
         title="Your performance analysis"
-        description="What content is working and what isn't, based on your synced post metrics."
+        description="All synced Buffer posts — classified by content domain (startup insights, entrepreneurship, etc.), not just Content OS drafts."
       >
         {analysis ? (
           <PerformanceAnalysisPanel analysis={analysis} />

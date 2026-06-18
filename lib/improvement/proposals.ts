@@ -42,14 +42,15 @@ Return ONLY valid JSON with keys:
 - rankingRationale (string)
 - rankingProposedSignals (object with keys: technical, momentum, founder, original, writing — must sum to ~1)
 - rankingProposedStudio (object with keys: studio, founder, brand, writing, original, momentum, technical — must sum to ~1)
-Be conservative — small shifts only. Tie rationale to specific performance patterns.`,
+Be conservative — small shifts only. Tie rationale to content DOMAIN patterns (startup insights, entrepreneurship, founder journey, etc.), never specific topic titles.`,
     },
     {
       role: "user",
-      content: `PERFORMANCE ANALYSIS:
+      content: `PERFORMANCE ANALYSIS (all Buffer posts, domain-level):
 What's working: ${analysis.whatsWorking.map((b) => b.text).join("; ") || "none"}
 What's not: ${analysis.whatsNotWorking.map((b) => b.text).join("; ") || "none"}
-Top post: ${analysis.topPerformers[0]?.textPreview ?? "none"}
+Top domain: ${analysis.topPerformers[0]?.contentDomainLabel ?? "none"}
+Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsExternal} external to Content OS)
 
 CURRENT WRITING STYLE:
 ${currentStyle.slice(0, 4000)}

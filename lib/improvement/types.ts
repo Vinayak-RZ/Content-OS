@@ -43,6 +43,8 @@ export type PerformancePostRow = {
   pipeline: string | null;
   sourceType: string | null;
   tags: string[];
+  contentDomain: string;
+  contentDomainLabel: string;
   attributionConfidence: number | null;
   attributionMethod: string | null;
   lengthBucket: string;
@@ -61,8 +63,8 @@ export type PerformanceAnalysis = {
   minPostsRequired: number;
   stats: {
     postsAnalyzed: number;
-    postsAttributed: number;
-    postsSkipped: number;
+    postsFromContentOs: number;
+    postsExternal: number;
     avgImpressions: number;
     avgEngagementRate: number;
   };
@@ -71,9 +73,8 @@ export type PerformanceAnalysis = {
   topPerformers: PerformancePostRow[];
   bottomPerformers: PerformancePostRow[];
   breakdowns: {
-    pipeline: DimensionBreakdown[];
-    sourceType: DimensionBreakdown[];
-    tags: DimensionBreakdown[];
+    domains: DimensionBreakdown[];
+    platform: DimensionBreakdown[];
     lengthBucket: DimensionBreakdown[];
   };
 };
@@ -97,8 +98,8 @@ export type ImprovementRunSummary = {
   proposalsCreated: ProposalSummary[];
   stats: {
     postsAnalyzed: number;
-    postsAttributed: number;
-    postsSkipped: number;
+    postsFromContentOs: number;
+    postsExternal: number;
   };
 };
 
@@ -137,5 +138,8 @@ export type StyleEditProposal = {
   proposedContent: string;
 };
 
-export const MIN_ATTRIBUTED_POSTS_FOR_LEARNING = 3;
+export const MIN_POSTS_FOR_LEARNING = 3;
+
+/** @deprecated Attribution no longer gates learning */
+export const MIN_ATTRIBUTED_POSTS_FOR_LEARNING = MIN_POSTS_FOR_LEARNING;
 export const ATTRIBUTION_CONFIDENCE_THRESHOLD = 0.75;

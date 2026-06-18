@@ -77,8 +77,8 @@ export async function runImprovementForUser(
       proposalsCreated,
       stats: {
         postsAnalyzed: analysis.stats.postsAnalyzed,
-        postsAttributed: analysis.stats.postsAttributed,
-        postsSkipped: analysis.stats.postsSkipped + attribution.skipped,
+        postsFromContentOs: analysis.stats.postsFromContentOs,
+        postsExternal: analysis.stats.postsExternal,
       },
     };
 

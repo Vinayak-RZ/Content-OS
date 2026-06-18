@@ -3,9 +3,9 @@ import {
   getMetricValue,
   parsePostMetrics,
 } from "@/lib/analytics/social-post-metrics";
+import { classifyPostDomain } from "@/lib/improvement/domains";
 import {
-  ATTRIBUTION_CONFIDENCE_THRESHOLD,
-  MIN_ATTRIBUTED_POSTS_FOR_LEARNING,
+  MIN_POSTS_FOR_LEARNING,
   type DimensionBreakdown,
   type PerformanceAnalysis,
   type PerformanceInsightBullet,
@@ -52,27 +52,28 @@ function buildBreakdown(
     .sort((a, b) => b.avgEngagementRate - a.avgEngagementRate);
 }
 
-function generateInsightBullets(
+function generateDomainInsightBullets(
   breakdowns: DimensionBreakdown[],
   overallAvgEngagement: number,
   positive: boolean,
 ): PerformanceInsightBullet[] {
   const bullets: PerformanceInsightBullet[] = [];
   for (const b of breakdowns) {
+    if (b.key === "general") continue;
     if (b.count < 2) continue;
     const ratio =
       overallAvgEngagement > 0
         ? b.avgEngagementRate / overallAvgEngagement
         : 0;
-    if (positive && ratio >= 1.2) {
+    if (positive && ratio >= 1.15) {
       bullets.push({
-        text: `${b.label} posts average ${ratio.toFixed(1)}x your typical engagement rate`,
+        text: `${b.label} content averages ${ratio.toFixed(1)}x your typical engagement rate`,
         metric: "engagementRate",
         value: b.avgEngagementRate,
       });
-    } else if (!positive && ratio <= 0.7 && b.avgEngagementRate > 0) {
+    } else if (!positive && ratio <= 0.75 && b.avgEngagementRate > 0) {
       bullets.push({
-        text: `${b.label} posts underperform at ${(ratio * 100).toFixed(0)}% of your average engagement`,
+        text: `${b.label} content underperforms at ${(ratio * 100).toFixed(0)}% of your average engagement`,
         metric: "engagementRate",
         value: b.avgEngagementRate,
       });
@@ -106,7 +107,7 @@ export async function analyzePerformance(
       },
     },
     orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
-    take: 100,
+    take: 200,
   });
 
   const rows: PerformancePostRow[] = posts.map((p) => {
@@ -116,6 +117,7 @@ export async function analyzePerformance(
     const comments = getMetricValue(metrics, "comments");
     const reposts = getMetricValue(metrics, "reposts");
     const engagementRate = getMetricValue(metrics, "engagementRate");
+    const domain = classifyPostDomain(p.text);
 
     return {
       id: p.id,
@@ -133,109 +135,78 @@ export async function analyzePerformance(
       pipeline: p.draft?.pipeline ?? p.draft?.trend?.pipeline ?? null,
       sourceType: p.draft?.trend?.sourceType ?? null,
       tags: p.draft?.trend?.tags ?? [],
+      contentDomain: domain.key,
+      contentDomainLabel: domain.label,
       attributionConfidence: p.attributionConfidence,
       attributionMethod: p.attributionMethod,
       lengthBucket: lengthBucket(p.text.length),
     };
   });
 
-  const attributed = rows.filter(
-    (r) =>
-      r.draftId != null &&
-      (r.attributionConfidence ?? 0) >= ATTRIBUTION_CONFIDENCE_THRESHOLD,
-  );
+  const postsWithMetrics = rows.filter((r) => r.engagementRate != null);
+  const postsFromContentOs = rows.filter((r) => r.draftId != null).length;
+  const postsExternal = rows.length - postsFromContentOs;
 
   const impressions = rows
     .map((r) => r.impressions ?? 0)
     .filter((v) => v > 0);
-  const engagementRates = rows
-    .map((r) => r.engagementRate ?? 0)
-    .filter((v) => v > 0);
+  const engagementRates = postsWithMetrics.map((r) => r.engagementRate ?? 0);
 
   const avgImpressions = avg(impressions);
   const avgEngagementRate = avg(engagementRates);
 
-  const learningRows = attributed.length >= MIN_ATTRIBUTED_POSTS_FOR_LEARNING
-    ? attributed
-    : rows.filter((r) => r.draftId != null);
-
-  const sortedByEngagement = [...learningRows].sort(
+  const sortedByEngagement = [...rows].sort(
     (a, b) => (b.engagementRate ?? 0) - (a.engagementRate ?? 0),
   );
 
-  const pipelineBreakdown = buildBreakdown(learningRows, (r) =>
-    r.pipeline ?? "unknown",
-  );
-  const sourceBreakdown = buildBreakdown(learningRows, (r) =>
-    r.sourceType ?? "unknown",
-  );
-  const lengthBreakdown = buildBreakdown(learningRows, (r) => r.lengthBucket);
+  const domainBreakdown = buildBreakdown(rows, (r) => r.contentDomain, (k) => {
+    const row = rows.find((r) => r.contentDomain === k);
+    return row?.contentDomainLabel ?? k;
+  });
+  const platformBreakdown = buildBreakdown(rows, (r) => r.platform);
+  const lengthBreakdown = buildBreakdown(rows, (r) => r.lengthBucket);
 
-  const tagMap = new Map<string, PerformancePostRow[]>();
-  for (const row of learningRows) {
-    for (const tag of row.tags) {
-      const list = tagMap.get(tag) ?? [];
-      list.push(row);
-      tagMap.set(tag, list);
-    }
-  }
-  const tagBreakdown: DimensionBreakdown[] = Array.from(tagMap.entries())
-    .map(([key, items]) => ({
-      key,
-      label: key,
-      count: items.length,
-      avgImpressions: avg(
-        items.map((i) => i.impressions ?? 0).filter((v) => v > 0),
-      ),
-      avgEngagementRate: avg(
-        items.map((i) => i.engagementRate ?? 0).filter((v) => v > 0),
-      ),
-    }))
-    .filter((b) => b.count >= 2)
-    .sort((a, b) => b.avgEngagementRate - a.avgEngagementRate)
-    .slice(0, 8);
+  const whatsWorking = generateDomainInsightBullets(
+    domainBreakdown,
+    avgEngagementRate,
+    true,
+  ).slice(0, 5);
 
-  const whatsWorking = [
-    ...generateInsightBullets(pipelineBreakdown, avgEngagementRate, true),
-    ...generateInsightBullets(sourceBreakdown, avgEngagementRate, true),
-    ...generateInsightBullets(tagBreakdown, avgEngagementRate, true),
-    ...generateInsightBullets(lengthBreakdown, avgEngagementRate, true),
-  ].slice(0, 5);
+  const whatsNotWorking = generateDomainInsightBullets(
+    domainBreakdown,
+    avgEngagementRate,
+    false,
+  ).slice(0, 5);
 
-  const whatsNotWorking = [
-    ...generateInsightBullets(pipelineBreakdown, avgEngagementRate, false),
-    ...generateInsightBullets(sourceBreakdown, avgEngagementRate, false),
-    ...generateInsightBullets(tagBreakdown, avgEngagementRate, false),
-    ...generateInsightBullets(lengthBreakdown, avgEngagementRate, false),
-  ].slice(0, 5);
-
-  if (whatsWorking.length === 0 && learningRows.length > 0) {
-    const top = sortedByEngagement[0];
+  if (whatsWorking.length === 0 && rows.length > 0) {
+    const top = sortedByEngagement.find((p) => p.engagementRate != null);
     if (top) {
       whatsWorking.push({
-        text: `Best performer: "${top.textPreview.slice(0, 60)}…" with ${top.engagementRate?.toFixed(1) ?? "—"}% engagement`,
+        text: `${top.contentDomainLabel} content performs best (${top.engagementRate?.toFixed(1) ?? "—"}% avg engagement on top posts)`,
       });
     }
   }
 
   return {
-    sufficientData: attributed.length >= MIN_ATTRIBUTED_POSTS_FOR_LEARNING,
-    minPostsRequired: MIN_ATTRIBUTED_POSTS_FOR_LEARNING,
+    sufficientData: postsWithMetrics.length >= MIN_POSTS_FOR_LEARNING,
+    minPostsRequired: MIN_POSTS_FOR_LEARNING,
     stats: {
       postsAnalyzed: rows.length,
-      postsAttributed: attributed.length,
-      postsSkipped: rows.length - rows.filter((r) => r.draftId).length,
+      postsFromContentOs,
+      postsExternal,
       avgImpressions,
       avgEngagementRate,
     },
     whatsWorking,
     whatsNotWorking,
     topPerformers: sortedByEngagement.slice(0, 5),
-    bottomPerformers: sortedByEngagement.slice(-5).reverse(),
+    bottomPerformers: sortedByEngagement
+      .filter((p) => p.engagementRate != null)
+      .slice(-5)
+      .reverse(),
     breakdowns: {
-      pipeline: pipelineBreakdown,
-      sourceType: sourceBreakdown,
-      tags: tagBreakdown,
+      domains: domainBreakdown.filter((d) => d.key !== "general"),
+      platform: platformBreakdown,
       lengthBucket: lengthBreakdown,
     },
   };

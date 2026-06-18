@@ -110,11 +110,10 @@ function PostTable({
           <thead className="border-b border-subtle bg-muted/20 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
               <th className="px-4 py-2 font-semibold">Post</th>
+              <th className="px-3 py-2 font-semibold">Domain</th>
               <th className="px-3 py-2 font-semibold">Eng.</th>
               <th className="px-3 py-2 font-semibold">Impr.</th>
-              <th className="px-3 py-2 font-semibold">Pipeline</th>
-              <th className="px-3 py-2 font-semibold">Source</th>
-              <th className="px-4 py-2 font-semibold">Match</th>
+              <th className="px-3 py-2 font-semibold">Platform</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-subtle">
@@ -122,12 +121,8 @@ function PostTable({
               <tr key={post.id} className="hover:bg-muted/10">
                 <td className="max-w-xs px-4 py-3">
                   <p className="line-clamp-2 font-medium">{post.textPreview}</p>
-                  {post.draftTitle ? (
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {post.draftTitle}
-                    </p>
-                  ) : null}
                 </td>
+                <td className="px-3 py-3 text-sm">{post.contentDomainLabel}</td>
                 <td className="px-3 py-3 tabular-nums">
                   {post.engagementRate != null
                     ? `${post.engagementRate.toFixed(1)}%`
@@ -136,23 +131,7 @@ function PostTable({
                 <td className="px-3 py-3 tabular-nums">
                   {post.impressions?.toLocaleString() ?? "—"}
                 </td>
-                <td className="px-3 py-3 capitalize">{post.pipeline ?? "—"}</td>
-                <td className="px-3 py-3">{post.sourceType ?? "—"}</td>
-                <td className="px-4 py-3">
-                  {post.attributionConfidence != null ? (
-                    <span
-                      className={
-                        post.attributionConfidence >= 0.75
-                          ? "rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800"
-                          : "rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
-                      }
-                    >
-                      {(post.attributionConfidence * 100).toFixed(0)}%
-                    </span>
-                  ) : (
-                    "—"
-                  )}
-                </td>
+                <td className="px-3 py-3 capitalize">{post.platform}</td>
               </tr>
             ))}
           </tbody>
@@ -187,7 +166,7 @@ export function PerformanceAnalysisPanel({
         <StatCard
           label="Posts analyzed"
           value={analysis.stats.postsAnalyzed}
-          hint={`${analysis.stats.postsAttributed} attributed`}
+          hint={`${analysis.stats.postsExternal} external · ${analysis.stats.postsFromContentOs} from Content OS`}
         />
         <StatCard
           label="Avg impressions"
@@ -202,8 +181,8 @@ export function PerformanceAnalysisPanel({
           value={analysis.sufficientData ? "Yes" : "Need more"}
           hint={
             analysis.sufficientData
-              ? "Enough attributed posts"
-              : `Need ${analysis.minPostsRequired} attributed posts`
+              ? "Enough posts with engagement data"
+              : `Need ${analysis.minPostsRequired} posts with metrics`
           }
         />
       </div>
@@ -225,10 +204,9 @@ export function PerformanceAnalysisPanel({
       <PostTable title="Bottom performers" posts={analysis.bottomPerformers} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <BreakdownBars title="By pipeline" data={analysis.breakdowns.pipeline} />
-        <BreakdownBars title="By source type" data={analysis.breakdowns.sourceType} />
+        <BreakdownBars title="By content domain" data={analysis.breakdowns.domains} />
+        <BreakdownBars title="By platform" data={analysis.breakdowns.platform} />
         <BreakdownBars title="By post length" data={analysis.breakdowns.lengthBucket} />
-        <BreakdownBars title="By tag" data={analysis.breakdowns.tags} />
       </div>
     </div>
   );

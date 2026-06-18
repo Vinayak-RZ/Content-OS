@@ -25,10 +25,17 @@ function buildInsightMessages(
   const notWorkingLines = analysis.whatsNotWorking
     .map((b) => `- ${b.text}`)
     .join("\n");
+  const domainLines = analysis.breakdowns.domains
+    .slice(0, 8)
+    .map(
+      (d) =>
+        `- ${d.label}: ${d.count} posts, ${d.avgEngagementRate.toFixed(1)}% avg engagement`,
+    )
+    .join("\n");
   const topPosts = analysis.topPerformers
     .map(
       (p) =>
-        `- "${p.textPreview}" (${p.engagementRate?.toFixed(1) ?? "?"}% eng, ${p.pipeline ?? "?"} pipeline)`,
+        `- [${p.contentDomainLabel}] "${p.textPreview}" (${p.engagementRate?.toFixed(1) ?? "?"}% eng, ${p.platform})`,
     )
     .join("\n");
   const researchSources = research.sources
@@ -40,23 +47,31 @@ function buildInsightMessages(
       role: "system",
       content: `You synthesize post performance data into concise markdown insight documents.
 Return ONLY valid JSON with keys: performancePlaybook, linkedinTrends, contentPatterns.
-Each value is markdown (use ## headings, bullet lists). Be specific and actionable. No fluff.`,
+Each value is markdown (use ## headings, bullet lists). Be specific and actionable. No fluff.
+
+CRITICAL RULES:
+- Analyze ALL synced Buffer posts (Content OS + external), not only Content OS drafts.
+- Frame every insight at the CONTENT DOMAIN level (e.g. "Startup insights", "Entrepreneurship", "Founder journey", "Technical / engineering").
+- NEVER cite specific topic titles, trend names, or granular tags (e.g. do NOT say "value proposition posts" — say "Startup insights" or "Entrepreneurship content").
+- Prefer domain-level patterns over individual post summaries.`,
     },
     {
       role: "user",
-      content: `PERFORMANCE STATS:
-- Posts analyzed: ${analysis.stats.postsAnalyzed}
-- Attributed posts: ${analysis.stats.postsAttributed}
+      content: `PERFORMANCE STATS (all Buffer posts):
+- Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsFromContentOs} from Content OS, ${analysis.stats.postsExternal} external)
 - Avg impressions: ${Math.round(analysis.stats.avgImpressions)}
 - Avg engagement rate: ${analysis.stats.avgEngagementRate.toFixed(2)}%
 
-WHAT'S WORKING:
+CONTENT DOMAIN BREAKDOWN:
+${domainLines || "(insufficient data)"}
+
+WHAT'S WORKING (domain-level):
 ${workingLines || "(insufficient data)"}
 
-WHAT'S NOT WORKING:
+WHAT'S NOT WORKING (domain-level):
 ${notWorkingLines || "(insufficient data)"}
 
-TOP POSTS:
+TOP POSTS (with domain):
 ${topPosts || "(none)"}
 
 LINKEDIN TREND RESEARCH:
@@ -65,10 +80,10 @@ ${research.synthesis}
 SOURCES:
 ${researchSources || "(none)"}
 
-Write three insight documents:
-1. performancePlaybook — what content works for this user, patterns to repeat
-2. linkedinTrends — what's working on LinkedIn now for their niche
-3. contentPatterns — format/length/topic patterns from their data`,
+Write three insight documents using DOMAIN language only:
+1. performancePlaybook — which content domains work best for this creator (startup insights, entrepreneurship, etc.)
+2. linkedinTrends — what's working on LinkedIn now for their niche, framed by domain
+3. contentPatterns — format/length/domain patterns from their full post history`,
     },
   ];
 }
