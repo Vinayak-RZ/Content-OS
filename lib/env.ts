@@ -41,7 +41,6 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().optional(),
-  CRON_SECRET: z.string().optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   GITHUB_TOKEN: z.string().optional(),
   REDDIT_CLIENT_ID: z.string().optional(),
