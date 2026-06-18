@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { syncBufferForUser } from "@/lib/buffer/sync";
 import { requireBufferCredentials } from "@/lib/buffer/credentials";
 import {
+  applyCutoffAttribution,
   attributeSocialPosts,
   boostAppPublishedAttribution,
 } from "@/lib/improvement/attribution";
@@ -43,7 +44,8 @@ export async function runImprovementForUser(
 
     await updateRunStep(run.id, "attribute");
     await boostAppPublishedAttribution(userId);
-    const attribution = await attributeSocialPosts(userId);
+    await attributeSocialPosts(userId);
+    await applyCutoffAttribution(userId);
 
     await updateRunStep(run.id, "analyze");
     const analysis = await analyzePerformance(userId);
@@ -77,8 +79,9 @@ export async function runImprovementForUser(
       proposalsCreated,
       stats: {
         postsAnalyzed: analysis.stats.postsAnalyzed,
+        postsAttributed: analysis.stats.postsAttributed,
+        postsUnattributed: analysis.stats.postsUnattributed,
         postsFromContentOs: analysis.stats.postsFromContentOs,
-        postsExternal: analysis.stats.postsExternal,
       },
     };
 

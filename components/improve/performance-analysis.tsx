@@ -166,7 +166,7 @@ export function PerformanceAnalysisPanel({
         <StatCard
           label="Posts analyzed"
           value={analysis.stats.postsAnalyzed}
-          hint={`${analysis.stats.postsExternal} external · ${analysis.stats.postsFromContentOs} from Content OS`}
+          hint={`${analysis.stats.postsAttributed} attributed · ${analysis.stats.postsUnattributed} not attributed`}
         />
         <StatCard
           label="Avg impressions"

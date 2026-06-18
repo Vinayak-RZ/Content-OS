@@ -50,7 +50,7 @@ Be conservative — small shifts only. Tie rationale to content DOMAIN patterns 
 What's working: ${analysis.whatsWorking.map((b) => b.text).join("; ") || "none"}
 What's not: ${analysis.whatsNotWorking.map((b) => b.text).join("; ") || "none"}
 Top domain: ${analysis.topPerformers[0]?.contentDomainLabel ?? "none"}
-Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsExternal} external to Content OS)
+Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsAttributed} attributed since Apr 16, 2026 rule)
 
 CURRENT WRITING STYLE:
 ${currentStyle.slice(0, 4000)}

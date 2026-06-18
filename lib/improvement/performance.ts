@@ -4,6 +4,7 @@ import {
   parsePostMetrics,
 } from "@/lib/analytics/social-post-metrics";
 import { classifyPostDomain } from "@/lib/improvement/domains";
+import { isPostAttributed } from "@/lib/improvement/attribution";
 import {
   MIN_POSTS_FOR_LEARNING,
   type DimensionBreakdown,
@@ -119,11 +120,13 @@ export async function analyzePerformance(
     const engagementRate = getMetricValue(metrics, "engagementRate");
     const domain = classifyPostDomain(p.text);
 
+    const publishedAt = p.publishedAt?.toISOString() ?? null;
+
     return {
       id: p.id,
       textPreview: p.text.slice(0, 120),
       platform: p.channel.service,
-      publishedAt: p.publishedAt?.toISOString() ?? null,
+      publishedAt,
       impressions,
       reactions,
       comments,
@@ -139,13 +142,19 @@ export async function analyzePerformance(
       contentDomainLabel: domain.label,
       attributionConfidence: p.attributionConfidence,
       attributionMethod: p.attributionMethod,
+      isAttributed: isPostAttributed({
+        draftId: p.draftId,
+        attributionConfidence: p.attributionConfidence,
+        publishedAt,
+      }),
       lengthBucket: lengthBucket(p.text.length),
     };
   });
 
   const postsWithMetrics = rows.filter((r) => r.engagementRate != null);
+  const postsAttributed = rows.filter((r) => r.isAttributed).length;
+  const postsUnattributed = rows.length - postsAttributed;
   const postsFromContentOs = rows.filter((r) => r.draftId != null).length;
-  const postsExternal = rows.length - postsFromContentOs;
 
   const impressions = rows
     .map((r) => r.impressions ?? 0)
@@ -192,8 +201,9 @@ export async function analyzePerformance(
     minPostsRequired: MIN_POSTS_FOR_LEARNING,
     stats: {
       postsAnalyzed: rows.length,
+      postsAttributed,
+      postsUnattributed,
       postsFromContentOs,
-      postsExternal,
       avgImpressions,
       avgEngagementRate,
     },

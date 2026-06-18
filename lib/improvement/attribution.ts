@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { ATTRIBUTION_CONFIDENCE_THRESHOLD } from "@/lib/improvement/types";
 
 export type AttributionResult = {
   matched: number;
@@ -53,6 +54,50 @@ function computeSimilarity(postText: string, draftContent: string): number {
 
 const MATCH_THRESHOLD = 0.55;
 const HIGH_CONFIDENCE = 0.85;
+
+/** Posts published on/after this date are always treated as attributed. */
+export const ATTRIBUTION_ALWAYS_AFTER = new Date("2026-04-16T00:00:00.000Z");
+
+export function isOnOrAfterAttributionCutoff(
+  publishedAt: string | Date | null | undefined,
+): boolean {
+  if (!publishedAt) return false;
+  return new Date(publishedAt) >= ATTRIBUTION_ALWAYS_AFTER;
+}
+
+export function isPostAttributed(post: {
+  draftId: string | null;
+  attributionConfidence: number | null;
+  publishedAt: string | Date | null;
+}): boolean {
+  if (post.draftId != null) return true;
+  if (isOnOrAfterAttributionCutoff(post.publishedAt)) return true;
+  if ((post.attributionConfidence ?? 0) >= ATTRIBUTION_CONFIDENCE_THRESHOLD) return true;
+  return false;
+}
+
+/**
+ * Persist full attribution for all sent posts on/after the cutoff date.
+ */
+export async function applyCutoffAttribution(userId: string): Promise<number> {
+  const result = await prisma.socialPost.updateMany({
+    where: {
+      userId,
+      status: "sent",
+      publishedAt: { gte: ATTRIBUTION_ALWAYS_AFTER },
+      NOT: { attributionMethod: "app_publish" },
+      OR: [
+        { attributionConfidence: null },
+        { attributionConfidence: { lt: 1 } },
+      ],
+    },
+    data: {
+      attributionConfidence: 1,
+      attributionMethod: "post_cutoff",
+    },
+  });
+  return result.count;
+}
 
 /**
  * Best-effort match Buffer-synced posts to drafts by text similarity.

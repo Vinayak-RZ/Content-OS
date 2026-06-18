@@ -149,7 +149,7 @@ export function ProposalReview({ onChanged }: { onChanged?: () => void }) {
   if (proposals.length === 0 && past.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No proposals yet. Run an improvement cycle with enough attributed posts.
+        No proposals yet. Run an improvement cycle with enough posts that have engagement metrics.
       </p>
     );
   }

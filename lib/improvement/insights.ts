@@ -58,7 +58,7 @@ CRITICAL RULES:
     {
       role: "user",
       content: `PERFORMANCE STATS (all Buffer posts):
-- Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsFromContentOs} from Content OS, ${analysis.stats.postsExternal} external)
+- Posts analyzed: ${analysis.stats.postsAnalyzed} (${analysis.stats.postsAttributed} attributed, ${analysis.stats.postsUnattributed} not attributed; ${analysis.stats.postsFromContentOs} linked to Content OS drafts)
 - Avg impressions: ${Math.round(analysis.stats.avgImpressions)}
 - Avg engagement rate: ${analysis.stats.avgEngagementRate.toFixed(2)}%
 

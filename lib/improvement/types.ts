@@ -47,6 +47,7 @@ export type PerformancePostRow = {
   contentDomainLabel: string;
   attributionConfidence: number | null;
   attributionMethod: string | null;
+  isAttributed: boolean;
   lengthBucket: string;
 };
 
@@ -63,8 +64,9 @@ export type PerformanceAnalysis = {
   minPostsRequired: number;
   stats: {
     postsAnalyzed: number;
+    postsAttributed: number;
+    postsUnattributed: number;
     postsFromContentOs: number;
-    postsExternal: number;
     avgImpressions: number;
     avgEngagementRate: number;
   };
@@ -98,8 +100,9 @@ export type ImprovementRunSummary = {
   proposalsCreated: ProposalSummary[];
   stats: {
     postsAnalyzed: number;
+    postsAttributed: number;
+    postsUnattributed: number;
     postsFromContentOs: number;
-    postsExternal: number;
   };
 };
 
