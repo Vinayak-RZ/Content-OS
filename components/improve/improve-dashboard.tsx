@@ -9,6 +9,7 @@ import { InsightFilesViewer } from "@/components/improve/insight-files-viewer";
 import { PerformanceAnalysisPanel } from "@/components/improve/performance-analysis";
 import { ProposalReview } from "@/components/improve/proposal-review";
 import { RunHistory } from "@/components/improve/run-history";
+import { normalizePerformanceAnalysis } from "@/lib/improvement/normalize";
 import type {
   ImprovementRunSummary,
   LinkedInResearchResult,
@@ -78,16 +79,19 @@ export function ImproveDashboard() {
       fetch("/api/improve/performance"),
       fetch("/api/improve/runs"),
     ]);
-    const perfData = (await perfRes.json()) as PerformanceAnalysis;
-    const runsData = (await runsRes.json()) as { runs?: LatestRun[] };
-    setAnalysis(perfData);
-    const latest = runsData.runs?.[0] ?? null;
-    setLatestRun(latest);
-    if (latest?.summary?.linkedinResearch) {
-      setResearch(latest.summary.linkedinResearch);
+
+    if (perfRes.ok) {
+      const perfData = normalizePerformanceAnalysis(await perfRes.json());
+      if (perfData) setAnalysis(perfData);
     }
-    if (latest?.summary?.analysis) {
-      setAnalysis(latest.summary.analysis);
+
+    if (runsRes.ok) {
+      const runsData = (await runsRes.json()) as { runs?: LatestRun[] };
+      const latest = runsData.runs?.[0] ?? null;
+      setLatestRun(latest);
+      if (latest?.summary?.linkedinResearch) {
+        setResearch(latest.summary.linkedinResearch);
+      }
     }
   }, []);
 

@@ -146,7 +146,8 @@ export function PerformanceAnalysisPanel({
 }: {
   analysis: PerformanceAnalysis;
 }) {
-  if (analysis.stats.postsAnalyzed === 0) {
+  const stats = analysis.stats;
+  if (!stats || stats.postsAnalyzed === 0) {
     return (
       <div className="rounded-xl border border-subtle bg-card p-8 text-center shadow-ambient">
         <p className="text-sm text-muted-foreground">
@@ -165,16 +166,16 @@ export function PerformanceAnalysisPanel({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Posts analyzed"
-          value={analysis.stats.postsAnalyzed}
-          hint={`${analysis.stats.postsAttributed} attributed · ${analysis.stats.postsUnattributed} not attributed`}
+          value={stats.postsAnalyzed}
+          hint={`${stats.postsAttributed ?? 0} attributed · ${stats.postsUnattributed ?? 0} not attributed`}
         />
         <StatCard
           label="Avg impressions"
-          value={Math.round(analysis.stats.avgImpressions).toLocaleString()}
+          value={Math.round(stats.avgImpressions ?? 0).toLocaleString()}
         />
         <StatCard
           label="Avg engagement"
-          value={`${analysis.stats.avgEngagementRate.toFixed(1)}%`}
+          value={`${(stats.avgEngagementRate ?? 0).toFixed(1)}%`}
         />
         <StatCard
           label="Learning ready"
@@ -204,9 +205,9 @@ export function PerformanceAnalysisPanel({
       <PostTable title="Bottom performers" posts={analysis.bottomPerformers} />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <BreakdownBars title="By content domain" data={analysis.breakdowns.domains} />
-        <BreakdownBars title="By platform" data={analysis.breakdowns.platform} />
-        <BreakdownBars title="By post length" data={analysis.breakdowns.lengthBucket} />
+        <BreakdownBars title="By content domain" data={analysis.breakdowns?.domains ?? []} />
+        <BreakdownBars title="By platform" data={analysis.breakdowns?.platform ?? []} />
+        <BreakdownBars title="By post length" data={analysis.breakdowns?.lengthBucket ?? []} />
       </div>
     </div>
   );

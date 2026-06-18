@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/app-header";
 import { LinkedInTrendsPanel } from "@/components/improve/linkedin-trends-panel";
 import { PerformanceAnalysisPanel } from "@/components/improve/performance-analysis";
 import { getAppAccess } from "@/lib/app-access";
+import { normalizePerformanceAnalysis } from "@/lib/improvement/normalize";
 import { getImprovementRun } from "@/lib/improvement/run";
 import type { ImprovementRunSummary } from "@/lib/improvement/types";
 
@@ -22,6 +23,9 @@ export default async function ImproveRunDetailPage({ params }: PageProps) {
   }
 
   const summary = run.summary as ImprovementRunSummary | null;
+  const analysis = summary?.analysis
+    ? normalizePerformanceAnalysis(summary.analysis)
+    : null;
 
   return (
     <>
@@ -35,13 +39,13 @@ export default async function ImproveRunDetailPage({ params }: PageProps) {
           <p className="text-sm text-red-600">{run.error}</p>
         ) : null}
 
-        {summary?.analysis ? (
+        {analysis ? (
           <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
             <h2 className="font-heading text-lg font-semibold">
               Performance analysis snapshot
             </h2>
             <div className="mt-6">
-              <PerformanceAnalysisPanel analysis={summary.analysis} />
+              <PerformanceAnalysisPanel analysis={analysis} />
             </div>
           </section>
         ) : null}
