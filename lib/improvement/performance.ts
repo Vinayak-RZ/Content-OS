@@ -25,6 +25,36 @@ function avg(nums: number[]): number {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
+/** Raw interaction count — reactions, comments, and reposts. */
+function totalEngagementActions(row: PerformancePostRow): number {
+  return (row.reactions ?? 0) + (row.comments ?? 0) + (row.reposts ?? 0);
+}
+
+/** Post has enough absolute metrics to rank (impressions or interactions). */
+function hasPerformanceMetrics(row: PerformancePostRow): boolean {
+  return (row.impressions ?? 0) > 0 || totalEngagementActions(row) > 0;
+}
+
+/**
+ * Rank posts by how well they performed using absolute counts, not percentages.
+ * 1. Impressions (primary reach signal)
+ * 2. Total engagement actions (reactions + comments + reposts)
+ * 3. Engagement rate (tiebreaker only)
+ */
+function comparePostPerformance(
+  a: PerformancePostRow,
+  b: PerformancePostRow,
+): number {
+  const impressionsDelta = (b.impressions ?? 0) - (a.impressions ?? 0);
+  if (impressionsDelta !== 0) return impressionsDelta;
+
+  const engagementDelta =
+    totalEngagementActions(b) - totalEngagementActions(a);
+  if (engagementDelta !== 0) return engagementDelta;
+
+  return (b.engagementRate ?? 0) - (a.engagementRate ?? 0);
+}
+
 function buildBreakdown(
   rows: PerformancePostRow[],
   keyFn: (r: PerformancePostRow) => string,
@@ -50,7 +80,7 @@ function buildBreakdown(
         items.map((i) => i.engagementRate ?? 0).filter((v) => v > 0),
       ),
     }))
-    .sort((a, b) => b.avgEngagementRate - a.avgEngagementRate);
+    .sort((a, b) => b.avgImpressions - a.avgImpressions || b.avgEngagementRate - a.avgEngagementRate);
 }
 
 function generateDomainInsightBullets(
@@ -151,22 +181,22 @@ export async function analyzePerformance(
     };
   });
 
-  const postsWithMetrics = rows.filter((r) => r.engagementRate != null);
+  const postsWithMetrics = rows.filter(hasPerformanceMetrics);
   const postsAttributed = rows.filter((r) => r.isAttributed).length;
   const postsUnattributed = rows.length - postsAttributed;
   const postsFromContentOs = rows.filter((r) => r.draftId != null).length;
 
-  const impressions = rows
+  const impressionValues = rows
     .map((r) => r.impressions ?? 0)
     .filter((v) => v > 0);
-  const engagementRates = postsWithMetrics.map((r) => r.engagementRate ?? 0);
+  const engagementRates = rows
+    .map((r) => r.engagementRate)
+    .filter((v): v is number => v != null);
 
-  const avgImpressions = avg(impressions);
+  const avgImpressions = avg(impressionValues);
   const avgEngagementRate = avg(engagementRates);
 
-  const sortedByEngagement = [...rows].sort(
-    (a, b) => (b.engagementRate ?? 0) - (a.engagementRate ?? 0),
-  );
+  const sortedByPerformance = [...postsWithMetrics].sort(comparePostPerformance);
 
   const domainBreakdown = buildBreakdown(rows, (r) => r.contentDomain, (k) => {
     const row = rows.find((r) => r.contentDomain === k);
@@ -187,13 +217,13 @@ export async function analyzePerformance(
     false,
   ).slice(0, 5);
 
-  if (whatsWorking.length === 0 && rows.length > 0) {
-    const top = sortedByEngagement.find((p) => p.engagementRate != null);
-    if (top) {
-      whatsWorking.push({
-        text: `${top.contentDomainLabel} content performs best (${top.engagementRate?.toFixed(1) ?? "—"}% avg engagement on top posts)`,
-      });
-    }
+  if (whatsWorking.length === 0 && sortedByPerformance.length > 0) {
+    const top = sortedByPerformance[0]!;
+    const topImpressions = top.impressions?.toLocaleString() ?? "—";
+    const topEngagements = totalEngagementActions(top);
+    whatsWorking.push({
+      text: `${top.contentDomainLabel} content reaches the most people (${topImpressions} impressions, ${topEngagements.toLocaleString()} interactions on top post)`,
+    });
   }
 
   return {
@@ -209,11 +239,8 @@ export async function analyzePerformance(
     },
     whatsWorking,
     whatsNotWorking,
-    topPerformers: sortedByEngagement.slice(0, 5),
-    bottomPerformers: sortedByEngagement
-      .filter((p) => p.engagementRate != null)
-      .slice(-5)
-      .reverse(),
+    topPerformers: sortedByPerformance.slice(0, 5),
+    bottomPerformers: sortedByPerformance.slice(-5).reverse(),
     breakdowns: {
       domains: domainBreakdown.filter((d) => d.key !== "general"),
       platform: platformBreakdown,

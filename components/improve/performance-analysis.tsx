@@ -111,8 +111,8 @@ function PostTable({
             <tr>
               <th className="px-4 py-2 font-semibold">Post</th>
               <th className="px-3 py-2 font-semibold">Domain</th>
-              <th className="px-3 py-2 font-semibold">Eng.</th>
               <th className="px-3 py-2 font-semibold">Impr.</th>
+              <th className="px-3 py-2 font-semibold">Interactions</th>
               <th className="px-3 py-2 font-semibold">Platform</th>
             </tr>
           </thead>
@@ -124,12 +124,14 @@ function PostTable({
                 </td>
                 <td className="px-3 py-3 text-sm">{post.contentDomainLabel}</td>
                 <td className="px-3 py-3 tabular-nums">
-                  {post.engagementRate != null
-                    ? `${post.engagementRate.toFixed(1)}%`
-                    : "—"}
+                  {post.impressions?.toLocaleString() ?? "—"}
                 </td>
                 <td className="px-3 py-3 tabular-nums">
-                  {post.impressions?.toLocaleString() ?? "—"}
+                  {(
+                    (post.reactions ?? 0) +
+                    (post.comments ?? 0) +
+                    (post.reposts ?? 0)
+                  ).toLocaleString()}
                 </td>
                 <td className="px-3 py-3 capitalize">{post.platform}</td>
               </tr>

@@ -33,10 +33,12 @@ function buildInsightMessages(
     )
     .join("\n");
   const topPosts = analysis.topPerformers
-    .map(
-      (p) =>
-        `- [${p.contentDomainLabel}] "${p.textPreview}" (${p.engagementRate?.toFixed(1) ?? "?"}% eng, ${p.platform})`,
-    )
+    .map((p) => {
+      const impressions = p.impressions?.toLocaleString() ?? "?";
+      const interactions =
+        (p.reactions ?? 0) + (p.comments ?? 0) + (p.reposts ?? 0);
+      return `- [${p.contentDomainLabel}] "${p.textPreview}" (${impressions} impressions, ${interactions.toLocaleString()} interactions, ${p.platform})`;
+    })
     .join("\n");
   const researchSources = research.sources
     .map((s) => `- ${s.title}: ${s.snippet.slice(0, 120)}`)
@@ -71,7 +73,7 @@ ${workingLines || "(insufficient data)"}
 WHAT'S NOT WORKING (domain-level):
 ${notWorkingLines || "(insufficient data)"}
 
-TOP POSTS (with domain):
+TOP POSTS (ranked by impressions, then absolute interactions):
 ${topPosts || "(none)"}
 
 LINKEDIN TREND RESEARCH:
