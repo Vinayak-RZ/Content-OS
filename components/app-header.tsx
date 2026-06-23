@@ -1,15 +1,19 @@
+import type { ReactNode } from "react";
+
 import { Badge } from "@/components/ui/badge";
 
 interface AppHeaderProps {
   title: string;
   breadcrumb?: string;
   description?: string;
+  action?: ReactNode;
 }
 
 export function AppHeader({
   title,
   breadcrumb = "Workspace",
   description,
+  action,
 }: AppHeaderProps) {
   return (
     <header className="page-x border-b border-subtle bg-background py-4 sm:py-6">
@@ -27,9 +31,13 @@ export function AppHeader({
             </p>
           ) : null}
         </div>
-        <Badge variant="brand" dot className="shrink-0">
-          Live
-        </Badge>
+        {action ? (
+          <div className="shrink-0">{action}</div>
+        ) : (
+          <Badge variant="brand" dot className="shrink-0">
+            Live
+          </Badge>
+        )}
       </div>
     </header>
   );

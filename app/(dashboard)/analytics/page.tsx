@@ -50,20 +50,15 @@ function BufferAnalyticsSection({
   return (
     <>
       <section className="rounded-xl border border-subtle bg-card p-6 shadow-ambient sm:p-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="font-heading text-lg font-semibold">
-              Buffer post performance
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Impressions and engagement for sent LinkedIn and X posts synced
-              from Buffer.
-            </p>
-          </div>
-          <BufferSyncButton
-            connected={buffer.connected}
-            lastSyncAt={buffer.lastSyncAt}
-          />
+        <div className="mb-6">
+          <h2 className="font-heading text-lg font-semibold">
+            Buffer post performance
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Impressions and engagement for sent LinkedIn and X posts synced
+            from Buffer. Use Refresh from Buffer above to pull the latest
+            metrics.
+          </p>
         </div>
 
         {buffer.lastSyncError ? (
@@ -179,8 +174,8 @@ function AnalyticsBody({
           <PublicationChart data={chartData} />
         ) : (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No Buffer data yet. Add your API key in Settings, then use Sync now
-            on this page.
+            No Buffer data yet. Add your API key in Settings, then use Refresh
+            from Buffer at the top of this page.
           </p>
         )}
       </section>
@@ -278,6 +273,15 @@ export default async function AnalyticsPage() {
         title="Analytics"
         breadcrumb="Insights"
         description="Published output and discovery activity for your account."
+        action={
+          buffer ? (
+            <BufferSyncButton
+              connected={buffer.connected}
+              lastSyncAt={buffer.lastSyncAt}
+              prominent
+            />
+          ) : undefined
+        }
       />
       <AnalyticsBody analytics={analytics} buffer={buffer} />
     </>
