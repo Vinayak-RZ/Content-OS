@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const createDraftBodySchema = z.object({
+  topicTitle: z.string().min(1).max(240),
+  currentContent: z.string().max(100_000).optional(),
+});
+
+export type CreateDraftBody = z.infer<typeof createDraftBodySchema>;
+
 export const draftPatchSchema = z
   .object({
     currentContent: z.string().max(100_000).optional(),

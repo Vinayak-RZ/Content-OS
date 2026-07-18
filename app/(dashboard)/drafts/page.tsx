@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import { AppHeader } from "@/components/app-header";
+import { CreateDraftForm } from "@/components/drafts/create-draft-form";
 import { DraftsLibrary } from "@/components/drafts/drafts-library";
 import { DraftsTable } from "@/components/drafts/drafts-table";
 import {
@@ -66,23 +65,21 @@ export default async function DraftsLibraryPage() {
       <AppHeader
         title="Drafts"
         breadcrumb="Library"
-        description="Everything you've generated. Open any draft to keep editing."
+        description="Create drafts from scratch or from dashboard topics. Edit, publish, and archive here."
       />
       <div className="page-x flex flex-1 flex-col gap-6 pb-16 pt-4 sm:pt-6">
         {drafts.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-16 text-center">
-            <p className="font-heading text-base font-semibold text-foreground">
-              No drafts yet
-            </p>
-            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Pick a topic on the dashboard and generate your first draft.
-            </p>
-            <Link
-              href="/dashboard"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-xl bg-brand px-4 text-sm font-medium text-white shadow-pill"
-            >
-              Go to Dashboard
-            </Link>
+          <div className="flex flex-col gap-8">
+            <CreateDraftForm defaultExpanded />
+            <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-12 text-center">
+              <p className="font-heading text-base font-semibold text-foreground">
+                No drafts yet
+              </p>
+              <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                Create a blank draft above, or pick a topic on the dashboard and
+                generate one with AI.
+              </p>
+            </div>
           </div>
         ) : (
           <DraftsLibrary initialDrafts={initialDrafts} />

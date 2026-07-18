@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { CreateDraftForm } from "@/components/drafts/create-draft-form";
 import { DraftsTable, type DraftRow } from "@/components/drafts/drafts-table";
 import { cn } from "@/lib/utils";
 
@@ -25,14 +26,15 @@ export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) 
 
   return (
     <div className="flex flex-col gap-8">
+      <CreateDraftForm />
+
       {activeDrafts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-subtle bg-muted/30 px-6 py-12 text-center">
           <p className="font-heading text-base font-semibold text-foreground">
             No active drafts
           </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            Published posts live in the archive below. Generate a new draft from
-            the dashboard.
+            Create one above, or generate from a topic on the dashboard.
           </p>
         </div>
       ) : (
