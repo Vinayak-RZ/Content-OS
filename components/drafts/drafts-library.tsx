@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { CreateDraftForm } from "@/components/drafts/create-draft-form";
 import { DraftsTable, type DraftRow } from "@/components/drafts/drafts-table";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type PipelineFilter = "all" | "signals" | "studio";
+type PipelineFilter = "all" | "signals" | "studio" | "manual";
 
 export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) {
   const [drafts, setDrafts] = useState(initialDrafts);
@@ -32,12 +33,22 @@ export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) 
     setDrafts((prev) => prev.filter((d) => d.id !== id));
   }
 
+  const emptyMessage =
+    filter === "all"
+      ? "Create one above, or generate from Signals or Studio."
+      : filter === "manual"
+        ? "No manual drafts yet. Use New draft above to start from scratch."
+        : `No ${filter} drafts yet. Generate from the ${filter === "studio" ? "Studio" : "Signals"} board.`;
+
   return (
     <div className="flex flex-col gap-8">
+      <CreateDraftForm />
+
       <div className="flex flex-wrap gap-2">
         {(
           [
             ["all", "All"],
+            ["manual", "Manual"],
             ["signals", "Signals"],
             ["studio", "Studio"],
           ] as const
@@ -60,9 +71,8 @@ export function DraftsLibrary({ initialDrafts }: { initialDrafts: DraftRow[] }) 
             No active drafts
           </p>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {filter === "all"
-              ? "Published posts live in the archive below."
-              : `No ${filter} drafts yet. Generate from the ${filter === "studio" ? "Studio" : "Signals"} board.`}
+            {emptyMessage}
+            {filter === "all" ? " Published posts live in the archive below." : null}
           </p>
         </div>
       ) : (
