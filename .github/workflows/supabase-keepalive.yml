@@ -1,0 +1,30 @@
+name: Keep Supabase awake
+
+on:
+  schedule:
+    # 02:15 UTC daily (07:45 IST). GitHub may start the job a few minutes late.
+    - cron: "15 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query the database
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_DIRECT_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_DIRECT_URL}" ]; then
+            echo "SUPABASE_DIRECT_URL secret is not set."
+            exit 1
+          fi
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql-client >/dev/null
+          case "${SUPABASE_DIRECT_URL}" in
+            *sslmode=*) url="${SUPABASE_DIRECT_URL}" ;;
+            *\?*) url="${SUPABASE_DIRECT_URL}&sslmode=require" ;;
+            *) url="${SUPABASE_DIRECT_URL}?sslmode=require" ;;
+          esac
+          psql "${url}" -v ON_ERROR_STOP=1 -c "SELECT 1 AS supabase_keepalive;"
